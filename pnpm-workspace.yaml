@@ -1,0 +1,8 @@
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
+saveExact: true
+update:
+  ignoreDeps:
+    - '@types/node'
+    - typescript
