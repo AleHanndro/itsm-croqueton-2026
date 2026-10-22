@@ -1,4 +1,7 @@
 {
+  "context_servers": {
+    "zod-docs": { "enabled": true, "url": "https://mcp.inkeep.com/zod/mcp" }
+  },
   "format_on_save": "on",
 
   "languages": {
