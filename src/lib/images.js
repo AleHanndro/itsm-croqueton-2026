@@ -1,0 +1,17 @@
+export const chapterOneImage = "/images/croqueton-capitulo-1.png";
+export const chapterTwoImage = "/images/croqueton-capitulo-2.png";
+export const chapterThreeImage = "/images/croqueton-capitulo-3-v2.png";
+export const chapterFourImage = "/images/croqueton-capitulo-4.png";
+export const chapterFiveImage = "/images/croqueton-capitulo-5-v2.png";
+export const chapterSixImage = "/images/croqueton-capitulo-6.png";
+export const goalImage = "/images/croqueton-meta.png";
+export const errorDogImage = "/images/croqueton-404-dog.png";
+export const rejectedApplicationImage = "/images/croqueton-requisitos-no-cumplidos.png";
+export const heroDogImage = "/images/croqueton-hero-cheems.png";
+export const donationMemeImage = "/images/croqueton-donacion-asalto.png";
+export const chooseFoodImage = "/images/croqueton-elegir-alimento.png";
+export const eventDeliveryImage = "/images/croqueton-entrega-evento.png";
+export const checkDateImage = "/images/croqueton-revisar-fecha.png";
+export const packAccessDogImage = "/images/croqueton-pack-access-dog.png";
+export const recruitmentDogImage = "/images/croqueton-reclutamiento.png";
+export const packGenerationImage = "/images/croqueton-manada-2025.png";
