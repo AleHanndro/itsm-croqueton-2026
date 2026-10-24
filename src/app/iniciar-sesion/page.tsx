@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 
 import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
 import { errorDogImage, packAccessDogImage } from '@/lib/images'
@@ -21,7 +21,7 @@ export default function LoginPage() {
 
   const isEnglish = language === 'en'
 
-  const requestAccess = (event) => {
+  const requestAccess = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (signIn(email, password)) {
@@ -39,7 +39,7 @@ export default function LoginPage() {
     )
   }
 
-  const requestAccount = (event) => {
+  const requestAccount = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (email.includes('@') && password.length >= 6 && createAccount(email, password)) {

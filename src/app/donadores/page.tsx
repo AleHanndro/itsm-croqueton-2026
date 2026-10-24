@@ -6,7 +6,7 @@ import { LanguageToggle, ThemeToggle, Paw, SiteNavigation } from '@/components/u
 import { donationMemeImage } from '@/lib/images'
 import { useLanguage } from '@/providers/language-provider'
 
-const officialDonors = []
+const officialDonors: { name: string; contribution: string }[] = []
 
 export default function DonorsPage() {
   const { language } = useLanguage()

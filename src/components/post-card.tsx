@@ -4,11 +4,12 @@ import Link from 'next/link'
 import { useRef, useState } from 'react'
 
 import { Paw } from '@/components/ui'
+import { assessPostRelevance } from '@/lib/content'
 import { useNavigate } from '@/lib/navigation'
-import { useCommunity } from '@/providers/community-provider'
+import { useCommunity, type CommunityPost } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
 
-export function PostCard({ post }) {
+export function PostCard({ post }: { post: CommunityPost }) {
   const { language } = useLanguage()
   const { user, editPost, deletePost, toggleLike, addComment } = useCommunity()
   const navigate = useNavigate()
@@ -17,7 +18,7 @@ export function PostCard({ post }) {
   const [editNotice, setEditNotice] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
-  const commentInputRef = useRef(null)
+  const commentInputRef = useRef<HTMLInputElement>(null)
 
   const isEnglish = language === 'en'
   const hasLiked = !!user && post.likedBy.includes(user.email)

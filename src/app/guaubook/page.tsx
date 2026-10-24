@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 
 import { PostCard } from '@/components/post-card'
 import { LanguageToggle, ThemeToggle, Paw, SiteNavigation } from '@/components/ui'
@@ -14,12 +14,12 @@ export default function GuauBookPage() {
   const { language } = useLanguage()
   const { user, posts, addPost, requestPostReview } = useCommunity()
   const [body, setBody] = useState('')
-  const [image, setImage] = useState()
+  const [image, setImage] = useState<string>()
   const [notice, setNotice] = useState('')
 
   const isEnglish = language === 'en'
 
-  const handleSelectPostImage = (file) => {
+  const handleSelectPostImage = (file: File | undefined) => {
     if (!file) return
 
     const reader = new FileReader()
@@ -30,7 +30,7 @@ export default function GuauBookPage() {
     reader.readAsDataURL(file)
   }
 
-  const handlePublish = (event) => {
+  const handlePublish = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (!body.trim() && !image) return

@@ -2,9 +2,12 @@
 
 import { createContext, use, useEffect, useMemo, useState, type ReactNode } from 'react'
 
+// `Yua` is the ISO code for Maya
+export type Language = 'en' | 'es' | 'yua'
+
 interface LanguageContextValue {
-  language: string
-  setLanguage: (language: string) => void
+  language: Language
+  setLanguage: (language: Language) => void
 }
 
 const LanguageContext = createContext<LanguageContextValue>({
@@ -13,21 +16,21 @@ const LanguageContext = createContext<LanguageContextValue>({
 })
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState('es')
+  const [language, setLanguage] = useState<Language>('es')
 
   useEffect(() => {
     const savedLanguage = window.localStorage.getItem('croqueton-language')
-    if (savedLanguage === 'en' || savedLanguage === 'maya' || savedLanguage === 'es')
+    if (savedLanguage === 'en' || savedLanguage === 'es' || savedLanguage === 'yua')
       setLanguage(savedLanguage)
   }, [])
 
   useEffect(() => {
     window.localStorage.setItem('croqueton-language', language)
-    document.documentElement.lang = language === 'maya' ? 'yua' : language
+    document.documentElement.lang = language
   }, [language])
 
   const value = useMemo<LanguageContextValue>(
-    () => ({ language, setLanguage: (language: string) => void 0 }),
+    () => ({ language, setLanguage: (language) => setLanguage(language) }),
     [language]
   )
 

@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 
 import { LanguageToggle, ThemeToggle, Paw, SiteNavigation } from '@/components/ui'
 import { rejectedApplicationImage, heroDogImage, recruitmentDogImage } from '@/lib/images'
@@ -10,7 +10,7 @@ import { useLanguage } from '@/providers/language-provider'
 export default function JoinPage() {
   const { language } = useLanguage()
   const [showJoinForm, setShowJoinForm] = useState(false)
-  const [joinResult, setJoinResult] = useState(null)
+  const [joinResult, setJoinResult] = useState<'requirements' | 'welcome' | null>(null)
   const [applicantName, setApplicantName] = useState('')
   const [applicantAge, setApplicantAge] = useState('')
   const [motivation, setMotivation] = useState('')
@@ -24,7 +24,7 @@ export default function JoinPage() {
     setShowJoinForm(true)
   }
 
-  const submitJoinForm = (event) => {
+  const submitJoinForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (

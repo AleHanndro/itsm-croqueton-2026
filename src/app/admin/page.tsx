@@ -21,7 +21,7 @@ export default function AdminPage() {
     signOut
   } = useCommunity()
   const navigate = useNavigate()
-  const [deletingPostId, setDeletingPostId] = useState(null)
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
   const [today, setToday] = useState('')
 
   const isAdmin = user?.email === 'admin@croqueton.mx'
@@ -38,7 +38,7 @@ export default function AdminPage() {
     )
   }, [])
 
-  if (!isAdmin) {
+  if (!user || !isAdmin) {
     return (
       <main className="community-page">
         <CommunityNavigation />

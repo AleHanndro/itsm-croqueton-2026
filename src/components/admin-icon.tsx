@@ -1,4 +1,4 @@
-export default function AdminIcon({ type }) {
+export default function AdminIcon({ type }: { type: 'posts' | 'review' | 'users' | 'heart' }) {
   if (type === 'posts')
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">

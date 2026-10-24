@@ -7,26 +7,26 @@ import { useEffect, useRef, useState, type ComponentProps } from 'react'
 
 import { useLocation } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
-import { useLanguage } from '@/providers/language-provider'
+import { useLanguage, type Language } from '@/providers/language-provider'
 import { useTheme } from '@/providers/theme-provider'
 
 function LanguageToggle() {
   const { language, setLanguage } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
-  const menuRef = useRef(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
-  const languageLabels = {
+  const languageLabels: Record<Language, string> = {
     es: 'ES',
     en: 'EN',
-    maya: 'MY'
+    yua: 'YUA'
   }
 
   useEffect(() => {
-    const closeOnOutsideClick = (event) => {
-      if (!menuRef.current?.contains(event.target)) setIsOpen(false)
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) setIsOpen(false)
     }
 
-    const closeOnEscape = (event) => {
+    const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setIsOpen(false)
     }
 
@@ -38,7 +38,7 @@ function LanguageToggle() {
     }
   }, [])
 
-  function selectLanguage(nextLanguage) {
+  function selectLanguage(nextLanguage: Language) {
     setLanguage(nextLanguage)
     setIsOpen(false)
   }
@@ -52,7 +52,7 @@ function LanguageToggle() {
           role="menu"
           aria-label="Idioma · Language · Maaya t'aan"
         >
-          {['es', 'en', 'maya'].map((option) => (
+          {(Object.keys(languageLabels) as Language[]).map((option) => (
             <button
               key={option}
               type="button"
@@ -91,7 +91,9 @@ function LanguageToggle() {
 
 function MayaTranslationNotice() {
   const { language } = useLanguage()
-  if (language !== 'maya') return null
+
+  if (language !== 'yua') return null
+
   return (
     <aside className="maya-translation-notice" role="status">
       <strong>Maaya t&apos;aan</strong>
@@ -317,7 +319,17 @@ function Paw({ className = '' }) {
   )
 }
 
-function PawColorButton({ color, label, selected, onClick }) {
+function PawColorButton({
+  color,
+  label,
+  selected,
+  onClick
+}: {
+  color: string
+  label: string
+  selected: boolean
+  onClick: () => void
+}) {
   return (
     <button
       type="button"
@@ -345,12 +357,18 @@ function Logo() {
   )
 }
 
-function SiteNavigation({ home = false, isScrolled = false }) {
+function SiteNavigation({
+  home = false,
+  isScrolled = false
+}: {
+  home?: boolean
+  isScrolled?: boolean
+}) {
   const { language } = useLanguage()
   const { user } = useCommunity()
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const navigationRef = useRef(null)
+  const navigationRef = useRef<HTMLElement>(null)
 
   const isEnglish = language === 'en'
   const navigationItems = [
@@ -385,11 +403,11 @@ function SiteNavigation({ home = false, isScrolled = false }) {
   useEffect(() => {
     if (!isMenuOpen) return
 
-    const closeMobileMenu = (event) => {
-      if (!navigationRef.current?.contains(event.target)) setIsMenuOpen(false)
+    const closeMobileMenu = (event: MouseEvent) => {
+      if (!navigationRef.current?.contains(event.target as Node)) setIsMenuOpen(false)
     }
 
-    const closeMobileMenuOnEscape = (event) => {
+    const closeMobileMenuOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setIsMenuOpen(false)
     }
 
@@ -558,7 +576,7 @@ function MoodPollCard({
   src: ComponentProps<typeof Image>['src']
 }) {
   const { language } = useLanguage()
-  const [selectedMood, setSelectedMood] = useState(null)
+  const [selectedMood, setSelectedMood] = useState<string | null>(null)
 
   const isEnglish = language === 'en'
   const hasResults = selectedMood !== null
