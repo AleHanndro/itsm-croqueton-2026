@@ -1,5 +1,6 @@
 'use client'
 
+import { cn } from 'cn'
 import Link from 'next/link'
 import { useRef, useState } from 'react'
 
@@ -50,25 +51,33 @@ export function PostCard({ post }: { post: CommunityPost }) {
   }
 
   return (
-    <article className="post-card">
-      <div className="post-header">
-        <div className="post-author">
-          <span className="post-avatar">
+    <article className="rounded-3xl border-4 border-ink bg-card p-5.5 shadow-card phone:p-4.75">
+      <div className="flex items-start justify-between gap-3.75">
+        <div className="flex items-center gap-3">
+          <span className="grid size-11.25 place-items-center rounded-circle bg-brand [&_svg]:w-6.25">
             <Paw />
           </span>
           <div>
-            <strong>{post.author}</strong>
-            <small>{post.createdAt}</small>
+            <strong className="block font-heading text-[20px]">{post.author}</strong>
+            <small className="block font-extrabold opacity-55">{post.createdAt}</small>
           </div>
         </div>
         {isOwner && (
-          <div className="post-owner-actions">
+          <div className="flex flex-wrap justify-end gap-1.75">
             {isConfirmingDelete ? (
               <>
-                <button type="button" className="is-danger" onClick={() => deletePost(post.id)}>
+                <button
+                  type="button"
+                  className="rounded-pill border-2 border-ink bg-accent px-2.25 py-1.5 text-caption font-black text-white"
+                  onClick={() => deletePost(post.id)}
+                >
                   {isEnglish ? 'Confirm' : 'Confirmar'}
                 </button>
-                <button type="button" onClick={() => setIsConfirmingDelete(false)}>
+                <button
+                  type="button"
+                  className="rounded-pill border-2 border-ink bg-surface-warm px-2.25 py-1.5 text-caption font-black text-ink"
+                  onClick={() => setIsConfirmingDelete(false)}
+                >
                   {isEnglish ? 'Cancel' : 'Cancelar'}
                 </button>
               </>
@@ -76,6 +85,7 @@ export function PostCard({ post }: { post: CommunityPost }) {
               <>
                 <button
                   type="button"
+                  className="rounded-pill border-2 border-ink bg-surface-warm px-2.25 py-1.5 text-caption font-black text-ink"
                   onClick={() => {
                     setEditedBody(post.body)
                     setEditNotice('')
@@ -86,7 +96,7 @@ export function PostCard({ post }: { post: CommunityPost }) {
                 </button>
                 <button
                   type="button"
-                  className="is-danger"
+                  className="rounded-pill border-2 border-ink bg-accent px-2.25 py-1.5 text-caption font-black text-white"
                   onClick={() => setIsConfirmingDelete(true)}
                 >
                   {isEnglish ? 'Delete' : 'Eliminar'}
@@ -97,19 +107,24 @@ export function PostCard({ post }: { post: CommunityPost }) {
         )}
       </div>
       {isEditing ? (
-        <div className="post-editor">
+        <div className="my-4.5 grid gap-2.5">
           <textarea
             value={editedBody}
+            className="min-h-28.75 w-full resize-y rounded-field border-3 border-ink bg-white p-3.25 leading-normal font-bold text-ink"
             onChange={(event) => setEditedBody(event.target.value)}
             aria-label={isEnglish ? 'Edit post' : 'Editar publicaci\xF3n'}
           />
-          <div>
-            <button type="button" className="button button-dark" onClick={saveEdit}>
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              className="relative inline-flex min-h-10 items-center justify-center gap-3.5 rounded-full border-3 border-current bg-ink px-4.25 font-black text-white shadow-[0_7px_0_var(--button-drop)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-7.5 after:flex-none after:place-items-center after:rounded-circle after:bg-white/18 after:text-lg after:leading-none after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none!"
+              onClick={saveEdit}
+            >
               {isEnglish ? 'Save' : 'Guardar'}
             </button>
             <button
               type="button"
-              className="post-editor-cancel"
+              className="rounded-pill border-2 border-ink bg-surface-warm px-2.25 py-1.5 text-caption font-black text-ink"
               onClick={() => {
                 setIsEditing(false)
                 setEditedBody(post.body)
@@ -119,16 +134,29 @@ export function PostCard({ post }: { post: CommunityPost }) {
               {isEnglish ? 'Cancel' : 'Cancelar'}
             </button>
           </div>
-          <small aria-live="polite">{editNotice}</small>
+          <small aria-live="polite" className="min-h-4.25 font-extrabold text-[#9e3b28]">
+            {editNotice}
+          </small>
         </div>
       ) : (
-        <p>{post.body}</p>
+        <p className="mt-4.5 mb-4.5 leading-copy font-bold whitespace-pre-wrap">{post.body}</p>
       )}
-      {post.image && <img src={post.image} alt="" loading="lazy" decoding="async" />}
-      <div className="post-actions">
+      {post.image && (
+        <img
+          src={post.image}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="block max-h-90 w-full rounded-control object-cover"
+        />
+      )}
+      <div className="mt-4.5 flex items-center gap-3.5 border-t-2 border-dashed border-divider pt-3.5 text-small font-black">
         <button
           type="button"
-          className={hasLiked ? 'is-liked' : ''}
+          className={cn(
+            'rounded-pill border-2 border-ink px-2.75 py-1.75 font-black disabled:cursor-not-allowed disabled:opacity-55',
+            hasLiked ? 'bg-accent text-white' : 'bg-surface-warm text-ink'
+          )}
           onClick={() => (user ? toggleLike(post.id) : navigate('/iniciar-sesion'))}
           aria-pressed={hasLiked}
         >
@@ -136,6 +164,7 @@ export function PostCard({ post }: { post: CommunityPost }) {
         </button>
         <button
           type="button"
+          className="rounded-pill border-2 border-ink bg-surface-warm px-2.75 py-1.75 font-black text-ink disabled:cursor-not-allowed disabled:opacity-55"
           onClick={() => (user ? commentInputRef.current?.focus() : navigate('/iniciar-sesion'))}
         >
           {isEnglish ? 'Comment' : 'Comentar'}
@@ -147,10 +176,13 @@ export function PostCard({ post }: { post: CommunityPost }) {
         </span>
       </div>
       {post.comments.length > 0 && (
-        <div className="post-comments">
+        <div className="mt-3.75 grid gap-2">
           {post.comments.map((item) => (
-            <p key={item.id}>
-              <strong>{item.author}</strong>
+            <p
+              key={item.id}
+              className="m-0 rounded-chip bg-surface-chip px-2.75 py-2.25 text-small font-bold"
+            >
+              <strong className="mr-1.75 font-heading text-[16px]">{item.author}</strong>
               {item.body}
             </p>
           ))}
@@ -158,7 +190,7 @@ export function PostCard({ post }: { post: CommunityPost }) {
       )}
       {user ? (
         <form
-          className="comment-form"
+          className="mt-3.5 flex gap-2.25"
           onSubmit={(event) => {
             event.preventDefault()
             if (comment.trim()) {
@@ -169,18 +201,26 @@ export function PostCard({ post }: { post: CommunityPost }) {
         >
           <input
             ref={commentInputRef}
+            className="min-h-10 min-w-0 flex-1 rounded-pill border-2 border-ink bg-white px-3 font-bold text-ink"
             value={comment}
             onChange={(event) => setComment(event.target.value)}
             placeholder={isEnglish ? 'Write a comment\u2026' : 'Escribe un comentario\u2026'}
           />
-          <button type="submit">{isEnglish ? 'Comment' : 'Comentar'}</button>
+          <button
+            type="submit"
+            className="rounded-pill border-0 bg-ink px-3.5 font-black text-white"
+          >
+            {isEnglish ? 'Comment' : 'Comentar'}
+          </button>
         </form>
       ) : (
-        <p className="post-login-note">
+        <p className="mt-3.75 text-small font-extrabold">
           {isEnglish
             ? 'Love this story or want to reply? '
             : '\xBFTe encant\xF3 o quieres responder? '}
-          <Link href="/iniciar-sesion">{isEnglish ? 'Join the pack' : '\xDAnete a la manada'}</Link>
+          <Link href="/iniciar-sesion" className="underline">
+            {isEnglish ? 'Join the pack' : '\xDAnete a la manada'}
+          </Link>
           .
         </p>
       )}

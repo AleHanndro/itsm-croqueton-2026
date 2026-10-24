@@ -65,86 +65,109 @@ export default function GuauBookPage() {
   }
 
   return (
-    <main className="community-page">
+    <main className="min-h-screen bg-surface-page-mint text-foreground">
       <LanguageToggle />
       <ThemeToggle />
       <SiteNavigation />
-      <section className="community-hero">
-        <div className="container">
-          <span className="eyebrow">GuauBook</span>
-          <h1>
+      <section className="bg-surface-soft pt-21.5 pb-23 phone:pt-14.5 phone:pb-16.25">
+        <div className="relative z-2 mx-auto w-[min(1240px,calc(100%-96px))] tablet:w-[min(100%-36px,680px)] phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+          <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
+            GuauBook
+          </span>
+          <h1 className="mt-2.75 mb-5 text-[clamp(64px,7vw,104px)] leading-display phone:text-[56px]">
             {isEnglish ? 'Stories from' : 'Historias de'}
             <br />
-            <span>{isEnglish ? 'the pack.' : 'la manada.'}</span>
+            <span className="text-accent">{isEnglish ? 'the pack.' : 'la manada.'}</span>
           </h1>
-          <p>
+          <p className="m-0 max-w-155 text-lg leading-copy font-extrabold">
             {isEnglish
               ? 'Share a moment, a photo or a little good news with the Croquet\xF3n community.'
               : 'Comparte un momento, una foto o una buena noticia con la comunidad Croquet\xF3n.'}
           </p>
         </div>
       </section>
-      <section className="community-content container">
+      <section className="relative z-2 mx-auto grid w-[min(1240px,calc(100%-96px))] grid-cols-[minmax(300px,0.72fr)_minmax(0,1fr)] items-start gap-13.75 pt-18 pb-27.5 tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] tablet:gap-8.75 phone:w-[min(100%-28px,680px)] phone:pt-10.5 laptop:w-[min(100%-48px,1040px)]">
         {user ? (
-          <form className="post-composer" onSubmit={handlePublish}>
-            <label htmlFor="post-body">
+          <form
+            className="sticky top-31.5 grid gap-3.75 rounded-3xl border-4 border-ink bg-card p-6.25 shadow-card tablet:relative tablet:top-0 phone:p-4.75"
+            onSubmit={handlePublish}
+          >
+            <label
+              htmlFor="post-body"
+              className="grid gap-1.75 text-[12px] font-black tracking-label uppercase"
+            >
               {isEnglish ? 'What do you want to share?' : '\xBFQu\xE9 quieres compartir?'}
             </label>
             <textarea
               id="post-body"
+              className="min-h-30 w-full resize-y rounded-control border-3 border-ink bg-white p-3.5 font-bold text-ink"
               value={body}
               onChange={(event) => setBody(event.target.value)}
               placeholder={isEnglish ? 'Write something kind\u2026' : 'Escribe algo bonito\u2026'}
             />
-            <small className="post-guidelines">
+            <small className="-mt-1.75 block text-[12px] leading-label font-extrabold text-[#526165]">
               {isEnglish
                 ? 'Please share pets, care, food, animal health, adoption or experiences with animals.'
                 : 'Comparte sobre mascotas, cuidados, alimentaci\xF3n, salud animal, adopci\xF3n o experiencias con animales.'}
             </small>
             {image && (
               <Image
-                className="post-preview"
+                className="block max-h-90 w-full rounded-control object-cover"
                 src={image}
                 alt={isEnglish ? 'Selected post preview' : 'Vista previa de la foto seleccionada'}
               />
             )}
-            <div>
-              <label className="photo-picker">
+            <div className="flex items-center justify-between gap-3">
+              <label className="cursor-(--paw-cursor) text-small font-black underline">
                 <input
                   type="file"
+                  className="absolute size-px opacity-0"
                   accept="image/*"
                   onChange={(event) => handleSelectPostImage(event.target.files?.[0])}
                 />
                 {isEnglish ? 'Add photo' : 'A\xF1adir foto'}
               </label>
-              <button className="button button-dark" type="submit">
+              <button
+                className="relative inline-flex min-h-12 items-center justify-center gap-3.5 rounded-full border-3 border-current bg-ink pr-4.5 pl-6.75 font-black text-white shadow-[0_7px_0_var(--button-drop)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-7.5 after:flex-none after:place-items-center after:rounded-circle after:bg-white/18 after:text-lg after:leading-none after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none!"
+                type="submit"
+              >
                 {isEnglish ? 'Publish' : 'Publicar'}
               </button>
             </div>
-            <small className="post-notice" aria-live="polite">
+            <small
+              className="block min-h-4.5 text-[12px] leading-label font-extrabold text-[#9e3b28]"
+              aria-live="polite"
+            >
               {notice}
             </small>
           </form>
         ) : (
-          <aside className="post-signup-card">
-            <Paw />
-            <span className="eyebrow">{isEnglish ? 'Your profile' : 'Tu perfil'}</span>
-            <h2>{isEnglish ? 'Join the conversation.' : '\xDAnete a la conversaci\xF3n.'}</h2>
-            <p>
+          <aside className="sticky top-31.5 grid justify-items-start gap-3.25 rounded-3xl border-4 border-ink bg-card p-6.75 text-ink shadow-card tablet:relative tablet:top-0 phone:p-4.75">
+            <Paw className="w-13.5 text-accent" />
+            <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
+              {isEnglish ? 'Your profile' : 'Tu perfil'}
+            </span>
+            <h2 className="m-0 min-[541px]:text-[42px]">
+              {isEnglish ? 'Join the conversation.' : '\xDAnete a la conversaci\xF3n.'}
+            </h2>
+            <p className="mb-2 leading-normal font-extrabold">
               {isEnglish
                 ? "Everyone can read the pack's stories. Create an account or sign in to publish, love and comment."
                 : 'Todos pueden leer las historias de la manada. Crea una cuenta o inicia sesi\xF3n para publicar, dar Me encanta y comentar.'}
             </p>
-            <Link className="button button-dark" href="/iniciar-sesion">
+            <Link
+              className="relative inline-flex min-h-14 items-center justify-center gap-3.5 rounded-full border-3 border-current bg-ink pr-4.5 pl-6.75 font-black text-white shadow-[0_7px_0_var(--button-drop)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-7.5 after:flex-none after:place-items-center after:rounded-circle after:bg-white/18 after:text-lg after:leading-none after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none!"
+              href="/iniciar-sesion"
+            >
               {isEnglish ? 'Join or sign in' : 'Unirme o iniciar sesi\xF3n'}
             </Link>
           </aside>
         )}
-        <div className="post-feed" aria-live="polite">
+        <div className="grid gap-5" aria-live="polite">
           {posts.length ? (
             posts.map((post) => <PostCard key={post.id} post={post} />)
           ) : (
-            <div className="empty-posts">
+            <div className="grid min-h-55 place-items-center rounded-3xl border-3 border-dashed border-secondary text-center font-black [&_svg]:w-14.5 [&_svg]:text-secondary">
               <Paw />
               <p>
                 {isEnglish
