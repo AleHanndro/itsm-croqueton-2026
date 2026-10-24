@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import { Paw } from '@/components/ui'
+import { Paw } from '@/assets/icons/paw'
 import { useNavigate } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'

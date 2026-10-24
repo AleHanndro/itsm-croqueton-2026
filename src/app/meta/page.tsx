@@ -4,7 +4,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
-import { LanguageToggle, ThemeToggle, Paw, SiteNavigation } from '@/components/ui'
+import { Paw } from '@/assets/icons/paw'
+import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
 import { goalImage } from '@/lib/images'
 import { useLanguage } from '@/providers/language-provider'
 

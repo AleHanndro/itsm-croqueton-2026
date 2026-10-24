@@ -3,9 +3,10 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
+import { Paw } from '@/assets/icons/paw'
 import AdminIcon from '@/components/admin-icon'
 import CommunityNavigation from '@/components/community-navigation'
-import { LanguageToggle, ThemeToggle, Paw } from '@/components/ui'
+import { LanguageToggle, ThemeToggle } from '@/components/ui'
 import { useNavigate } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
 

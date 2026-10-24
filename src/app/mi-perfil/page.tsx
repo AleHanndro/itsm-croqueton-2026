@@ -4,9 +4,11 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { useState } from 'react'
 
+import { Paw } from '@/assets/icons/paw'
+import { SmallDogMascot } from '@/assets/icons/small-dog-mascot'
 import CommunityNavigation from '@/components/community-navigation'
 import { PostCard } from '@/components/post-card'
-import { LanguageToggle, ThemeToggle, Paw, CareAvatar, SmallDogMascot } from '@/components/ui'
+import { LanguageToggle, ThemeToggle, CareAvatar } from '@/components/ui'
 import { useNavigate } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
@@ -46,7 +48,7 @@ export default function ProfilePage() {
             <p>{user.email}</p>
           </div>
           <div className="profile-pet">
-            <SmallDogMascot furColor={petFurColor} />
+            <SmallDogMascot furColor={petFurColor} className="kibble-mascot" />
             <span>{isEnglish ? 'Pet' : 'Mascota'} · Chispita</span>
           </div>
         </div>

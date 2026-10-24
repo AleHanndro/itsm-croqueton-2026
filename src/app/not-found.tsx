@@ -3,7 +3,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { LanguageToggle, ThemeToggle, Cloud, SiteNavigation } from '@/components/ui'
+import { Cloud } from '@/assets/icons/cloud'
+import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
 import { errorDogImage } from '@/lib/images'
 import { useLanguage } from '@/providers/language-provider'
 

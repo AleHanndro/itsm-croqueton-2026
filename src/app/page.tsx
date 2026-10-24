@@ -5,11 +5,11 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
 import { ArrowDown } from '@/assets/icons/arrow-down'
+import { Cloud } from '@/assets/icons/cloud'
+import { Paw } from '@/assets/icons/paw'
 import {
   LanguageToggle,
   ThemeToggle,
-  Cloud,
-  Paw,
   Logo,
   SiteNavigation,
   StoryImage,

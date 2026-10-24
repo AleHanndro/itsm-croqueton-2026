@@ -3,7 +3,8 @@
 import Image from 'next/image'
 import { useState, type FormEvent } from 'react'
 
-import { LanguageToggle, ThemeToggle, Paw, SiteNavigation } from '@/components/ui'
+import { Paw } from '@/assets/icons/paw'
+import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
 import { rejectedApplicationImage, heroDogImage, recruitmentDogImage } from '@/lib/images'
 import { useLanguage } from '@/providers/language-provider'
 

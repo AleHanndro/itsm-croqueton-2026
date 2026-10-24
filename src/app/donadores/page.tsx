@@ -2,7 +2,8 @@
 
 import Image from 'next/image'
 
-import { LanguageToggle, ThemeToggle, Paw, SiteNavigation } from '@/components/ui'
+import { Paw } from '@/assets/icons/paw'
+import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
 import { donationMemeImage } from '@/lib/images'
 import { useLanguage } from '@/providers/language-provider'
 

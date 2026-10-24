@@ -5,6 +5,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState, type ComponentProps } from 'react'
 
+import { ChevronDown } from '@/assets/icons/chevron-down'
+import { Close } from '@/assets/icons/close'
+import { Menu } from '@/assets/icons/menu'
+import { Moon } from '@/assets/icons/moon'
+import { Paw } from '@/assets/icons/paw'
+import { Sun } from '@/assets/icons/sun'
+import { User } from '@/assets/icons/user'
 import { useLocation } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
 import { useLanguage, type Language } from '@/providers/language-provider'
@@ -74,16 +81,7 @@ function LanguageToggle() {
         onClick={() => setIsOpen((open) => !open)}
       >
         <span>{languageLabels[language]}</span>
-        <svg viewBox="0 0 16 16" aria-hidden="true">
-          <path
-            d="m4 6 4 4 4-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <ChevronDown />
       </button>
     </div>
   )
@@ -124,21 +122,7 @@ function ThemeToggle() {
       }
       aria-pressed={isDark}
     >
-      {isDark ? (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="4" fill="currentColor" />
-          <path
-            d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
-      ) : (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M20 15.2A8.5 8.5 0 018.8 4 8.5 8.5 0 1020 15.2z" fill="currentColor" />
-        </svg>
-      )}
+      {isDark ? <Sun /> : <Moon />}
     </button>
   )
 }
@@ -292,29 +276,6 @@ function Bowl({ empty = false, className = '' }) {
       />
       <path d="M41 72h218" stroke="#202436" strokeWidth="12" strokeLinecap="round" />
       <path d="M115 108h70" stroke="#fff7df" strokeWidth="11" strokeLinecap="round" opacity=".9" />
-    </svg>
-  )
-}
-
-function Cloud({ className = '' }) {
-  return (
-    <svg viewBox="0 0 220 100" className={className} aria-hidden="true">
-      <path
-        d="M21 77c0-17 14-30 31-30 5-25 26-41 52-34 16-16 48-4 50 21 25-2 43 13 43 35 0 6-1 9-3 13H24c-2-2-3-4-3-5z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
-function Paw({ className = '' }) {
-  return (
-    <svg viewBox="0 0 80 80" className={className} aria-hidden="true">
-      <ellipse cx="40" cy="51" rx="22" ry="18" fill="currentColor" />
-      <ellipse cx="17" cy="34" rx="9" ry="12" fill="currentColor" transform="rotate(-24 17 34)" />
-      <ellipse cx="34" cy="19" rx="9" ry="12" fill="currentColor" transform="rotate(-6 34 19)" />
-      <ellipse cx="58" cy="23" rx="9" ry="12" fill="currentColor" transform="rotate(16 58 23)" />
-      <ellipse cx="67" cy="43" rx="9" ry="12" fill="currentColor" transform="rotate(30 67 43)" />
     </svg>
   )
 }
@@ -473,27 +434,7 @@ function SiteNavigation({
               aria-controls="mobile-navigation-menu"
               onClick={() => setIsMenuOpen((open) => !open)}
             >
-              {isMenuOpen ? (
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="m5 5 14 14M19 5 5 19"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="M4 6h16M4 12h16M4 18h16"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              )}
+              {isMenuOpen ? <Close /> : <Menu />}
             </button>
             <Link
               className={`user-login-button ${location.pathname === '/iniciar-sesion' || location.pathname === '/mi-perfil' ? 'is-active' : ''}`}
@@ -522,16 +463,7 @@ function SiteNavigation({
                     : 'Iniciar sesi\xF3n'
               }
             >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" strokeWidth="2.2" />
-                <path
-                  d="M4.5 21c.7-5 3.2-7.5 7.5-7.5s6.8 2.5 7.5 7.5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <User />
             </Link>
           </div>
         </nav>
@@ -931,85 +863,17 @@ function CareAvatar({
   )
 }
 
-function SmallDogMascot({ furColor = '#efc88f' }) {
-  return (
-    <svg
-      className="kibble-mascot"
-      viewBox="0 0 250 300"
-      role="img"
-      aria-label="Perrito pequeño sentado con pañuelo azul"
-    >
-      <path
-        d="M174 218c55-31 72 19 37 49-18 15-35 3-31-14"
-        fill={furColor}
-        stroke="#202436"
-        strokeWidth="8"
-        strokeLinecap="round"
-      />
-      <ellipse cx="125" cy="210" rx="72" ry="74" fill={furColor} stroke="#202436" strokeWidth="9" />
-      <path
-        d="M75 76L45 20c42 1 61 20 66 57M175 76l30-56c-42 1-61 20-66 57"
-        fill={furColor}
-        stroke="#202436"
-        strokeWidth="8"
-        strokeLinejoin="round"
-      />
-      <ellipse cx="125" cy="112" rx="82" ry="77" fill={furColor} stroke="#202436" strokeWidth="9" />
-      <path
-        d="M73 47l21 31M177 78l21-31"
-        stroke="#ef9c9c"
-        strokeWidth="10"
-        strokeLinecap="round"
-        opacity=".8"
-      />
-      <ellipse cx="125" cy="135" rx="45" ry="35" fill="#fff0bd" />
-      <path
-        d="M86 108q14-16 28 0M136 108q14-16 28 0"
-        fill="none"
-        stroke="#202436"
-        strokeWidth="7"
-        strokeLinecap="round"
-      />
-      <ellipse cx="125" cy="129" rx="14" ry="11" fill="#202436" />
-      <path
-        d="M101 145c15 18 33 18 48 0"
-        fill="none"
-        stroke="#202436"
-        strokeWidth="7"
-        strokeLinecap="round"
-      />
-      <path
-        d="M62 166c39 22 87 22 126 0l-20 66-43-33-43 33z"
-        fill="#4f83bd"
-        stroke="#202436"
-        strokeWidth="8"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M83 255l-8 28M167 255l8 28M67 283h35M148 283h35"
-        fill="none"
-        stroke="#202436"
-        strokeWidth="10"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
 export {
   LanguageToggle,
   MayaTranslationNotice,
   ThemeToggle,
   Dog,
   Bowl,
-  Cloud,
-  Paw,
   PawColorButton,
   Logo,
   SiteNavigation,
   StoryImage,
   MoodPollCard,
   MemePlaceholder,
-  CareAvatar,
-  SmallDogMascot
+  CareAvatar
 }

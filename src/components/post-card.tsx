@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRef, useState } from 'react'
 
-import { Paw } from '@/components/ui'
+import { Paw } from '@/assets/icons/paw'
 import { assessPostRelevance } from '@/lib/content'
 import { useNavigate } from '@/lib/navigation'
 import { useCommunity, type CommunityPost } from '@/providers/community-provider'

@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 
+import { SmallDogMascot } from '@/assets/icons/small-dog-mascot'
 import {
   LanguageToggle,
   ThemeToggle,
   PawColorButton,
   SiteNavigation,
-  CareAvatar,
-  SmallDogMascot
+  CareAvatar
 } from '@/components/ui'
 import { useCommunity } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
@@ -72,7 +72,7 @@ export default function AvatarStudio() {
               </div>
             </div>
             <div className="studio-mascot-card">
-              <SmallDogMascot furColor={petFurColor} />
+              <SmallDogMascot furColor={petFurColor} className="kibble-mascot" />
               <div>
                 <span>{isEnglish ? 'Pet' : 'Mascota'}</span>
                 <strong>Chispita</strong>
