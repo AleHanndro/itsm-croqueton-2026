@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { useState } from 'react'
 
-import { Paw } from '@/assets/icons/paw'
 import { SmallDogMascot } from '@/assets/icons/small-dog-mascot'
+import { EmptyStateCard } from '@/components/empty-state-card'
 import { PageShell } from '@/components/page-shell'
 import { PostCard } from '@/components/post-card'
 import { CareAvatar } from '@/components/ui'
@@ -136,14 +136,13 @@ export default function ProfilePage() {
                 ))}
               </div>
             ) : (
-              <div className="grid min-h-55 place-items-center rounded-3xl border-3 border-dashed border-secondary text-center font-black [&_svg]:w-14.5 [&_svg]:text-secondary">
-                <Paw />
-                <p>
-                  {isEnglish
+              <EmptyStateCard
+                title={
+                  isEnglish
                     ? 'Your first post will appear here.'
-                    : 'Tu primera publicaci\xF3n aparecer\xE1 aqu\xED.'}
-                </p>
-              </div>
+                    : 'Tu primera publicaci\xF3n aparecer\xE1 aqu\xED.'
+                }
+              />
             )}
           </section>
         </div>

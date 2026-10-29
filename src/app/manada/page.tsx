@@ -3,6 +3,7 @@
 import Image from 'next/image'
 
 import { Paw } from '@/assets/icons/paw'
+import { EmptyStateCard } from '@/components/empty-state-card'
 import { PageHero } from '@/components/page-hero'
 import { PageShell } from '@/components/page-shell'
 import { SectionIntro } from '@/components/section-intro'
@@ -89,28 +90,28 @@ export default function PackPage() {
                 </span>
               </figcaption>
             </figure>
-            <div className="grid min-h-80 rotate-1 place-items-center content-center gap-2.75 rounded-3xl border-4 border-dashed border-stroke bg-surface-generation-placeholder p-6.5 text-center tablet:min-h-65">
-              <Paw className="size-17.5 text-secondary" />
-              <strong className="font-heading text-[20px]">
-                {isEnglish ? 'Next group photo' : 'Pr\xF3xima foto grupal'}
-              </strong>
-              <span className="text-[12px] leading-label font-extrabold opacity-65">
-                {isEnglish
+            <EmptyStateCard
+              variant="generation"
+              className="rotate-1"
+              iconClassName="text-secondary"
+              title={isEnglish ? 'Next group photo' : 'Pr\xF3xima foto grupal'}
+              description={
+                isEnglish
                   ? 'Reserved for the next generation of Croquetones.'
-                  : 'Reservado para la siguiente generaci\xF3n de Croquetones.'}
-              </span>
-            </div>
-            <div className="grid min-h-80 rotate-[-1.5deg] place-items-center content-center gap-2.75 rounded-3xl border-4 border-dashed border-stroke bg-surface-generation-placeholder p-6.5 text-center tablet:min-h-65">
-              <Paw className="size-17.5 text-accent" />
-              <strong className="font-heading text-[20px]">
-                {isEnglish ? 'Your team could be here' : 'Aqu\xED puede estar tu equipo'}
-              </strong>
-              <span className="text-[12px] leading-label font-extrabold opacity-65">
-                {isEnglish
+                  : 'Reservado para la siguiente generaci\xF3n de Croquetones.'
+              }
+            />
+            <EmptyStateCard
+              variant="generation"
+              className="rotate-[-1.5deg]"
+              iconClassName="text-accent"
+              title={isEnglish ? 'Your team could be here' : 'Aqu\xED puede estar tu equipo'}
+              description={
+                isEnglish
                   ? 'Join, help and smile for the camera.'
-                  : '\xDAnete, ayuda y sonr\xEDe para la foto.'}
-              </span>
-            </div>
+                  : '\xDAnete, ayuda y sonr\xEDe para la foto.'
+              }
+            />
           </div>
         </Container>
       </section>

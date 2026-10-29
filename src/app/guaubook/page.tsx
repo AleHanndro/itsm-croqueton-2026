@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState, type FormEvent } from 'react'
 
 import { Paw } from '@/assets/icons/paw'
+import { EmptyStateCard } from '@/components/empty-state-card'
 import { PageHero } from '@/components/page-hero'
 import { PageShell } from '@/components/page-shell'
 import { PostCard } from '@/components/post-card'
@@ -158,14 +159,13 @@ export default function GuauBookPage() {
           {posts.length ? (
             posts.map((post) => <PostCard key={post.id} post={post} />)
           ) : (
-            <div className="grid min-h-55 place-items-center rounded-3xl border-3 border-dashed border-secondary text-center font-black [&_svg]:w-14.5 [&_svg]:text-secondary">
-              <Paw />
-              <p>
-                {isEnglish
+            <EmptyStateCard
+              title={
+                isEnglish
                   ? "The pack's first story will appear here."
-                  : 'Aqu\xED aparecer\xE1 la primera publicaci\xF3n de la manada.'}
-              </p>
-            </div>
+                  : 'Aqu\xED aparecer\xE1 la primera publicaci\xF3n de la manada.'
+              }
+            />
           )}
         </div>
       </Container>

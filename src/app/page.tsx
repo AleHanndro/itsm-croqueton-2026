@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ArrowDown } from '@/assets/icons/arrow-down'
 import { Cloud } from '@/assets/icons/cloud'
 import { Paw } from '@/assets/icons/paw'
+import { NoteCallout } from '@/components/callout-banner'
 import {
   LanguageToggle,
   ThemeToggle,
@@ -428,16 +429,11 @@ export default function HomePage() {
                 </div>
               </article>
             </div>
-            <div className="mt-5 grid max-w-123.75 gap-0.75 border-l-5 border-accent bg-surface-trust-note px-4.25 py-3.5 text-small leading-tight-copy">
-              <strong className="font-heading text-[16px]">
-                {isEnglish ? 'No fine print' : 'Sin letras chiquitas'}
-              </strong>
-              <span>
-                {isEnglish
-                  ? 'We receive sealed food, check its date and deliver it to people who care for dogs.'
-                  : 'Recibimos alimento cerrado, revisamos su fecha y lo entregamos a quienes cuidan perritos.'}
-              </span>
-            </div>
+            <NoteCallout tone="accent" title={isEnglish ? 'No fine print' : 'Sin letras chiquitas'}>
+              {isEnglish
+                ? 'We receive sealed food, check its date and deliver it to people who care for dogs.'
+                : 'Recibimos alimento cerrado, revisamos su fecha y lo entregamos a quienes cuidan perritos.'}
+            </NoteCallout>
           </div>
           <div className="relative h-175 tablet:min-h-170 phone:min-h-162.5">
             <span className="absolute top-10 left-2.5 text-[46px] font-black text-accent">✦</span>

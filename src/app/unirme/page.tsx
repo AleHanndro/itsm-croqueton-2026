@@ -4,7 +4,8 @@ import { cn } from 'cn'
 import Image from 'next/image'
 import { useState, type FormEvent } from 'react'
 
-import { Paw } from '@/assets/icons/paw'
+import { CalloutBanner, NoteCallout } from '@/components/callout-banner'
+import { FeatureCard } from '@/components/feature-card'
 import { PageHero, PolaroidFigure } from '@/components/page-hero'
 import { PageShell } from '@/components/page-shell'
 import { SectionIntro } from '@/components/section-intro'
@@ -137,63 +138,50 @@ export default function JoinPage() {
             descriptionClassName="max-w-150 text-[18px] leading-[1.55]"
           />
           <div className="mt-12.5 grid grid-cols-[repeat(3,1fr)] gap-5.5 tablet:grid-cols-[1fr]">
-            <article className="rounded-3xl bg-card px-6.75 py-7.5 text-ink shadow-card phone:px-5.75 phone:py-6.5">
-              <span className="mb-5.5 grid size-14.5 place-items-center rounded-circle bg-brand text-ink [&_svg]:size-8">
-                <Paw />
-              </span>
-              <strong className="block font-heading text-[24px]">
-                {isEnglish ? 'Leave a paw print' : 'Dejar una huellita'}
-              </strong>
-              <p className="mt-2 text-body-sm leading-copy font-bold">
-                {isEnglish
+            <FeatureCard
+              iconTone="brand"
+              title={isEnglish ? 'Leave a paw print' : 'Dejar una huellita'}
+              description={
+                isEnglish
                   ? 'See how your time turns into full bowls, calmer bellies and much happier tails.'
-                  : 'Mira c\xF3mo tu tiempo se convierte en platos llenos, pancitas tranquilas y colitas mucho m\xE1s felices.'}
-              </p>
-            </article>
-            <article className="rounded-3xl bg-card px-6.75 py-7.5 text-ink shadow-card phone:px-5.75 phone:py-6.5">
-              <span className="mb-5.5 grid size-14.5 place-items-center rounded-circle bg-accent text-card [&_svg]:size-8">
-                <Paw />
-              </span>
-              <strong className="block font-heading text-[24px]">
-                {isEnglish ? 'Meet your pack' : 'Encontrar tu manada'}
-              </strong>
-              <p className="mt-2 text-body-sm leading-copy font-bold">
-                {isEnglish
+                  : 'Mira c\xF3mo tu tiempo se convierte en platos llenos, pancitas tranquilas y colitas mucho m\xE1s felices.'
+              }
+            />
+            <FeatureCard
+              iconTone="accent"
+              title={isEnglish ? 'Meet your pack' : 'Encontrar tu manada'}
+              description={
+                isEnglish
                   ? 'Share laughs, ideas and possibly too many dog photos with people who care about the same cause.'
-                  : 'Comparte risas, ideas y posiblemente demasiadas fotos de perros con personas que creen en la misma causa.'}
-              </p>
-            </article>
-            <article className="rounded-3xl bg-card px-6.75 py-7.5 text-ink shadow-card phone:px-5.75 phone:py-6.5">
-              <span className="mb-5.5 grid size-14.5 place-items-center rounded-circle bg-secondary text-ink [&_svg]:size-8">
-                <Paw />
-              </span>
-              <strong className="block font-heading text-[24px]">
-                {isEnglish ? 'Unlock good memories' : 'Desbloquear buenos recuerdos'}
-              </strong>
-              <p className="mt-2 text-body-sm leading-copy font-bold">
-                {isEnglish
+                  : 'Comparte risas, ideas y posiblemente demasiadas fotos de perros con personas que creen en la misma causa.'
+              }
+            />
+            <FeatureCard
+              iconTone="secondary"
+              title={isEnglish ? 'Unlock good memories' : 'Desbloquear buenos recuerdos'}
+              description={
+                isEnglish
                   ? 'Take part in an experience worth remembering and earn your place in the next pack photo.'
-                  : 'Vive una experiencia que vale la pena recordar y gana tu lugar en la pr\xF3xima foto de la manada.'}
-              </p>
-            </article>
+                  : 'Vive una experiencia que vale la pena recordar y gana tu lugar en la pr\xF3xima foto de la manada.'
+              }
+            />
           </div>
 
-          <div className="mt-21.25 flex items-center justify-between gap-12.5 rounded-4xl bg-ink px-13 py-12 text-card tablet:flex-col tablet:items-start phone:mt-13.75 phone:px-6 phone:py-8">
-            <div>
-              <Eyebrow>{isEnglish ? 'Pack promise' : 'Promesa de la manada'}</Eyebrow>
-              <h2 className="mt-1.5 mb-3 text-[clamp(44px,4.2vw,62px)] phone:text-[43px]">
-                {isEnglish ? 'Your help matters.' : 'Tu ayuda s\xED cuenta.'}
-              </h2>
-              <p className="m-0 max-w-155 leading-normal font-extrabold">
-                {isEnglish
-                  ? 'We organize tasks, respect your time and share the impact achieved by the team.'
-                  : 'Organizamos las tareas, respetamos tu tiempo y compartimos el impacto logrado por el equipo.'}
-              </p>
-            </div>
-            <Button variant="card-cta" className="mt-2.5" onClick={openJoinForm}>
-              {isEnglish ? 'Join the team' : 'Unirme al equipo'} <span>→</span>
-            </Button>
-          </div>
+          <CalloutBanner
+            tone="ink"
+            eyebrow={isEnglish ? 'Pack promise' : 'Promesa de la manada'}
+            title={isEnglish ? 'Your help matters.' : 'Tu ayuda s\xED cuenta.'}
+            description={
+              isEnglish
+                ? 'We organize tasks, respect your time and share the impact achieved by the team.'
+                : 'Organizamos las tareas, respetamos tu tiempo y compartimos el impacto logrado por el equipo.'
+            }
+            action={
+              <Button variant="card-cta" className="mt-2.5" onClick={openJoinForm}>
+                {isEnglish ? 'Join the team' : 'Unirme al equipo'} <span>→</span>
+              </Button>
+            }
+          />
         </Container>
       </section>
 
@@ -279,16 +267,14 @@ export default function JoinPage() {
                         ? 'I agree to work as a team and follow care guidelines.'
                         : 'Acepto trabajar en equipo y seguir las indicaciones de cuidado.'}
                     </CheckboxCard>
-                    <div className="col-span-full grid gap-0.75 border-l-5 border-secondary bg-[#e7eee7] px-4.25 py-3.5 text-[12px] phone:col-1">
-                      <strong className="font-heading text-[16px]">
-                        {isEnglish ? "Chispita's checklist" : 'Lista de Chispita'}
-                      </strong>
-                      <span>
-                        {isEnglish
-                          ? '18+ \xB7 A clear motivation \xB7 Availability \xB7 Team commitment'
-                          : '18+ \xB7 Una motivaci\xF3n clara \xB7 Disponibilidad \xB7 Compromiso'}
-                      </span>
-                    </div>
+                    <NoteCallout
+                      tone="secondary"
+                      title={isEnglish ? "Chispita's checklist" : 'Lista de Chispita'}
+                    >
+                      {isEnglish
+                        ? '18+ \xB7 A clear motivation \xB7 Availability \xB7 Team commitment'
+                        : '18+ \xB7 Una motivaci\xF3n clara \xB7 Disponibilidad \xB7 Compromiso'}
+                    </NoteCallout>
                     <Button
                       type="submit"
                       className="col-span-full mt-1.25 w-max phone:col-1 phone:w-full"

@@ -1,6 +1,6 @@
 'use client'
 
-import { Paw } from '@/assets/icons/paw'
+import { EmptyStateCard } from '@/components/empty-state-card'
 import { PageHero, PolaroidFigure } from '@/components/page-hero'
 import { PageShell } from '@/components/page-shell'
 import { SectionIntro } from '@/components/section-intro'
@@ -88,19 +88,19 @@ export default function DonorsPage() {
                 ))}
               </ol>
             ) : (
-              <div className="grid min-h-82.5 place-items-center content-center gap-2.5 text-center">
-                <Paw className="size-17.5 -rotate-12 text-[#d8cba9]" />
-                <strong className="max-w-82.5 font-heading text-[23px]">
-                  {isEnglish
+              <EmptyStateCard
+                variant="donor-wall"
+                title={
+                  isEnglish
                     ? 'The admin is sharpening the pencil.'
-                    : 'El admin est\xE1 sac\xE1ndole punta al l\xE1piz.'}
-                </strong>
-                <span className="text-small font-extrabold opacity-60">
-                  {isEnglish
+                    : 'El admin est\xE1 sac\xE1ndole punta al l\xE1piz.'
+                }
+                description={
+                  isEnglish
                     ? 'Confirmed donor names will appear here soon.'
-                    : 'Los nombres confirmados aparecer\xE1n aqu\xED muy pronto.'}
-                </span>
-              </div>
+                    : 'Los nombres confirmados aparecer\xE1n aqu\xED muy pronto.'
+                }
+              />
             )}
           </div>
         </Container>
