@@ -3,6 +3,7 @@
 import Image from 'next/image'
 
 import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
 import {
@@ -154,12 +155,13 @@ export default function DonationPage() {
                   : 'Escr\xEDbenos y te ayudamos a preparar tu donaci\xF3n.'}
               </p>
             </div>
-            <a
-              className="relative mt-2.5 inline-flex min-h-17 items-center justify-center gap-7.5 rounded-full border-3 border-current bg-card px-8.5 text-[20px] font-black text-ink shadow-[0_9px_0_var(--accent-deep)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] active:transform-[translateY(4px)] active:shadow-none! [&_span]:text-[31px] [&_span]:leading-0"
-              href="mailto:croqueton@tecnologico.edu.mx"
+            <Button
+              variant="card-cta"
+              className="mt-2.5"
+              render={<a href="mailto:croqueton@tecnologico.edu.mx" />}
             >
               {isEnglish ? 'Send an email' : 'Enviar un correo'} <span>→</span>
-            </a>
+            </Button>
           </div>
         </Container>
       </section>

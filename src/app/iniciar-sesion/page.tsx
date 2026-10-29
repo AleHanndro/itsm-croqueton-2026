@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useState, type FormEvent } from 'react'
 
 import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { Button } from '@/components/ui/button'
 import { Eyebrow } from '@/components/ui/eyebrow'
 import { errorDogImage, packAccessDogImage } from '@/lib/images'
 import { useNavigate } from '@/lib/navigation'
@@ -137,10 +138,7 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
           </label>
-          <button
-            className="relative mt-1 inline-flex min-h-14 w-full items-center justify-center gap-3.5 rounded-full border-3 border-current bg-ink pr-4.5 pl-6.75 font-black text-white shadow-[0_7px_0_var(--button-drop)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-7.5 after:flex-none after:place-items-center after:rounded-circle after:bg-white/18 after:text-lg after:leading-none after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none!"
-            type="submit"
-          >
+          <Button type="submit" className="mt-1 w-full">
             {isCreatingAccount
               ? isEnglish
                 ? 'Create my account'
@@ -148,7 +146,7 @@ export default function LoginPage() {
               : isEnglish
                 ? 'Sign in'
                 : 'Iniciar sesi\xF3n'}
-          </button>
+          </Button>
           {!isCreatingAccount && (
             <small className="min-h-4.5 rounded-lg bg-surface-warm px-3 py-2.25 text-center font-extrabold text-ink">
               {isEnglish
@@ -156,9 +154,9 @@ export default function LoginPage() {
                 : 'Demo: admin@croqueton.mx \xB7 croqueton2026'}
             </small>
           )}
-          <button
-            className="justify-self-center border-b-3 border-current bg-transparent py-1 font-black text-ink"
-            type="button"
+          <Button
+            variant="link-border"
+            className="justify-self-center py-1 text-ink"
             onClick={() => {
               setIsCreatingAccount((current) => !current)
               setLoginFailed(false)
@@ -172,7 +170,7 @@ export default function LoginPage() {
               : isEnglish
                 ? 'Create my account'
                 : 'Crear mi cuenta'}
-          </button>
+          </Button>
           <small aria-live="polite" className="min-h-4.5 font-extrabold opacity-65">
             {loginMessage ||
               (isCreatingAccount

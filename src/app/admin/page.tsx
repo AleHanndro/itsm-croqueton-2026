@@ -7,6 +7,7 @@ import { Paw } from '@/assets/icons/paw'
 import AdminIcon from '@/components/admin-icon'
 import CommunityNavigation from '@/components/community-navigation'
 import { LanguageToggle, ThemeToggle } from '@/components/ui'
+import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
 import { useNavigate } from '@/lib/navigation'
@@ -46,12 +47,7 @@ export default function AdminPage() {
           <p className="max-w-125 font-extrabold">
             Inicia sesión con la cuenta administradora para gestionar la comunidad.
           </p>
-          <Link
-            className="relative inline-flex min-h-14 items-center justify-center gap-3.5 rounded-full border-3 border-current bg-ink pr-4.5 pl-6.75 font-black text-white shadow-[0_7px_0_var(--button-drop)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-7.5 after:flex-none after:place-items-center after:rounded-circle after:bg-white/18 after:text-lg after:leading-none after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none!"
-            href="/iniciar-sesion"
-          >
-            Ir al acceso
-          </Link>
+          <Button render={<Link href="/iniciar-sesion" />}>Ir al acceso</Button>
         </Container>
       </main>
     )
@@ -133,16 +129,16 @@ export default function AdminPage() {
               </small>
             </div>
           </div>
-          <button
-            className="border-0 bg-transparent px-2 py-2.5 text-left text-caption font-black text-[#f19a89] underline underline-offset-4 tablet:text-right phone:col-2 phone:row-1 phone:text-tiny"
-            type="button"
+          <Button
+            variant="underline"
+            className="px-2 py-2.5 text-left text-[11px] text-[#f19a89] tablet:text-right phone:col-2 phone:row-1 phone:text-[10px]"
             onClick={() => {
               signOut()
               navigate('/')
             }}
           >
             Cerrar sesión
-          </button>
+          </Button>
         </aside>
 
         <div className="min-w-0">

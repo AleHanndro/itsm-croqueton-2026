@@ -6,6 +6,7 @@ import { useState, type FormEvent } from 'react'
 
 import { Paw } from '@/assets/icons/paw'
 import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
 import { rejectedApplicationImage, heroDogImage, recruitmentDogImage } from '@/lib/images'
@@ -65,13 +66,12 @@ export default function JoinPage() {
                 ? "You don't need superpowers. A little time, good ideas and a big heart are enough to help more bowls end up full."
                 : 'No necesitas superpoderes. Con un poco de tiempo, buenas ideas y un coraz\xF3n enorme podemos lograr que m\xE1s platos terminen llenos.'}
             </p>
-            <button
-              className="relative mt-3.5 inline-flex min-h-14 items-center justify-center gap-3.5 rounded-full border-3 border-current bg-ink pr-4.5 pl-6.75 font-black text-white shadow-[0_7px_0_var(--button-drop)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-7.5 after:flex-none after:place-items-center after:rounded-circle after:bg-white/18 after:text-lg after:leading-none after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none! in-data-[theme='dark']:bg-[#ffc929] in-data-[theme='dark']:text-[#202436] in-data-[theme='dark']:shadow-[0_7px_0_#9f592f]!"
-              type="button"
+            <Button
+              className="mt-3.5 in-data-[theme='dark']:bg-[#ffc929] in-data-[theme='dark']:text-[#202436] in-data-[theme='dark']:shadow-[0_7px_0_#9f592f]!"
               onClick={openJoinForm}
             >
               {isEnglish ? 'I want to join' : 'Quiero unirme'}
-            </button>
+            </Button>
             <small className="mt-4.75 block font-extrabold opacity-62">
               {isEnglish
                 ? 'Opens your email. No secret initiation rituals.'
@@ -176,13 +176,9 @@ export default function JoinPage() {
                   : 'Organizamos las tareas, respetamos tu tiempo y compartimos el impacto logrado por el equipo.'}
               </p>
             </div>
-            <button
-              className="relative mt-2.5 inline-flex min-h-17 items-center justify-center gap-7.5 rounded-full border-3 border-current bg-card px-8.5 text-[20px] font-black text-ink shadow-[0_9px_0_var(--accent-deep)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] active:transform-[translateY(4px)] active:shadow-none! [&_span]:text-[31px] [&_span]:leading-0"
-              type="button"
-              onClick={openJoinForm}
-            >
+            <Button variant="card-cta" className="mt-2.5" onClick={openJoinForm}>
               {isEnglish ? 'Join the team' : 'Unirme al equipo'} <span>→</span>
-            </button>
+            </Button>
           </div>
         </Container>
       </section>
@@ -311,12 +307,12 @@ export default function JoinPage() {
                         : '18+ \xB7 Una motivaci\xF3n clara \xB7 Disponibilidad \xB7 Compromiso'}
                     </span>
                   </div>
-                  <button
-                    className="relative col-span-full mt-1.25 inline-flex min-h-14 w-max items-center justify-center gap-3.5 rounded-full border-3 border-current bg-ink pr-4.5 pl-6.75 font-black text-white shadow-[0_7px_0_var(--button-drop)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-7.5 after:flex-none after:place-items-center after:rounded-circle after:bg-white/18 after:text-lg after:leading-none after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none! phone:col-1 phone:w-full"
+                  <Button
                     type="submit"
+                    className="col-span-full mt-1.25 w-max phone:col-1 phone:w-full"
                   >
                     {isEnglish ? 'Check my application' : 'Revisar mi solicitud'}
-                  </button>
+                  </Button>
                 </form>
               </>
             ) : (
@@ -369,11 +365,7 @@ export default function JoinPage() {
                       ? 'You need to be 18+, explain your motivation in at least 20 characters, be available and ready to work as a team. The dog is laughing with you, not at you. Probably.'
                       : 'Necesitas ser mayor de edad, explicar tu motivaci\xF3n en al menos 20 caracteres, tener disponibilidad y aceptar el trabajo en equipo. El perrito se r\xEDe contigo, no de ti. Probablemente.'}
                 </p>
-                <button
-                  className="relative mt-3 inline-flex min-h-14 items-center justify-center gap-3.5 rounded-full border-3 border-current bg-ink pr-4.5 pl-6.75 font-black text-white shadow-[0_7px_0_var(--button-drop)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-7.5 after:flex-none after:place-items-center after:rounded-circle after:bg-white/18 after:text-lg after:leading-none after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none!"
-                  type="button"
-                  onClick={() => setJoinResult(null)}
-                >
+                <Button className="mt-3" onClick={() => setJoinResult(null)}>
                   {joinResult === 'welcome'
                     ? isEnglish
                       ? 'Review my answers'
@@ -381,7 +373,7 @@ export default function JoinPage() {
                     : isEnglish
                       ? 'Complete the form'
                       : 'Completar el formulario'}
-                </button>
+                </Button>
               </div>
             )}
           </section>

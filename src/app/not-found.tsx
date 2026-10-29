@@ -5,6 +5,7 @@ import Link from 'next/link'
 
 import { Cloud } from '@/assets/icons/cloud'
 import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
 import { errorDogImage } from '@/lib/images'
@@ -48,15 +49,16 @@ export default function NotFoundPage() {
               : 'Yo s\xED s\xE9 volver a casa y ni siquiera s\xE9 leer mapas. Pero tranquilo: no le diremos a nadie.'}
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-5.5 phone:flex-col phone:items-start">
-            <Link
-              className="relative inline-flex min-h-14 items-center justify-center gap-3.5 rounded-full border-3 border-current bg-ink pr-4.5 pl-6.75 font-black text-white shadow-[0_7px_0_var(--button-drop)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-7.5 after:flex-none after:place-items-center after:rounded-circle after:bg-white/18 after:text-lg after:leading-none after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none!"
-              href="/"
-            >
+            <Button render={<Link href="/" />}>
               {isEnglish ? 'Return with dignity' : 'Regresar con dignidad'}
-            </Link>
-            <Link className="border-b-3 border-foreground font-black" href="/avatar-mascota">
+            </Button>
+            <Button
+              variant="link-border"
+              className="border-foreground pb-0"
+              render={<Link href="/avatar-mascota" />}
+            >
               {isEnglish ? 'Distract me with an avatar' : 'Distraerme creando un avatar'}
-            </Link>
+            </Button>
           </div>
           <small className="mt-7 block font-extrabold opacity-60">
             {isEnglish

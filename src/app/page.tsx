@@ -16,6 +16,7 @@ import {
   StoryImage,
   MoodPollCard
 } from '@/components/ui'
+import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
 import { dogFacts, dogFactsEn } from '@/lib/content'
@@ -120,18 +121,12 @@ export default function HomePage() {
                 : 'Narrado por Croqueto, experto certificado en siestas y segundas oportunidades.'}
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-3.5 phone:mt-7.5">
-              <Link
-                className="relative inline-flex min-h-16.5 items-center justify-center gap-3.5 rounded-full border-3 border-current bg-surface-inverse pr-5.5 pl-8.5 text-[20px] font-black text-fg-cta shadow-[0_9px_0_var(--accent-deep)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-9 after:flex-none after:place-items-center after:rounded-circle after:bg-brand after:text-lg after:leading-none after:text-ink after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none! phone:w-full"
-                href="/como-donar"
-              >
+              <Button variant="hero" className="phone:w-full" render={<Link href="/como-donar" />}>
                 {isEnglish ? 'I want to donate' : 'Quiero donar'}
-              </Link>
-              <a
-                className="border-b-3 border-current pb-0.5 text-body-sm font-black"
-                href="#historia"
-              >
+              </Button>
+              <Button variant="link-border" className="text-[15px]" render={<a href="#historia" />}>
                 {isEnglish ? 'Read the story' : 'Leer la historia'}
-              </a>
+              </Button>
             </div>
           </div>
           <div className="relative min-h-155 tablet:min-h-130 phone:min-h-100">
@@ -512,12 +507,9 @@ export default function HomePage() {
                 ? 'Before: an empty bowl. After: friends, food and a suspiciously muscular dog.'
                 : 'Antes: un plato vac\xEDo. Despu\xE9s: amigos, comida y un perrito sospechosamente musculoso.'}
             </p>
-            <Link
-              className="relative mt-2.5 inline-flex min-h-17 items-center justify-center gap-7.5 rounded-full border-3 border-current bg-card px-8.5 text-[20px] font-black text-ink shadow-[0_9px_0_var(--accent-deep)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] active:transform-[translateY(4px)] active:shadow-none! [&_span]:text-[31px] [&_span]:leading-0"
-              href="/como-donar"
-            >
+            <Button variant="card-cta" className="mt-2.5" render={<Link href="/como-donar" />}>
               {isEnglish ? 'I want to donate' : 'Quiero donar'} <span>→</span>
-            </Link>
+            </Button>
             <small className="mt-5.25 block font-extrabold opacity-75">
               {isEnglish
                 ? "Opens your email. No endless forms, dog's word."

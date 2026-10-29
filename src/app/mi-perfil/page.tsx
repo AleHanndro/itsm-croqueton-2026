@@ -9,6 +9,7 @@ import { SmallDogMascot } from '@/assets/icons/small-dog-mascot'
 import CommunityNavigation from '@/components/community-navigation'
 import { PostCard } from '@/components/post-card'
 import { LanguageToggle, ThemeToggle, CareAvatar } from '@/components/ui'
+import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
 import { useNavigate } from '@/lib/navigation'
@@ -80,12 +81,7 @@ export default function ProfilePage() {
                   onChange={(event) => setName(event.target.value)}
                 />
               </label>
-              <button
-                className="relative inline-flex min-h-14 items-center justify-center gap-3.5 rounded-full border-3 border-current bg-ink pr-4.5 pl-6.75 font-black text-white shadow-[0_7px_0_var(--button-drop)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-7.5 after:flex-none after:place-items-center after:rounded-circle after:bg-white/18 after:text-lg after:leading-none after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none!"
-                type="submit"
-              >
-                {isEnglish ? 'Edit profile' : 'Editar perfil'}
-              </button>
+              <Button type="submit">{isEnglish ? 'Edit profile' : 'Editar perfil'}</Button>
             </form>
             <form
               className="grid gap-3"
@@ -108,23 +104,20 @@ export default function ProfilePage() {
                   onChange={(event) => setPassword(event.target.value)}
                 />
               </label>
-              <button
-                className="border-0 bg-transparent font-black text-ink underline underline-offset-4"
-                type="submit"
-              >
+              <Button variant="underline" type="submit" className="text-ink">
                 {isEnglish ? 'Change password' : 'Cambiar contrase\xF1a'}
-              </button>
+              </Button>
             </form>
-            <button
-              className="border-0 bg-transparent text-left font-black text-accent-deep underline underline-offset-4"
-              type="button"
+            <Button
+              variant="underline"
+              className="text-left text-accent-deep"
               onClick={() => {
                 signOut()
                 navigate('/')
               }}
             >
               {isEnglish ? 'Sign out' : 'Cerrar sesi\xF3n'}
-            </button>
+            </Button>
             <small aria-live="polite" className="font-extrabold">
               {message}
             </small>
