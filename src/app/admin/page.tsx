@@ -5,8 +5,7 @@ import { useState } from 'react'
 
 import { Paw } from '@/assets/icons/paw'
 import AdminIcon from '@/components/admin-icon'
-import CommunityNavigation from '@/components/community-navigation'
-import { LanguageToggle, ThemeToggle } from '@/components/ui'
+import { PageShell } from '@/components/page-shell'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
@@ -35,8 +34,7 @@ export default function AdminPage() {
 
   if (!user || !isAdmin) {
     return (
-      <main className="min-h-screen bg-surface-page-mint text-foreground">
-        <CommunityNavigation />
+      <PageShell surface="mint" navigation="community" showToggles={false}>
         <Container
           as="section"
           className="grid min-h-[calc(100vh-82px)] content-center justify-items-center gap-3 text-center"
@@ -49,7 +47,7 @@ export default function AdminPage() {
           </p>
           <Button render={<Link href="/iniciar-sesion" />}>Ir al acceso</Button>
         </Container>
-      </main>
+      </PageShell>
     )
   }
 
@@ -60,9 +58,7 @@ export default function AdminPage() {
   }).format(new Date())
 
   return (
-    <main className="min-h-screen bg-surface-admin-page text-foreground">
-      <LanguageToggle />
-      <ThemeToggle />
+    <PageShell surface="admin" navigation="none">
       <div className="grid min-h-screen grid-cols-[250px_minmax(0,1fr)] tablet:grid-cols-[1fr]">
         <aside className="sticky top-0 z-20 flex h-screen flex-col bg-surface-admin-sidebar px-5 pt-6.75 pb-5.5 text-card tablet:relative tablet:grid tablet:h-auto tablet:grid-cols-[auto_1fr_auto] tablet:items-center tablet:gap-5 tablet:px-5 tablet:py-4 phone:grid-cols-[1fr_auto] phone:gap-2.5 phone:p-3.5">
           <Link
@@ -455,6 +451,6 @@ export default function AdminPage() {
           </section>
         </div>
       </div>
-    </main>
+    </PageShell>
   )
 }

@@ -6,9 +6,9 @@ import { useState } from 'react'
 
 import { Paw } from '@/assets/icons/paw'
 import { SmallDogMascot } from '@/assets/icons/small-dog-mascot'
-import CommunityNavigation from '@/components/community-navigation'
+import { PageShell } from '@/components/page-shell'
 import { PostCard } from '@/components/post-card'
-import { LanguageToggle, ThemeToggle, CareAvatar } from '@/components/ui'
+import { CareAvatar } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
@@ -31,10 +31,7 @@ export default function ProfilePage() {
   const userPosts = posts.filter((post) => post.author === user.name)
 
   return (
-    <main className="min-h-screen bg-surface-page-mint text-foreground">
-      <LanguageToggle />
-      <ThemeToggle />
-      <CommunityNavigation />
+    <PageShell surface="mint" navigation="community">
       <Container as="section" className="pt-16.5 pb-27.5 phone:pt-10.5">
         <div className="grid grid-cols-[170px_1fr_auto] items-center gap-7 rounded-3xl border-4 border-ink bg-card p-6.25 shadow-card tablet:grid-cols-[140px_1fr] phone:grid-cols-[1fr] phone:p-4.75">
           <div className="h-41.25 overflow-hidden rounded-card-sm bg-brand phone:size-33.75 [&_.care-avatar]:-mt-10.5 [&_.care-avatar]:h-63.75 [&_.care-avatar]:w-full">
@@ -151,6 +148,6 @@ export default function ProfilePage() {
           </section>
         </div>
       </Container>
-    </main>
+    </PageShell>
   )
 }

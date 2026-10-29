@@ -5,7 +5,9 @@ import Image from 'next/image'
 import { useState, type FormEvent } from 'react'
 
 import { Paw } from '@/assets/icons/paw'
-import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { PageHero, PolaroidFigure } from '@/components/page-hero'
+import { PageShell } from '@/components/page-shell'
+import { SectionIntro } from '@/components/section-intro'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import {
@@ -57,25 +59,22 @@ export default function JoinPage() {
   }
 
   return (
-    <main className="min-h-screen bg-surface-page-mint text-foreground">
-      <LanguageToggle />
-      <ThemeToggle />
-      <SiteNavigation />
-
-      <section className="bg-surface-soft pt-22.5 pb-27.5 phone:pt-15 phone:pb-20">
-        <Container className="grid grid-cols-[0.9fr_1.1fr] items-center gap-20 tablet:grid-cols-[1fr]">
-          <div>
-            <Eyebrow>{isEnglish ? 'Join the pack' : '\xDAnete a la manada'}</Eyebrow>
-            <h1 className="mt-3.5 mb-7 text-[clamp(62px,6.3vw,96px)] leading-display-tight font-extrabold phone:text-[52px]">
-              {isEnglish ? 'Be part of the' : 'S\xE9 parte de los'}
-              <br />
-              <span className="text-accent">{isEnglish ? 'Croquetones.' : 'Croquetones.'}</span>
-            </h1>
-            <p className="max-w-147.5 text-body leading-loose font-extrabold phone:text-base">
-              {isEnglish
-                ? "You don't need superpowers. A little time, good ideas and a big heart are enough to help more bowls end up full."
-                : 'No necesitas superpoderes. Con un poco de tiempo, buenas ideas y un coraz\xF3n enorme podemos lograr que m\xE1s platos terminen llenos.'}
-            </p>
+    <PageShell surface="mint">
+      <PageHero
+        surface="soft"
+        spacing="default"
+        containerClassName="grid-cols-[0.9fr_1.1fr] gap-20"
+        eyebrow={isEnglish ? 'Join the pack' : '\xDAnete a la manada'}
+        title={isEnglish ? 'Be part of the' : 'S\xE9 parte de los'}
+        accentTitle={isEnglish ? 'Croquetones.' : 'Croquetones.'}
+        description={
+          isEnglish
+            ? "You don't need superpowers. A little time, good ideas and a big heart are enough to help more bowls end up full."
+            : 'No necesitas superpoderes. Con un poco de tiempo, buenas ideas y un coraz\xF3n enorme podemos lograr que m\xE1s platos terminen llenos.'
+        }
+        descriptionClassName="max-w-147.5 phone:text-base"
+        actions={
+          <>
             <Button
               className="mt-3.5 in-data-[theme='dark']:bg-[#ffc929] in-data-[theme='dark']:text-[#202436] in-data-[theme='dark']:shadow-[0_7px_0_#9f592f]!"
               onClick={openJoinForm}
@@ -87,51 +86,56 @@ export default function JoinPage() {
                 ? 'Opens your email. No secret initiation rituals.'
                 : 'Abre tu correo. Sin rituales secretos de iniciaci\xF3n.'}
             </small>
-          </div>
-          <figure className="relative mx-auto mt-10 w-[min(100%,340px)] rotate-2 pt-8.75 tablet:mt-13.75">
-            <p className="absolute -top-6.25 -right-7 z-2 m-0 w-[min(310px,82%)] -rotate-4 rounded-[22px_22px_4px_22px] border-3 border-ink bg-brand px-4.75 py-3.75 text-center font-heading text-[18px] leading-[1.15] font-black text-ink shadow-pop phone:-top-4.25 phone:-right-1 phone:text-body-sm">
-              {isEnglish
-                ? 'Want to lend a paw? Leave me your details.'
-                : '\xBFQuieres echar una pata? D\xE9jame tus datos.'}
-            </p>
-            <Image
-              src={recruitmentDogImage}
-              className="block aspect-[0.593] w-full rounded-3xl border-10 border-card bg-white object-contain shadow-[16px_18px_0_rgba(32,36,54,0.23)]"
-              alt={
-                isEnglish
-                  ? 'Dog wearing glasses and using a laptop to welcome volunteers'
-                  : 'Perrito con lentes usando una laptop para recibir voluntarios'
-              }
-            />
-            <figcaption className="relative mx-auto -mt-3.5 w-max max-w-[88%] -rotate-3 rounded-lg bg-ink px-4 py-2.5 text-center font-heading font-black text-card phone:text-small">
-              {isEnglish
+          </>
+        }
+        aside={
+          <PolaroidFigure
+            src={recruitmentDogImage}
+            alt={
+              isEnglish
+                ? 'Dog wearing glasses and using a laptop to welcome volunteers'
+                : 'Perrito con lentes usando una laptop para recibir voluntarios'
+            }
+            caption={
+              isEnglish
                 ? 'Recruitment manager. Paid in kibble.'
-                : 'Gerente de reclutamiento. Cobra en croquetas.'}
-            </figcaption>
-          </figure>
-        </Container>
-      </section>
+                : 'Gerente de reclutamiento. Cobra en croquetas.'
+            }
+            speechBubble={
+              isEnglish
+                ? 'Want to lend a paw? Leave me your details.'
+                : '\xBFQuieres echar una pata? D\xE9jame tus datos.'
+            }
+            className="relative mx-auto mt-10 w-[min(100%,340px)] pt-8.75 tablet:mt-13.75"
+            imageClassName="aspect-[0.593] bg-white object-contain"
+            captionClassName="phone:text-[13px]"
+          />
+        }
+      />
 
       <section
         className="pt-27.5 pb-30 phone:pt-18.75 phone:pb-22.5"
         aria-labelledby="join-experience-title"
       >
         <Container>
-          <div className="max-w-175">
-            <Eyebrow variant="section" tone="accent">
-              {isEnglish ? 'The Croquet\xF3n experience' : 'La experiencia Croquet\xF3n'}
-            </Eyebrow>
-            <h2 id="join-experience-title" className="mb-6">
-              {isEnglish ? 'What awaits you' : '\xBFQu\xE9 te espera'}
-              <br />
-              {isEnglish ? 'in the pack?' : 'en la manada?'}
-            </h2>
-            <p className="max-w-150 text-lg leading-copy font-extrabold">
-              {isEnglish
+          <SectionIntro
+            eyebrow={isEnglish ? 'The Croquet\xF3n experience' : 'La experiencia Croquet\xF3n'}
+            titleId="join-experience-title"
+            titleClassName="mb-6"
+            title={
+              <>
+                {isEnglish ? 'What awaits you' : '\xBFQu\xE9 te espera'}
+                <br />
+                {isEnglish ? 'in the pack?' : 'en la manada?'}
+              </>
+            }
+            description={
+              isEnglish
                 ? 'Good people, wagging tails and the strange satisfaction of knowing that a bag of kibble can change an entire story.'
-                : 'Gente buena onda, colitas felices y esa extra\xF1a satisfacci\xF3n de saber que una bolsa de croquetas puede cambiar una historia completa.'}
-            </p>
-          </div>
+                : 'Gente buena onda, colitas felices y esa extra\xF1a satisfacci\xF3n de saber que una bolsa de croquetas puede cambiar una historia completa.'
+            }
+            descriptionClassName="max-w-150 text-[18px] leading-[1.55]"
+          />
           <div className="mt-12.5 grid grid-cols-[repeat(3,1fr)] gap-5.5 tablet:grid-cols-[1fr]">
             <article className="rounded-3xl bg-card px-6.75 py-7.5 text-ink shadow-card phone:px-5.75 phone:py-6.5">
               <span className="mb-5.5 grid size-14.5 place-items-center rounded-circle bg-brand text-ink [&_svg]:size-8">
@@ -355,6 +359,6 @@ export default function JoinPage() {
           </DialogViewport>
         </DialogPortal>
       </DialogRoot>
-    </main>
+    </PageShell>
   )
 }

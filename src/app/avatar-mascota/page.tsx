@@ -8,7 +8,9 @@ import {
   CustomizerFieldset,
   TogglePillGroup
 } from '@/components/customizer-controls'
-import { LanguageToggle, ThemeToggle, SiteNavigation, CareAvatar } from '@/components/ui'
+import { PageHero } from '@/components/page-hero'
+import { PageShell } from '@/components/page-shell'
+import { CareAvatar } from '@/components/ui'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
 import { useCommunity } from '@/providers/community-provider'
@@ -28,26 +30,21 @@ export default function AvatarStudio() {
   const isEnglish = language === 'en'
 
   return (
-    <main className="min-h-screen bg-surface-page-mint text-foreground">
-      <LanguageToggle />
-      <ThemeToggle />
-      <SiteNavigation />
-
-      <section className="bg-surface-bar pt-18.75 pb-17.5 phone:py-13.75">
-        <Container>
-          <Eyebrow>{isEnglish ? 'Avatar & pet' : 'Avatar y mascota'}</Eyebrow>
-          <h1 className="mt-2.5 mb-6.25 text-[clamp(66px,7.5vw,112px)] leading-[0.84] font-extrabold phone:text-[clamp(50px,16vw,60px)]">
-            {isEnglish ? 'Build your' : 'Arma tu equipo'}
-            <br />
-            <span className="text-accent">{isEnglish ? 'animal team.' : 'animal.'}</span>
-          </h1>
-          <p className="mb-0 max-w-170 text-body leading-loose font-extrabold phone:text-base">
-            {isEnglish
-              ? "Create a full-body anthropomorphic dog, change every piece of its look and pair it with Chispita. Everything is drawn in Croquet\xF3n's 2D style."
-              : 'Crea un perro antropom\xF3rfico de cuerpo completo, cambia cada pieza de su look y acomp\xE1\xF1alo con Chispita. Todo est\xE1 dibujado en el estilo 2D de Croquet\xF3n.'}
-          </p>
-        </Container>
-      </section>
+    <PageShell surface="mint">
+      <PageHero
+        surface="bar"
+        spacing="studio"
+        eyebrow={isEnglish ? 'Avatar & pet' : 'Avatar y mascota'}
+        title={isEnglish ? 'Build your' : 'Arma tu equipo'}
+        accentTitle={isEnglish ? 'animal team.' : 'animal.'}
+        titleClassName="mt-2.5 mb-6.25 text-[clamp(66px,7.5vw,112px)] leading-[0.84] phone:text-[clamp(50px,16vw,60px)]"
+        description={
+          isEnglish
+            ? "Create a full-body anthropomorphic dog, change every piece of its look and pair it with Chispita. Everything is drawn in Croquet\xF3n's 2D style."
+            : 'Crea un perro antropom\xF3rfico de cuerpo completo, cambia cada pieza de su look y acomp\xE1\xF1alo con Chispita. Todo est\xE1 dibujado en el estilo 2D de Croquet\xF3n.'
+        }
+        descriptionClassName="mb-0 max-w-170 phone:text-base"
+      />
 
       <section
         className="relative pt-25 pb-30 before:absolute before:inset-0 before:bg-[radial-gradient(var(--secondary)_2px,transparent_2px)] before:bg-size-[32px_32px] before:opacity-(--studio-dots-opacity) before:content-[''] phone:pt-17.5 phone:pb-22.5"
@@ -236,6 +233,6 @@ export default function AvatarStudio() {
           </div>
         </Container>
       </section>
-    </main>
+    </PageShell>
   )
 }

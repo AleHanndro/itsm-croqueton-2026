@@ -1,11 +1,10 @@
 'use client'
 
-import Image from 'next/image'
-
 import { Paw } from '@/assets/icons/paw'
-import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { PageHero, PolaroidFigure } from '@/components/page-hero'
+import { PageShell } from '@/components/page-shell'
+import { SectionIntro } from '@/components/section-intro'
 import { Container } from '@/components/ui/container'
-import { Eyebrow } from '@/components/ui/eyebrow'
 import { donationMemeImage } from '@/lib/images'
 import { useLanguage } from '@/providers/language-provider'
 
@@ -17,67 +16,63 @@ export default function DonorsPage() {
   const isEnglish = language === 'en'
 
   return (
-    <main className="min-h-screen bg-surface-page-mint text-foreground">
-      <LanguageToggle />
-      <ThemeToggle />
-      <SiteNavigation />
-
-      <section className="bg-surface-bar pt-22.5 pb-26.25 phone:pt-15 phone:pb-20">
-        <Container className="grid grid-cols-[1fr_0.7fr] items-center gap-21.25 tablet:grid-cols-[1fr]">
-          <div>
-            <Eyebrow>{isEnglish ? 'Official donor wall' : 'Muro oficial de donadores'}</Eyebrow>
-            <h1 className="mt-3.5 mb-7 text-[clamp(60px,6vw,90px)] leading-display-tight font-extrabold phone:text-[52px]">
-              {isEnglish ? 'Humans with' : 'Humanos con'}
-              <br />
-              <span className="text-accent">
-                {isEnglish ? 'a big heart.' : 'coraz\xF3n grandote.'}
-              </span>
-            </h1>
-            <p className="max-w-155 text-body leading-loose font-extrabold">
-              {isEnglish
-                ? "This wall celebrates confirmed donations. Only the Croquet\xF3n admin team publishes names here, with each donor's permission."
-                : 'Este muro celebra donaciones confirmadas. Solo el equipo administrador del Croquet\xF3n publica nombres aqu\xED, con autorizaci\xF3n de cada donador.'}
-            </p>
-          </div>
-          <figure className="rotate-2 tablet:mx-auto tablet:mt-7.5 tablet:w-[min(100%,430px)]">
-            <Image
-              src={donationMemeImage}
-              className="block w-full rounded-[22px] border-9 border-card shadow-[14px_16px_0_rgba(32,36,54,0.24)]"
-              alt={
-                isEnglish
-                  ? 'Dog demanding kibble donations'
-                  : 'Perrito exigiendo donaciones de croquetas'
-              }
-            />
-            <figcaption className="relative mx-auto -mt-3 w-max max-w-[90%] -rotate-3 rounded-tag bg-ink px-3.5 py-2.25 text-center font-heading font-black text-card">
-              {isEnglish
+    <PageShell surface="mint">
+      <PageHero
+        surface="bar"
+        spacing="compact"
+        containerClassName="grid-cols-[1fr_0.7fr] gap-21.25"
+        eyebrow={isEnglish ? 'Official donor wall' : 'Muro oficial de donadores'}
+        title={isEnglish ? 'Humans with' : 'Humanos con'}
+        accentTitle={isEnglish ? 'a big heart.' : 'coraz\xF3n grandote.'}
+        titleClassName="text-[clamp(60px,6vw,90px)] leading-[0.85]"
+        description={
+          isEnglish
+            ? "This wall celebrates confirmed donations. Only the Croquet\xF3n admin team publishes names here, with each donor's permission."
+            : 'Este muro celebra donaciones confirmadas. Solo el equipo administrador del Croquet\xF3n publica nombres aqu\xED, con autorizaci\xF3n de cada donador.'
+        }
+        aside={
+          <PolaroidFigure
+            src={donationMemeImage}
+            alt={
+              isEnglish
+                ? 'Dog demanding kibble donations'
+                : 'Perrito exigiendo donaciones de croquetas'
+            }
+            caption={
+              isEnglish
                 ? 'Your name could be here. No pressure.'
-                : 'Tu nombre podr\xEDa estar aqu\xED. Sin presi\xF3n.'}
-            </figcaption>
-          </figure>
-        </Container>
-      </section>
+                : 'Tu nombre podr\xEDa estar aqu\xED. Sin presi\xF3n.'
+            }
+            className="tablet:mx-auto tablet:mt-7.5 tablet:w-[min(100%,430px)]"
+            imageClassName="rounded-[22px] border-9 shadow-[14px_16px_0_rgba(32,36,54,0.24)]"
+            captionClassName="-mt-3 max-w-[90%] rounded-tag px-3.5 py-2.25"
+          />
+        }
+      />
 
       <section
         className="min-h-175 bg-surface-donor-wall pt-27.5 pb-31.25 phone:pt-18.75 phone:pb-22.5"
         aria-labelledby="official-donors-title"
       >
         <Container>
-          <div className="max-w-180">
-            <Eyebrow variant="section" tone="accent">
-              {isEnglish ? 'Verified by the pack' : 'Verificado por la manada'}
-            </Eyebrow>
-            <h2 id="official-donors-title" className="mb-5.5">
-              {isEnglish ? 'The good human' : 'La lista de humanos'}
-              <br />
-              {isEnglish ? 'honor roll.' : 'buena onda.'}
-            </h2>
-            <p className="max-w-162.5 text-body leading-copy font-extrabold">
-              {isEnglish
+          <SectionIntro
+            className="max-w-180"
+            eyebrow={isEnglish ? 'Verified by the pack' : 'Verificado por la manada'}
+            titleId="official-donors-title"
+            title={
+              <>
+                {isEnglish ? 'The good human' : 'La lista de humanos'}
+                <br />
+                {isEnglish ? 'honor roll.' : 'buena onda.'}
+              </>
+            }
+            description={
+              isEnglish
                 ? 'Names appear after the admin team confirms the donation and publication permission.'
-                : 'Los nombres aparecen despu\xE9s de que el equipo administrador confirma la donaci\xF3n y el permiso de publicaci\xF3n.'}
-            </p>
-          </div>
+                : 'Los nombres aparecen despu\xE9s de que el equipo administrador confirma la donaci\xF3n y el permiso de publicaci\xF3n.'
+            }
+            descriptionClassName="max-w-162.5"
+          />
 
           <div className="mt-12 min-h-97.5 rounded-card-lg border-4 border-stroke bg-card p-8 text-ink shadow-panel phone:min-h-85 phone:px-4.5 phone:py-5.5">
             {officialDonors.length > 0 ? (
@@ -110,6 +105,6 @@ export default function DonorsPage() {
           </div>
         </Container>
       </section>
-    </main>
+    </PageShell>
   )
 }

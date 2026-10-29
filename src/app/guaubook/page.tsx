@@ -5,8 +5,9 @@ import Link from 'next/link'
 import { useState, type FormEvent } from 'react'
 
 import { Paw } from '@/assets/icons/paw'
+import { PageHero } from '@/components/page-hero'
+import { PageShell } from '@/components/page-shell'
 import { PostCard } from '@/components/post-card'
-import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
@@ -69,25 +70,21 @@ export default function GuauBookPage() {
   }
 
   return (
-    <main className="min-h-screen bg-surface-page-mint text-foreground">
-      <LanguageToggle />
-      <ThemeToggle />
-      <SiteNavigation />
-      <section className="bg-surface-soft pt-21.5 pb-23 phone:pt-14.5 phone:pb-16.25">
-        <Container>
-          <Eyebrow>GuauBook</Eyebrow>
-          <h1 className="mt-2.75 mb-5 text-[clamp(64px,7vw,104px)] leading-display phone:text-[56px]">
-            {isEnglish ? 'Stories from' : 'Historias de'}
-            <br />
-            <span className="text-accent">{isEnglish ? 'the pack.' : 'la manada.'}</span>
-          </h1>
-          <p className="m-0 max-w-155 text-lg leading-copy font-extrabold">
-            {isEnglish
-              ? 'Share a moment, a photo or a little good news with the Croquet\xF3n community.'
-              : 'Comparte un momento, una foto o una buena noticia con la comunidad Croquet\xF3n.'}
-          </p>
-        </Container>
-      </section>
+    <PageShell surface="mint">
+      <PageHero
+        surface="soft"
+        spacing="guaubook"
+        eyebrow="GuauBook"
+        title={isEnglish ? 'Stories from' : 'Historias de'}
+        accentTitle={isEnglish ? 'the pack.' : 'la manada.'}
+        titleClassName="mt-2.75 mb-5 text-[clamp(64px,7vw,104px)] leading-[0.8] font-normal phone:text-[56px]"
+        description={
+          isEnglish
+            ? 'Share a moment, a photo or a little good news with the Croquet\xF3n community.'
+            : 'Comparte un momento, una foto o una buena noticia con la comunidad Croquet\xF3n.'
+        }
+        descriptionClassName="m-0 text-[18px] leading-[1.55]"
+      />
       <Container
         as="section"
         className="grid grid-cols-[minmax(300px,0.72fr)_minmax(0,1fr)] items-start gap-13.75 pt-18 pb-27.5 tablet:grid-cols-[1fr] tablet:gap-8.75 phone:pt-10.5"
@@ -172,6 +169,6 @@ export default function GuauBookPage() {
           )}
         </div>
       </Container>
-    </main>
+    </PageShell>
   )
 }

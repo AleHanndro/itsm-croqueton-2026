@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { Cloud } from '@/assets/icons/cloud'
-import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { PageShell } from '@/components/page-shell'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
@@ -17,10 +17,7 @@ export default function NotFoundPage() {
   const isEnglish = language === 'en'
 
   return (
-    <main className="relative flex min-h-screen items-center bg-surface-not-found-page text-foreground [&_.page-nav-spacer]:hidden">
-      <LanguageToggle />
-      <ThemeToggle />
-      <SiteNavigation />
+    <PageShell surface="not-found">
       <div className="absolute top-[8%] -left-12.5 w-57.5 text-[#ffe982] opacity-80 [&_svg]:w-full">
         <Cloud />
       </div>
@@ -84,6 +81,6 @@ export default function NotFoundPage() {
           </p>
         </div>
       </Container>
-    </main>
+    </PageShell>
   )
 }

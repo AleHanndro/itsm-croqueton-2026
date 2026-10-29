@@ -1,15 +1,15 @@
 'use client'
 
 import { cn } from 'cn'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { Paw } from '@/assets/icons/paw'
-import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { PageHero, PolaroidFigure } from '@/components/page-hero'
+import { PageShell } from '@/components/page-shell'
+import { SectionIntro } from '@/components/section-intro'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
-import { Eyebrow } from '@/components/ui/eyebrow'
 import { goalImage } from '@/lib/images'
 import { useLanguage } from '@/providers/language-provider'
 
@@ -41,42 +41,35 @@ export default function GoalPage() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-surface-page-warm text-foreground">
-      <LanguageToggle />
-      <ThemeToggle />
-      <SiteNavigation />
-
-      <section className="bg-surface-soft pt-22.5 pb-27.5 phone:pt-15 phone:pb-20">
-        <Container className="grid grid-cols-[1fr_0.75fr] items-center gap-22.5 tablet:grid-cols-[1fr]">
-          <div>
-            <Eyebrow>{isEnglish ? 'The great kibble goal' : 'La gran meta croquetera'}</Eyebrow>
-            <h1 className="mt-3.5 mb-7 text-[clamp(62px,6.3vw,96px)] leading-display-tight font-extrabold phone:text-[52px]">
-              {isEnglish ? "Let's fill" : 'Vamos a llenar'}
-              <br />
-              <span className="text-accent">{isEnglish ? 'every bowl.' : 'todos los platos.'}</span>
-            </h1>
-            <p className="max-w-155 text-body leading-loose font-extrabold phone:text-base">
-              {isEnglish
-                ? 'Our goal is to collect 1,000 kg of sealed dog food. It sounds huge, but so did teaching Croqueto not to eat the homework.'
-                : 'Queremos reunir 1,000 kg de alimento sellado. Suena enorme, pero tambi\xE9n sonaba enorme ense\xF1arle a Croqueto a no comerse la tarea.'}
-            </p>
-          </div>
-          <figure className="relative mx-auto w-[min(100%,430px)] rotate-2 tablet:mt-7.5">
-            <Image
-              src={goalImage}
-              className="block aspect-[0.778] w-full rounded-3xl border-10 border-card object-cover shadow-[16px_18px_0_rgba(32,36,54,0.23)]"
-              alt={
-                isEnglish
-                  ? 'Happy group of dogs celebrating among donated food bags'
-                  : 'Grupo de perros felices celebrando entre bolsas de alimento donado'
-              }
-            />
-            <figcaption className="relative mx-auto -mt-3.5 w-max max-w-[88%] -rotate-3 rounded-lg bg-ink px-4 py-2.5 text-center font-heading font-black text-card phone:text-small">
-              {isEnglish ? 'Final boss: the empty bowl.' : 'Jefe final: el plato vac\xEDo.'}
-            </figcaption>
-          </figure>
-        </Container>
-      </section>
+    <PageShell surface="warm">
+      <PageHero
+        surface="soft"
+        spacing="default"
+        containerClassName="grid-cols-[1fr_0.75fr] gap-22.5"
+        eyebrow={isEnglish ? 'The great kibble goal' : 'La gran meta croquetera'}
+        title={isEnglish ? "Let's fill" : 'Vamos a llenar'}
+        accentTitle={isEnglish ? 'every bowl.' : 'todos los platos.'}
+        description={
+          isEnglish
+            ? 'Our goal is to collect 1,000 kg of sealed dog food. It sounds huge, but so did teaching Croqueto not to eat the homework.'
+            : 'Queremos reunir 1,000 kg de alimento sellado. Suena enorme, pero tambi\xE9n sonaba enorme ense\xF1arle a Croqueto a no comerse la tarea.'
+        }
+        descriptionClassName="phone:text-base"
+        aside={
+          <PolaroidFigure
+            src={goalImage}
+            alt={
+              isEnglish
+                ? 'Happy group of dogs celebrating among donated food bags'
+                : 'Grupo de perros felices celebrando entre bolsas de alimento donado'
+            }
+            caption={isEnglish ? 'Final boss: the empty bowl.' : 'Jefe final: el plato vac\xEDo.'}
+            className="relative mx-auto w-[min(100%,430px)] tablet:mt-7.5"
+            imageClassName="aspect-[0.778]"
+            captionClassName="phone:text-[13px]"
+          />
+        }
+      />
 
       <section
         ref={goalRef}
@@ -84,24 +77,25 @@ export default function GoalPage() {
         aria-labelledby="croquette-goal-title"
       >
         <Container className="grid grid-cols-[0.8fr_1.2fr] items-center gap-20 tablet:grid-cols-[1fr] tablet:gap-8.75">
-          <div>
-            <Eyebrow variant="section" tone="accent">
-              {isEnglish ? 'Current progress' : 'Progreso actual'}
-            </Eyebrow>
-            <h2
-              id="croquette-goal-title"
-              className="mb-6.25 min-[541px]:text-[clamp(48px,4.6vw,70px)]"
-            >
-              1,000 kg
-              <br />
-              {isEnglish ? 'of kibble.' : 'de croquetas.'}
-            </h2>
-            <p className="max-w-135 text-lg leading-copy font-extrabold">
-              {isEnglish
+          <SectionIntro
+            className="max-w-none"
+            eyebrow={isEnglish ? 'Current progress' : 'Progreso actual'}
+            titleId="croquette-goal-title"
+            titleClassName="mb-6.25 min-[541px]:text-[clamp(48px,4.6vw,70px)]"
+            title={
+              <>
+                1,000 kg
+                <br />
+                {isEnglish ? 'of kibble.' : 'de croquetas.'}
+              </>
+            }
+            description={
+              isEnglish
                 ? `We have collected ${collectedKilograms} kg. We need ${Math.max(0, 1e3 - collectedKilograms)} more to make the scale say \u201Cwow\u201D and many tails say \u201Cthank you.\u201D`
-                : `Llevamos ${collectedKilograms} kg reunidos. Faltan ${Math.max(0, 1e3 - collectedKilograms)} para que la b\xE1scula diga \u201Cguau\u201D y muchas colitas digan \u201Cgracias\u201D.`}
-            </p>
-          </div>
+                : `Llevamos ${collectedKilograms} kg reunidos. Faltan ${Math.max(0, 1e3 - collectedKilograms)} para que la b\xE1scula diga \u201Cguau\u201D y muchas colitas digan \u201Cgracias\u201D.`
+            }
+            descriptionClassName="max-w-135 text-[18px] leading-[1.55]"
+          />
           <div className="relative rotate-1 rounded-card-lg border-4 border-stroke bg-card px-10 pt-9.5 pb-8 text-ink shadow-panel before:absolute before:-top-3.25 before:left-1/2 before:h-6.25 before:w-18.5 before:-translate-x-1/2 before:-rotate-2 before:bg-[rgba(255,235,168,0.9)] before:content-[''] phone:px-5 phone:pt-8 phone:pb-6.75">
             <div className="absolute -top-8.75 right-6 flex rotate-8 gap-1.75" aria-hidden="true">
               <span className="h-4.25 w-6 rounded-circle border-4 border-ink bg-kibble-dark" />
@@ -170,6 +164,6 @@ export default function GoalPage() {
           </div>
         </Container>
       </section>
-    </main>
+    </PageShell>
   )
 }

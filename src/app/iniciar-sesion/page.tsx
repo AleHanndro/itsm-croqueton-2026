@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useState, type FormEvent } from 'react'
 
-import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { PageShell } from '@/components/page-shell'
 import { Button } from '@/components/ui/button'
 import { Eyebrow } from '@/components/ui/eyebrow'
 import { FieldLabel, TextInput } from '@/components/ui/field'
@@ -59,10 +59,10 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative grid min-h-screen place-items-center bg-background px-5 pt-39.5 pb-20 text-foreground before:absolute before:top-[52%] before:left-1/2 before:size-130 before:-translate-1/2 before:rounded-circle before:bg-surface-soft before:content-[''] phone:px-3.5 phone:pt-46.25 phone:pb-12 phone:before:size-80 [&_.page-nav-spacer]:hidden">
-      <LanguageToggle />
-      <ThemeToggle />
-      <SiteNavigation />
+    <PageShell
+      surface="default"
+      className="relative grid place-items-center px-5 pt-39.5 pb-20 before:absolute before:top-[52%] before:left-1/2 before:size-130 before:-translate-1/2 before:rounded-circle before:bg-surface-soft before:content-[''] phone:px-3.5 phone:pt-46.25 phone:pb-12 phone:before:size-80 [&_.page-nav-spacer]:hidden"
+    >
       <section
         className="relative z-2 w-[min(520px,100%)] rounded-4xl border-5 border-stroke bg-card p-12 text-ink shadow-login-card phone:px-5.5 phone:pt-9.5 phone:pb-7"
         aria-labelledby="login-title"
@@ -200,6 +200,6 @@ export default function LoginPage() {
           </figure>
         )}
       </section>
-    </main>
+    </PageShell>
   )
 }
