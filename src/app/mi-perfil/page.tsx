@@ -12,6 +12,7 @@ import { LanguageToggle, ThemeToggle, CareAvatar } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
+import { FieldLabel, TextInput } from '@/components/ui/field'
 import { useNavigate } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
@@ -73,14 +74,14 @@ export default function ProfilePage() {
                 setMessage(isEnglish ? 'Profile updated.' : 'Perfil actualizado.')
               }}
             >
-              <label className="grid gap-1.75 text-[12px] font-black tracking-label uppercase">
+              <FieldLabel>
                 {isEnglish ? 'Name' : 'Nombre'}
-                <input
-                  className="min-h-13 w-full resize-none rounded-control border-3 border-ink bg-white p-3.5 font-bold text-ink"
+                <TextInput
+                  variant="control"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                 />
-              </label>
+              </FieldLabel>
               <Button type="submit">{isEnglish ? 'Edit profile' : 'Editar perfil'}</Button>
             </form>
             <form
@@ -94,16 +95,16 @@ export default function ProfilePage() {
                 }
               }}
             >
-              <label className="grid gap-1.75 text-[12px] font-black tracking-label uppercase">
+              <FieldLabel>
                 {isEnglish ? 'New password' : 'Nueva contrase\xF1a'}
-                <input
+                <TextInput
                   type="password"
-                  className="min-h-13 w-full resize-none rounded-control border-3 border-ink bg-white p-3.5 font-bold text-ink"
+                  variant="control"
                   minLength={6}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                 />
-              </label>
+              </FieldLabel>
               <Button variant="underline" type="submit" className="text-ink">
                 {isEnglish ? 'Change password' : 'Cambiar contrase\xF1a'}
               </Button>

@@ -6,6 +6,7 @@ import { useState, type FormEvent } from 'react'
 import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import { Eyebrow } from '@/components/ui/eyebrow'
+import { FieldLabel, TextInput } from '@/components/ui/field'
 import { errorDogImage, packAccessDogImage } from '@/lib/images'
 import { useNavigate } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
@@ -115,29 +116,29 @@ export default function LoginPage() {
           className="mt-7 grid gap-4.5"
           onSubmit={isCreatingAccount ? requestAccount : requestAccess}
         >
-          <label className="grid gap-1.75 text-[12px] font-black tracking-label uppercase">
+          <FieldLabel>
             <span>{isEnglish ? 'Email' : 'Correo electr\xF3nico'}</span>
-            <input
+            <TextInput
               type="email"
-              className="min-h-13.5 rounded-field border-3 border-ink bg-white px-4 font-extrabold text-ink focus:outline-4 focus:outline-offset-2 focus:outline-secondary"
+              variant="auth"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               autoComplete="email"
               placeholder="tu@correo.com"
             />
-          </label>
-          <label className="grid gap-1.75 text-[12px] font-black tracking-label uppercase">
+          </FieldLabel>
+          <FieldLabel>
             <span>{isEnglish ? 'Password' : 'Contrase\xF1a'}</span>
-            <input
+            <TextInput
               type="password"
-              className="min-h-13.5 rounded-field border-3 border-ink bg-white px-4 font-extrabold text-ink focus:outline-4 focus:outline-offset-2 focus:outline-secondary"
+              variant="auth"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               autoComplete={isCreatingAccount ? 'new-password' : 'current-password'}
               minLength={isCreatingAccount ? 6 : void 0}
               placeholder="••••••••"
             />
-          </label>
+          </FieldLabel>
           <Button type="submit" className="mt-1 w-full">
             {isCreatingAccount
               ? isEnglish

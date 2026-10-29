@@ -10,6 +10,7 @@ import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
+import { FieldLabel, TextareaInput } from '@/components/ui/field'
 import { assessPostRelevance } from '@/lib/content'
 import { useCommunity } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
@@ -96,15 +97,12 @@ export default function GuauBookPage() {
             className="sticky top-31.5 grid gap-3.75 rounded-3xl border-4 border-ink bg-card p-6.25 shadow-card tablet:relative tablet:top-0 phone:p-4.75"
             onSubmit={handlePublish}
           >
-            <label
-              htmlFor="post-body"
-              className="grid gap-1.75 text-[12px] font-black tracking-label uppercase"
-            >
+            <FieldLabel htmlFor="post-body">
               {isEnglish ? 'What do you want to share?' : '\xBFQu\xE9 quieres compartir?'}
-            </label>
-            <textarea
+            </FieldLabel>
+            <TextareaInput
               id="post-body"
-              className="min-h-30 w-full resize-y rounded-control border-3 border-ink bg-white p-3.5 font-bold text-ink"
+              variant="control"
               value={body}
               onChange={(event) => setBody(event.target.value)}
               placeholder={isEnglish ? 'Write something kind\u2026' : 'Escribe algo bonito\u2026'}

@@ -9,6 +9,7 @@ import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
+import { CheckboxCard, FieldLabel, TextareaInput, TextInput } from '@/components/ui/field'
 import { rejectedApplicationImage, heroDogImage, recruitmentDogImage } from '@/lib/images'
 import { useLanguage } from '@/providers/language-provider'
 
@@ -226,39 +227,36 @@ export default function JoinPage() {
                   className="mt-7 grid grid-cols-[1fr_1fr] gap-4.25 phone:grid-cols-[1fr]"
                   onSubmit={submitJoinForm}
                 >
-                  <label className="grid gap-1.75 text-[12px] font-black tracking-label uppercase">
+                  <FieldLabel>
                     <span>{isEnglish ? 'Your name' : 'Tu nombre'}</span>
-                    <input
+                    <TextInput
                       value={applicantName}
-                      className="min-h-13 w-full rounded-field border-3 border-ink bg-white px-3.75 font-extrabold text-ink focus:outline-4 focus:outline-offset-2 focus:outline-brand"
                       onChange={(event) => setApplicantName(event.target.value)}
                       maxLength={40}
                       placeholder={
                         isEnglish ? 'Human or heroic nickname' : 'Nombre humano o apodo heroico'
                       }
                     />
-                  </label>
-                  <label className="grid gap-1.75 text-[12px] font-black tracking-label uppercase">
+                  </FieldLabel>
+                  <FieldLabel>
                     <span>{isEnglish ? 'Your age' : 'Tu edad'}</span>
-                    <input
+                    <TextInput
                       type="number"
-                      className="min-h-13 w-full rounded-field border-3 border-ink bg-white px-3.75 font-extrabold text-ink focus:outline-4 focus:outline-offset-2 focus:outline-brand"
                       min="0"
                       max="99"
                       value={applicantAge}
                       onChange={(event) => setApplicantAge(event.target.value)}
                       placeholder="18"
                     />
-                  </label>
-                  <label className="col-span-full grid gap-1.75 text-[12px] font-black tracking-label uppercase phone:col-1">
+                  </FieldLabel>
+                  <FieldLabel className="col-span-full phone:col-1">
                     <span>
                       {isEnglish
                         ? 'Why do you want to participate?'
                         : '\xBFPor qu\xE9 quieres participar?'}
                     </span>
-                    <textarea
+                    <TextareaInput
                       value={motivation}
-                      className="min-h-31.25 w-full resize-y rounded-field border-3 border-ink bg-white px-3.75 pt-3.5 leading-label font-extrabold text-ink focus:outline-4 focus:outline-offset-2 focus:outline-brand"
                       onChange={(event) => setMotivation(event.target.value)}
                       maxLength={400}
                       placeholder={
@@ -270,33 +268,23 @@ export default function JoinPage() {
                     <small className="text-tiny tracking-normal normal-case opacity-62">
                       {isEnglish ? 'Minimum 20 characters.' : 'M\xEDnimo 20 caracteres.'}
                     </small>
-                  </label>
-                  <label className="col-span-full flex items-start gap-2.75 rounded-xl bg-surface-chip px-3.75 py-3.25 text-small leading-tight-copy font-extrabold phone:col-1">
-                    <input
-                      type="checkbox"
-                      className="size-5.25 flex-none accent-accent focus:outline-4 focus:outline-offset-2 focus:outline-brand"
-                      checked={hasAvailability}
-                      onChange={(event) => setHasAvailability(event.target.checked)}
-                    />
-                    <span>
-                      {isEnglish
-                        ? 'I am available on event day.'
-                        : 'Tengo disponibilidad el d\xEDa del evento.'}
-                    </span>
-                  </label>
-                  <label className="col-span-full flex items-start gap-2.75 rounded-xl bg-surface-chip px-3.75 py-3.25 text-small leading-tight-copy font-extrabold phone:col-1">
-                    <input
-                      type="checkbox"
-                      className="size-5.25 flex-none accent-accent focus:outline-4 focus:outline-offset-2 focus:outline-brand"
-                      checked={acceptsCommitment}
-                      onChange={(event) => setAcceptsCommitment(event.target.checked)}
-                    />
-                    <span>
-                      {isEnglish
-                        ? 'I agree to work as a team and follow care guidelines.'
-                        : 'Acepto trabajar en equipo y seguir las indicaciones de cuidado.'}
-                    </span>
-                  </label>
+                  </FieldLabel>
+                  <CheckboxCard
+                    checked={hasAvailability}
+                    onChange={(event) => setHasAvailability(event.target.checked)}
+                  >
+                    {isEnglish
+                      ? 'I am available on event day.'
+                      : 'Tengo disponibilidad el d\xEDa del evento.'}
+                  </CheckboxCard>
+                  <CheckboxCard
+                    checked={acceptsCommitment}
+                    onChange={(event) => setAcceptsCommitment(event.target.checked)}
+                  >
+                    {isEnglish
+                      ? 'I agree to work as a team and follow care guidelines.'
+                      : 'Acepto trabajar en equipo y seguir las indicaciones de cuidado.'}
+                  </CheckboxCard>
                   <div className="col-span-full grid gap-0.75 border-l-5 border-secondary bg-[#e7eee7] px-4.25 py-3.5 text-[12px] phone:col-1">
                     <strong className="font-heading text-[16px]">
                       {isEnglish ? "Chispita's checklist" : 'Lista de Chispita'}
