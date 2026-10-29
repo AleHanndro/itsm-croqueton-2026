@@ -1,12 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Paw } from '@/assets/icons/paw'
 import AdminIcon from '@/components/admin-icon'
 import CommunityNavigation from '@/components/community-navigation'
 import { LanguageToggle, ThemeToggle } from '@/components/ui'
+import { Container } from '@/components/ui/container'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import { useNavigate } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
 
@@ -23,7 +25,6 @@ export default function AdminPage() {
   } = useCommunity()
   const navigate = useNavigate()
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
-  const [today, setToday] = useState('')
 
   const isAdmin = user?.email === 'admin@croqueton.mx'
   const totalReactions = posts.reduce(
@@ -31,23 +32,16 @@ export default function AdminPage() {
     0
   )
 
-  useEffect(() => {
-    setToday(
-      new Intl.DateTimeFormat('es', { weekday: 'long', day: 'numeric', month: 'long' }).format(
-        new Date()
-      )
-    )
-  }, [])
-
   if (!user || !isAdmin) {
     return (
       <main className="min-h-screen bg-surface-page-mint text-foreground">
         <CommunityNavigation />
-        <section className="relative z-2 mx-auto grid min-h-[calc(100vh-82px)] w-[min(1240px,calc(100%-96px))] content-center justify-items-center gap-3 text-center tablet:w-[min(100%-36px,680px)] phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container
+          as="section"
+          className="grid min-h-[calc(100vh-82px)] content-center justify-items-center gap-3 text-center"
+        >
           <Paw className="w-18 text-accent" />
-          <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-            Acceso restringido
-          </span>
+          <Eyebrow>Acceso restringido</Eyebrow>
           <h1 className="m-0 text-[62px] phone:text-[47px]">Panel de administración</h1>
           <p className="max-w-125 font-extrabold">
             Inicia sesión con la cuenta administradora para gestionar la comunidad.
@@ -58,10 +52,16 @@ export default function AdminPage() {
           >
             Ir al acceso
           </Link>
-        </section>
+        </Container>
       </main>
     )
   }
+
+  const today = new Intl.DateTimeFormat('es', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long'
+  }).format(new Date())
 
   return (
     <main className="min-h-screen bg-surface-admin-page text-foreground">
@@ -169,9 +169,7 @@ export default function AdminPage() {
           >
             <div className="mb-7.5 flex items-end justify-between gap-8.75 tablet:flex-col tablet:items-start">
               <div>
-                <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-                  Resumen general
-                </span>
+                <Eyebrow>Resumen general</Eyebrow>
                 <h1 className="mt-1.5 mb-2 text-[clamp(48px,5vw,68px)] leading-[0.9] phone:text-[48px]">
                   Buenos días, admin.
                 </h1>
@@ -290,9 +288,9 @@ export default function AdminPage() {
               >
                 <div className="flex min-h-26 items-center justify-between gap-5 border-b border-stroke-divider px-5.75 py-5.25 phone:p-4.5">
                   <div>
-                    <span className="mb-1 inline-flex items-center text-micro leading-tight font-black tracking-[0.16em] text-accent uppercase">
+                    <Eyebrow variant="section" tone="accent" size="xs" className="mb-1">
                       Cola de trabajo
-                    </span>
+                    </Eyebrow>
                     <h2 className="m-0 text-[27px] tracking-[-0.03em] phone:text-[24px]">
                       Moderación
                     </h2>
@@ -373,9 +371,9 @@ export default function AdminPage() {
               >
                 <div className="flex min-h-26 items-center justify-between gap-5 border-b border-stroke-divider px-5.75 py-5.25 phone:p-4.5">
                   <div>
-                    <span className="mb-1 inline-flex items-center text-micro leading-tight font-black tracking-[0.16em] text-accent uppercase">
+                    <Eyebrow variant="section" tone="accent" size="xs" className="mb-1">
                       Actividad reciente
-                    </span>
+                    </Eyebrow>
                     <h2 className="m-0 text-[27px] tracking-[-0.03em] phone:text-[24px]">
                       Comunidad
                     </h2>

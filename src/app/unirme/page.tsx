@@ -6,6 +6,8 @@ import { useState, type FormEvent } from 'react'
 
 import { Paw } from '@/assets/icons/paw'
 import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { Container } from '@/components/ui/container'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import { rejectedApplicationImage, heroDogImage, recruitmentDogImage } from '@/lib/images'
 import { useLanguage } from '@/providers/language-provider'
 
@@ -50,11 +52,9 @@ export default function JoinPage() {
       <SiteNavigation />
 
       <section className="bg-surface-soft pt-22.5 pb-27.5 phone:pt-15 phone:pb-20">
-        <div className="relative z-2 mx-auto grid w-[min(1240px,calc(100%-96px))] grid-cols-[0.9fr_1.1fr] items-center gap-20 tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container className="grid grid-cols-[0.9fr_1.1fr] items-center gap-20 tablet:grid-cols-[1fr]">
           <div>
-            <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-              {isEnglish ? 'Join the pack' : '\xDAnete a la manada'}
-            </span>
+            <Eyebrow>{isEnglish ? 'Join the pack' : '\xDAnete a la manada'}</Eyebrow>
             <h1 className="mt-3.5 mb-7 text-[clamp(62px,6.3vw,96px)] leading-display-tight font-extrabold phone:text-[52px]">
               {isEnglish ? 'Be part of the' : 'S\xE9 parte de los'}
               <br />
@@ -99,18 +99,18 @@ export default function JoinPage() {
                 : 'Gerente de reclutamiento. Cobra en croquetas.'}
             </figcaption>
           </figure>
-        </div>
+        </Container>
       </section>
 
       <section
         className="pt-27.5 pb-30 phone:pt-18.75 phone:pb-22.5"
         aria-labelledby="join-experience-title"
       >
-        <div className="relative z-2 mx-auto w-[min(1240px,calc(100%-96px))] tablet:w-[min(100%-36px,680px)] phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container>
           <div className="max-w-175">
-            <span className="mb-6.25 inline-flex items-center text-small leading-tight font-black tracking-[0.16em] text-accent uppercase">
+            <Eyebrow variant="section" tone="accent">
               {isEnglish ? 'The Croquet\xF3n experience' : 'La experiencia Croquet\xF3n'}
-            </span>
+            </Eyebrow>
             <h2 id="join-experience-title" className="mb-6">
               {isEnglish ? 'What awaits you' : '\xBFQu\xE9 te espera'}
               <br />
@@ -166,9 +166,7 @@ export default function JoinPage() {
 
           <div className="mt-21.25 flex items-center justify-between gap-12.5 rounded-4xl bg-ink px-13 py-12 text-card tablet:flex-col tablet:items-start phone:mt-13.75 phone:px-6 phone:py-8">
             <div>
-              <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-                {isEnglish ? 'Pack promise' : 'Promesa de la manada'}
-              </span>
+              <Eyebrow>{isEnglish ? 'Pack promise' : 'Promesa de la manada'}</Eyebrow>
               <h2 className="mt-1.5 mb-3 text-[clamp(44px,4.2vw,62px)] phone:text-[43px]">
                 {isEnglish ? 'Your help matters.' : 'Tu ayuda s\xED cuenta.'}
               </h2>
@@ -186,7 +184,7 @@ export default function JoinPage() {
               {isEnglish ? 'Join the team' : 'Unirme al equipo'} <span>→</span>
             </button>
           </div>
-        </div>
+        </Container>
       </section>
 
       {showJoinForm && (
@@ -212,9 +210,9 @@ export default function JoinPage() {
             </button>
             {!joinResult ? (
               <>
-                <span className="mb-6.25 inline-flex items-center text-small leading-tight font-black tracking-[0.16em] text-accent uppercase">
+                <Eyebrow variant="section" tone="accent">
                   {isEnglish ? 'Official pack application' : 'Solicitud oficial de la manada'}
-                </span>
+                </Eyebrow>
                 <h2
                   id="join-dialog-title"
                   className="mt-2 mb-4.5 min-[541px]:text-[clamp(48px,6vw,70px)]"
@@ -341,7 +339,7 @@ export default function JoinPage() {
                         : 'Perrito ri\xE9ndose de la solicitud'
                   }
                 />
-                <span className="mb-6.25 inline-flex items-center text-small leading-tight font-black tracking-[0.16em] text-accent uppercase">
+                <Eyebrow variant="section" tone="accent">
                   {joinResult === 'welcome'
                     ? isEnglish
                       ? 'Registration complete'
@@ -349,7 +347,7 @@ export default function JoinPage() {
                     : isEnglish
                       ? 'Almost, human'
                       : 'Casi, humano'}
-                </span>
+                </Eyebrow>
                 <h2
                   id="join-dialog-title"
                   className="mt-2 mb-4.5 min-[541px]:text-[clamp(48px,6vw,70px)]"

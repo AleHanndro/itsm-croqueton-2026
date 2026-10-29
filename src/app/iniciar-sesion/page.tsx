@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useState, type FormEvent } from 'react'
 
 import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import { errorDogImage, packAccessDogImage } from '@/lib/images'
 import { useNavigate } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
@@ -73,9 +74,9 @@ export default function LoginPage() {
             />
           </figure>
           <div className="flex-1">
-            <span className="mb-2.25 inline-flex items-center text-small leading-tight font-black tracking-[0.16em] text-accent uppercase">
+            <Eyebrow variant="section" tone="accent" className="mb-2.25">
               {isEnglish ? 'Pack access' : 'Acceso de la manada'}
-            </span>
+            </Eyebrow>
             <h1
               id="login-title"
               className="m-0 font-heading text-[clamp(48px,5vw,60px)] leading-[0.86] font-extrabold tracking-heading phone:text-[50px]"

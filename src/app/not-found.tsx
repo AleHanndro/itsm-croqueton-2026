@@ -5,6 +5,8 @@ import Link from 'next/link'
 
 import { Cloud } from '@/assets/icons/cloud'
 import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { Container } from '@/components/ui/container'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import { errorDogImage } from '@/lib/images'
 import { useLanguage } from '@/providers/language-provider'
 
@@ -24,11 +26,11 @@ export default function NotFoundPage() {
       <div className="absolute right-[3%] bottom-[4%] w-45 text-[#ffe982] opacity-80 [&_svg]:w-full">
         <Cloud />
       </div>
-      <div className="relative z-2 mx-auto grid min-h-screen w-[min(1240px,calc(100%-96px))] grid-cols-[0.9fr_1.1fr] items-center py-20 tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] tablet:pt-25 phone:w-[min(100%-28px,680px)] phone:pt-17.5 phone:pb-5 laptop:w-[min(100%-48px,1040px)]">
+      <Container className="grid min-h-screen grid-cols-[0.9fr_1.1fr] items-center py-20 tablet:grid-cols-[1fr] tablet:pt-25 phone:pt-17.5 phone:pb-5">
         <div className="relative z-4">
-          <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
+          <Eyebrow>
             {isEnglish ? 'Error 404 \xB7 Lost the scent' : 'Error 404 \xB7 Olfato perdido'}
-          </span>
+          </Eyebrow>
           <p
             className="-mb-8.75 font-heading text-[clamp(130px,17vw,260px)] leading-[0.7] font-black -tracking-label-wide text-fg-not-found-code phone:-mb-4.5 phone:text-[120px]"
             aria-hidden="true"
@@ -79,7 +81,7 @@ export default function NotFoundPage() {
             {isEnglish ? 'So little direction.' : 'Poco sentido de orientaci\xF3n.'}
           </p>
         </div>
-      </div>
+      </Container>
     </main>
   )
 }

@@ -3,6 +3,8 @@
 import Image from 'next/image'
 
 import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { Container } from '@/components/ui/container'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import {
   donationMemeImage,
   chooseFoodImage,
@@ -21,11 +23,9 @@ export default function DonationPage() {
       <SiteNavigation />
 
       <section className="bg-surface-bar pt-21.25 pb-26.25 phone:pt-15 phone:pb-20">
-        <div className="relative z-2 mx-auto grid w-[min(1240px,calc(100%-96px))] grid-cols-[1fr_0.85fr] items-center gap-20 tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container className="grid grid-cols-[1fr_0.85fr] items-center gap-20 tablet:grid-cols-[1fr]">
           <div>
-            <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-              {isEnglish ? 'How to donate' : 'C\xF3mo donar'}
-            </span>
+            <Eyebrow>{isEnglish ? 'How to donate' : 'C\xF3mo donar'}</Eyebrow>
             <h1 className="mt-3 mb-7 text-[clamp(62px,6.3vw,96px)] leading-display-tight font-extrabold phone:text-[52px]">
               {isEnglish ? 'One little kibble,' : 'Una croquetita,'}
               <br />
@@ -53,18 +53,18 @@ export default function DonationPage() {
               {isEnglish ? 'Hand over all the kibble' : 'Deme todas las croquetas que tenga'}
             </figcaption>
           </figure>
-        </div>
+        </Container>
       </section>
 
       <section
         className="pt-27.5 pb-30 phone:pt-18.75 phone:pb-22.5"
         aria-labelledby="donation-guide-title"
       >
-        <div className="relative z-2 mx-auto w-[min(1240px,calc(100%-96px))] tablet:w-[min(100%-36px,680px)] phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container>
           <div className="mb-13.75 max-w-175 phone:mb-9.5">
-            <span className="mb-6.25 inline-flex items-center text-small leading-tight font-black tracking-[0.16em] text-accent uppercase">
+            <Eyebrow variant="section" tone="accent">
               {isEnglish ? 'Three easy steps' : 'Tres pasos sencillos'}
-            </span>
+            </Eyebrow>
             <h2 id="donation-guide-title" className="mb-0">
               {isEnglish ? 'Donate without' : 'Dona sin'}
               <br />
@@ -142,9 +142,9 @@ export default function DonationPage() {
 
           <div className="mt-20 flex items-center justify-between gap-10 rounded-[30px] bg-[#f2673f] px-12.5 py-11.25 text-card tablet:flex-col tablet:items-start phone:mt-13.75 phone:px-6 phone:py-8">
             <div>
-              <span className="mb-6.25 inline-flex items-center text-small leading-tight font-black tracking-[0.16em] text-ink uppercase">
+              <Eyebrow variant="section" tone="ink">
                 {isEnglish ? 'Still have questions?' : '\xBFTodav\xEDa tienes dudas?'}
-              </span>
+              </Eyebrow>
               <h2 className="mt-1.25 mb-2.5 text-[clamp(44px,4.2vw,62px)] phone:text-[43px]">
                 {isEnglish ? "Let's talk." : 'Hablemos.'}
               </h2>
@@ -161,7 +161,7 @@ export default function DonationPage() {
               {isEnglish ? 'Send an email' : 'Enviar un correo'} <span>→</span>
             </a>
           </div>
-        </div>
+        </Container>
       </section>
     </main>
   )

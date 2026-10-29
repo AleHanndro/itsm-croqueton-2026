@@ -7,6 +7,8 @@ import { useState, type FormEvent } from 'react'
 import { Paw } from '@/assets/icons/paw'
 import { PostCard } from '@/components/post-card'
 import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { Container } from '@/components/ui/container'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import { assessPostRelevance } from '@/lib/content'
 import { useCommunity } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
@@ -70,10 +72,8 @@ export default function GuauBookPage() {
       <ThemeToggle />
       <SiteNavigation />
       <section className="bg-surface-soft pt-21.5 pb-23 phone:pt-14.5 phone:pb-16.25">
-        <div className="relative z-2 mx-auto w-[min(1240px,calc(100%-96px))] tablet:w-[min(100%-36px,680px)] phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
-          <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-            GuauBook
-          </span>
+        <Container>
+          <Eyebrow>GuauBook</Eyebrow>
           <h1 className="mt-2.75 mb-5 text-[clamp(64px,7vw,104px)] leading-display phone:text-[56px]">
             {isEnglish ? 'Stories from' : 'Historias de'}
             <br />
@@ -84,9 +84,12 @@ export default function GuauBookPage() {
               ? 'Share a moment, a photo or a little good news with the Croquet\xF3n community.'
               : 'Comparte un momento, una foto o una buena noticia con la comunidad Croquet\xF3n.'}
           </p>
-        </div>
+        </Container>
       </section>
-      <section className="relative z-2 mx-auto grid w-[min(1240px,calc(100%-96px))] grid-cols-[minmax(300px,0.72fr)_minmax(0,1fr)] items-start gap-13.75 pt-18 pb-27.5 tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] tablet:gap-8.75 phone:w-[min(100%-28px,680px)] phone:pt-10.5 laptop:w-[min(100%-48px,1040px)]">
+      <Container
+        as="section"
+        className="grid grid-cols-[minmax(300px,0.72fr)_minmax(0,1fr)] items-start gap-13.75 pt-18 pb-27.5 tablet:grid-cols-[1fr] tablet:gap-8.75 phone:pt-10.5"
+      >
         {user ? (
           <form
             className="sticky top-31.5 grid gap-3.75 rounded-3xl border-4 border-ink bg-card p-6.25 shadow-card tablet:relative tablet:top-0 phone:p-4.75"
@@ -144,9 +147,7 @@ export default function GuauBookPage() {
         ) : (
           <aside className="sticky top-31.5 grid justify-items-start gap-3.25 rounded-3xl border-4 border-ink bg-card p-6.75 text-ink shadow-card tablet:relative tablet:top-0 phone:p-4.75">
             <Paw className="w-13.5 text-accent" />
-            <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-              {isEnglish ? 'Your profile' : 'Tu perfil'}
-            </span>
+            <Eyebrow>{isEnglish ? 'Your profile' : 'Tu perfil'}</Eyebrow>
             <h2 className="m-0 min-[541px]:text-[42px]">
               {isEnglish ? 'Join the conversation.' : '\xDAnete a la conversaci\xF3n.'}
             </h2>
@@ -177,7 +178,7 @@ export default function GuauBookPage() {
             </div>
           )}
         </div>
-      </section>
+      </Container>
     </main>
   )
 }

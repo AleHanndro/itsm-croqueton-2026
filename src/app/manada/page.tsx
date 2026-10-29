@@ -4,6 +4,8 @@ import Image from 'next/image'
 
 import { Paw } from '@/assets/icons/paw'
 import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { Container } from '@/components/ui/container'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import { packGenerationImage } from '@/lib/images'
 import { useLanguage } from '@/providers/language-provider'
 
@@ -32,10 +34,8 @@ export default function PackPage() {
             </span>
           ))}
         </div>
-        <div className="relative z-2 mx-auto w-[min(1240px,calc(100%-96px))] tablet:w-[min(100%-36px,680px)] phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
-          <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-            {isEnglish ? 'The Croquet\xF3n pack' : 'La manada Croquet\xF3n'}
-          </span>
+        <Container>
+          <Eyebrow>{isEnglish ? 'The Croquet\xF3n pack' : 'La manada Croquet\xF3n'}</Eyebrow>
           <h1 className="mt-3.5 mb-7 text-[clamp(62px,6.3vw,96px)] leading-display-tight font-extrabold phone:text-[52px]">
             {isEnglish ? 'Every generation' : 'Cada generaci\xF3n'}
             <br />
@@ -48,18 +48,18 @@ export default function PackPage() {
               ? 'Our group album keeps the volunteers, laughs and heroic kibble-carrying poses from every edition.'
               : 'Nuestro \xE1lbum grupal guarda a los voluntarios, las risas y las poses heroicas cargando croquetas de cada edici\xF3n.'}
           </p>
-        </div>
+        </Container>
       </section>
 
       <section
         className="pt-27.5 pb-31.25 phone:pt-18.75 phone:pb-22.5"
         aria-labelledby="pack-gallery-title"
       >
-        <div className="relative z-2 mx-auto w-[min(1240px,calc(100%-96px))] tablet:w-[min(100%-36px,680px)] phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container>
           <div className="max-w-180">
-            <span className="mb-6.25 inline-flex items-center text-small leading-tight font-black tracking-[0.16em] text-accent uppercase">
+            <Eyebrow variant="section" tone="accent">
               {isEnglish ? 'Croquet\xF3n generations' : 'Generaciones Croquet\xF3n'}
-            </span>
+            </Eyebrow>
             <h2 id="pack-gallery-title" className="mb-5.5">
               {isEnglish ? "The pack's" : 'El \xE1lbum de'}
               <br />
@@ -114,7 +114,7 @@ export default function PackPage() {
               </span>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     </main>
   )

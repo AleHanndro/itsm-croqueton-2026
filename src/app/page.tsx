@@ -16,6 +16,8 @@ import {
   StoryImage,
   MoodPollCard
 } from '@/components/ui'
+import { Container } from '@/components/ui/container'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import { dogFacts, dogFactsEn } from '@/lib/content'
 import {
   chapterOneImage,
@@ -101,11 +103,9 @@ export default function HomePage() {
         <Cloud className="absolute top-31.25 right-17.5 w-47.5 text-fg-cloud opacity-75" />
         <Paw className="absolute top-37.5 left-[42%] w-22.5 -rotate-18 text-fg-paw opacity-55" />
         <Paw className="absolute right-[4%] bottom-32.5 w-32.5 rotate-23 text-fg-paw opacity-55" />
-        <div className="relative z-2 mx-auto grid w-[min(1240px,calc(100%-96px))] grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-center gap-x-[clamp(56px,7vw,120px)] pt-6 pb-28 tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] tablet:gap-y-18 tablet:pt-0 tablet:pb-35 phone:w-[min(100%-28px,680px)] phone:gap-y-14 phone:pb-32 laptop:w-[min(100%-48px,1040px)]">
+        <Container className="grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-center gap-x-[clamp(56px,7vw,120px)] pt-6 pb-28 tablet:grid-cols-[1fr] tablet:gap-y-18 tablet:pt-0 tablet:pb-35 phone:gap-y-14 phone:pb-32">
           <div className="z-5 pl-7.5 tablet:p-0">
-            <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-              {isEnglish ? 'A furry tale' : 'Una historia de pelos'}
-            </span>
+            <Eyebrow>{isEnglish ? 'A furry tale' : 'Una historia de pelos'}</Eyebrow>
             <h1 className="mt-3 mb-8.5 text-[clamp(86px,9.5vw,146px)] leading-[0.72] font-extrabold text-foreground tablet:text-[104px] phone:text-[70px]">
               Croque<span className="text-accent">tón</span>
             </h1>
@@ -166,7 +166,7 @@ export default function HomePage() {
               ✦
             </span>
           </div>
-        </div>
+        </Container>
         <a
           className="absolute bottom-11 left-1/2 z-8 flex -translate-x-1/2 items-center gap-3.75 text-[12px] font-black tracking-[0.14em] uppercase"
           href="#historia"
@@ -187,7 +187,7 @@ export default function HomePage() {
       >
         <Paw className="absolute top-[9%] right-[4%] w-26.25 rotate-21 text-[#eab934] opacity-55" />
         <Paw className="absolute right-[38%] bottom-[7%] w-26.25 -rotate-18 text-[#eab934] opacity-55" />
-        <div className="relative z-2 mx-auto grid min-h-[inherit] w-[min(1240px,calc(100%-96px))] grid-cols-[1.05fr_0.95fr] items-center tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] tablet:pt-22.5 tablet:pb-25 phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container className="grid min-h-[inherit] grid-cols-[1.05fr_0.95fr] items-center tablet:grid-cols-[1fr] tablet:pt-22.5 tablet:pb-25">
           <div className="relative h-162.5 tablet:order-2 tablet:h-147.5 phone:h-120">
             <span className="absolute top-16.25 left-3.75 z-9 -rotate-4 rounded-lg border-4 border-[#fff7e5] bg-ink px-5.25 py-3.25 font-heading text-lead-lg font-extrabold text-white shadow-[7px_7px_0_var(--ink-soft)] phone:top-12 phone:left-0.5 phone:text-[16px]">
               {isEnglish ? 'Day 1: everything under control' : 'D\xEDa 1: todo bajo control'}
@@ -202,9 +202,9 @@ export default function HomePage() {
             />
           </div>
           <div className="relative z-4 pl-6.25 tablet:px-2.5! tablet:py-0!">
-            <span className="mb-6.25 inline-flex items-center text-small leading-tight font-black tracking-[0.16em] text-accent uppercase">
+            <Eyebrow variant="section" tone="accent">
               {isEnglish ? 'Chapter 01 \xB7 The good life' : 'Cap\xEDtulo 01 \xB7 La buena vida'}
-            </span>
+            </Eyebrow>
             <h2 className="min-[541px]:text-[clamp(50px,4.7vw,74px)]">
               {isEnglish ? 'Full belly,' : 'Pancita llena,'}
               <br />
@@ -221,7 +221,7 @@ export default function HomePage() {
               {isEnglish ? 'Worry level: zero' : 'Nivel de preocupaci\xF3n: cero'}
             </span>
           </div>
-        </div>
+        </Container>
         <div className="absolute -bottom-px h-10.5 w-full bg-[#25334c] [clip-path:polygon(0_70%,8%_45%,17%_67%,26%_35%,36%_59%,45%_32%,55%_65%,64%_35%,75%_55%,84%_29%,93%_58%,100%_40%,100%_100%,0_100%)]" />
       </section>
 
@@ -232,7 +232,7 @@ export default function HomePage() {
         />
         <Cloud className="absolute top-1.25 -left-25 z-2 w-125 text-[#121c31]" />
         <Cloud className="absolute top-22.5 -right-17.5 z-2 w-110 text-[#121c31]" />
-        <div className="relative z-2 mx-auto grid min-h-[inherit] w-[min(1240px,calc(100%-96px))] grid-cols-[1.08fr_0.92fr] items-center tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] tablet:pt-25 tablet:pb-17.5 phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container className="grid min-h-[inherit] grid-cols-[1.08fr_0.92fr] items-center tablet:grid-cols-[1fr] tablet:pt-25 tablet:pb-17.5">
           <div className="relative h-162.5 tablet:order-2 tablet:h-142.5">
             <StoryImage
               src={chapterTwoImage}
@@ -246,9 +246,9 @@ export default function HomePage() {
             />
           </div>
           <div className="relative z-4 tablet:px-2.5! tablet:py-0!">
-            <span className="mb-6.25 inline-flex items-center text-small leading-tight font-black tracking-[0.16em] text-brand uppercase">
+            <Eyebrow variant="section" tone="brand">
               {isEnglish ? 'Chapter 02 \xB7 The fall' : 'Cap\xEDtulo 02 \xB7 La ca\xEDda'}
-            </span>
+            </Eyebrow>
             <h2>
               {isEnglish ? 'What could' : '\xBFQu\xE9 podr\xEDa'}
               <br />
@@ -266,16 +266,16 @@ export default function HomePage() {
               …
             </strong>
           </div>
-        </div>
+        </Container>
       </section>
 
       <section className="relative isolate flex min-h-207.5 items-center bg-surface-sinking text-foreground before:absolute before:top-30 before:-left-32.5 before:size-80 before:rounded-circle before:border-3 before:border-dashed before:border-stroke-sinking-ring before:content-[''] tablet:min-h-312.5">
         <div className="noise" />
-        <div className="relative z-2 mx-auto grid min-h-[inherit] w-[min(1240px,calc(100%-96px))] grid-cols-[0.9fr_1.1fr] items-center tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] tablet:pt-25 tablet:pb-17.5 phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container className="grid min-h-[inherit] grid-cols-[0.9fr_1.1fr] items-center tablet:grid-cols-[1fr] tablet:pt-25 tablet:pb-17.5">
           <div className="relative z-4 pl-8.75 tablet:order-1 tablet:px-2.5! tablet:py-0!">
-            <span className="mb-6.25 inline-flex items-center text-small leading-tight font-black tracking-[0.16em] text-accent uppercase">
+            <Eyebrow variant="section" tone="accent">
               {isEnglish ? 'Chapter 03 \xB7 Sinking' : 'Cap\xEDtulo 03 \xB7 El hundimiento'}
-            </span>
+            </Eyebrow>
             <h2>
               {isEnglish ? 'Things got a' : 'La cosa se puso'}
               <br />
@@ -300,11 +300,11 @@ export default function HomePage() {
               className="top-37.5 right-22 w-110 rotate-2 tablet:right-auto tablet:left-1/2 tablet:w-[min(100%,590px)] tablet:-translate-x-1/2 tablet:-rotate-2 [&_img]:filter-[saturate(0.72)_contrast(1.03)] [&>div]:aspect-square"
             />
           </div>
-        </div>
+        </Container>
       </section>
 
       <section className="relative isolate flex min-h-212.5 items-center bg-[#566c82] text-[#eef4f7] tablet:min-h-312.5">
-        <div className="relative z-2 mx-auto grid min-h-[inherit] w-[min(1240px,calc(100%-96px))] grid-cols-[1fr_1fr] items-center tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container className="grid min-h-[inherit] grid-cols-[1fr_1fr] items-center tablet:grid-cols-[1fr]">
           <div className="relative h-150 tablet:mt-25">
             <StoryImage
               src={chapterFourImage}
@@ -318,9 +318,9 @@ export default function HomePage() {
             />
           </div>
           <div className="relative z-4 pl-7.5 tablet:px-2.5! tablet:pt-0! tablet:pb-22.5!">
-            <span className="mb-6.25 inline-flex items-center text-small leading-tight font-black tracking-[0.16em] text-brand uppercase">
+            <Eyebrow variant="section" tone="brand">
               {isEnglish ? 'Chapter 04 \xB7 Rock bottom' : 'Cap\xEDtulo 04 \xB7 El fondo'}
-            </span>
+            </Eyebrow>
             <h2 className="min-[541px]:text-[clamp(46px,4.3vw,68px)]">
               {isEnglish ? 'I guess this is' : 'Supongo que este es'}
               <br />
@@ -342,7 +342,7 @@ export default function HomePage() {
                 : 'Croqueto puede ser un personaje. La necesidad que representa no lo es.'}
             </p>
           </div>
-        </div>
+        </Container>
       </section>
 
       <section
@@ -366,11 +366,11 @@ export default function HomePage() {
         </div>
         <div className="absolute top-12.5 -right-25 size-75 rounded-circle bg-surface-warm-orb opacity-(--warm-orb-opacity)" />
         <div className="absolute bottom-25 -left-22.5 size-45 rounded-circle bg-surface-warm-orb opacity-(--warm-orb-opacity)" />
-        <div className="relative z-2 mx-auto grid min-h-[inherit] w-[min(1240px,calc(100%-96px))] grid-cols-[0.92fr_1.08fr] items-center tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] tablet:pt-25 phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container className="grid min-h-[inherit] grid-cols-[0.92fr_1.08fr] items-center tablet:grid-cols-[1fr] tablet:pt-25">
           <div className="pl-7 tablet:pl-0">
-            <span className="mb-6.25 inline-flex items-center text-small leading-tight font-black tracking-[0.16em] text-accent uppercase">
+            <Eyebrow variant="section" tone="accent">
               {isEnglish ? 'Chapter 05 \xB7 The way out' : 'Cap\xEDtulo 05 \xB7 La salida'}
-            </span>
+            </Eyebrow>
             <h2 className="mb-4.5 min-[541px]:text-[clamp(66px,6.5vw,104px)]">
               {isEnglish ? 'He is not' : '\xA1No est\xE1'}
               <br />
@@ -461,7 +461,7 @@ export default function HomePage() {
               className="top-26.25 left-1/2 w-140 -translate-x-1/2 rotate-3 phone:w-[min(88vw,420px)] phone:rotate-2 [&_figcaption]:bg-accent [&_figcaption]:text-white [&>div]:aspect-[1.5]"
             />
           </div>
-        </div>
+        </Container>
       </section>
 
       <section
@@ -485,7 +485,7 @@ export default function HomePage() {
         </div>
         <Paw className="absolute top-[8%] right-[2%] w-40 rotate-23 text-[#d84f31] opacity-60" />
         <Paw className="absolute right-[38%] bottom-[3%] w-27.5 -rotate-20 text-[#d84f31] opacity-60" />
-        <div className="relative z-2 mx-auto grid min-h-[inherit] w-[min(1240px,calc(100%-96px))] grid-cols-[0.9fr_1.1fr] items-center tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] tablet:py-20 phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container className="grid min-h-[inherit] grid-cols-[0.9fr_1.1fr] items-center tablet:grid-cols-[1fr] tablet:py-20">
           <div className="relative h-175 tablet:order-2 phone:min-h-172.5">
             <span className="absolute top-25 -left-2.5 size-122.5 max-h-[94%] max-w-[94%] rounded-circle bg-brand before:absolute before:-inset-10 before:rounded-circle before:bg-[repeating-conic-gradient(from_0deg,transparent_0deg_12deg,rgba(255,255,255,0.35)_12deg_18deg)] before:content-['']" />
             <StoryImage
@@ -498,9 +498,9 @@ export default function HomePage() {
             />
           </div>
           <div className="relative z-4 pl-8.75 tablet:pl-0">
-            <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] text-[#fff9e8] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
+            <Eyebrow className="text-[#fff9e8]">
               {isEnglish ? 'Happy ending unlocked' : 'Final feliz desbloqueado'}
-            </span>
+            </Eyebrow>
             <h2 className="mt-4.25 mb-6.75 min-[541px]:text-[clamp(55px,5.6vw,86px)]">
               {isEnglish ? 'Together we can' : '\xA1Juntos podemos'}
               <br />
@@ -535,11 +535,11 @@ export default function HomePage() {
               </span>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
 
       <footer className="[&_.logo-mark]:bg-brand [&_.logo-mark]:text-ink">
-        <div className="relative z-2 mx-auto grid w-[min(1240px,calc(100%-96px))] grid-cols-[1.3fr_0.7fr_1fr_1fr] items-start gap-11.25 tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr_1fr] phone:w-[min(100%-28px,680px)] phone:grid-cols-[1fr] laptop:w-[min(100%-48px,1040px)]">
+        <Container className="grid grid-cols-[1.3fr_0.7fr_1fr_1fr] items-start gap-11.25 tablet:grid-cols-[1fr_1fr] phone:grid-cols-[1fr]">
           <div>
             <Logo />
             <p className="mt-4.25 text-[14px] leading-copy text-[#9fa6b6]">
@@ -584,15 +584,15 @@ export default function HomePage() {
               {isEnglish ? 'Technological Institute' : 'Tecnol\xF3gico Superior'}
             </p>
           </div>
-        </div>
-        <div className="relative z-2 mx-auto mt-13.75 flex w-[min(1240px,calc(100%-96px))] justify-between border-t border-[#393e51] pt-5.5 text-small text-[#858c9d] tablet:w-[min(100%-36px,680px)] phone:w-[min(100%-28px,680px)] phone:flex-col phone:gap-2 laptop:w-[min(100%-48px,1040px)]">
+        </Container>
+        <Container className="mt-13.75 flex justify-between border-t border-[#393e51] pt-5.5 text-[13px] text-[#858c9d] phone:flex-col phone:gap-2">
           <span>
             {isEnglish
               ? 'Made with love and lots of kibble.'
               : 'Hecho con amor y muchas croquetas.'}
           </span>
           <span>© 2026 Croquetón</span>
-        </div>
+        </Container>
       </footer>
     </main>
   )

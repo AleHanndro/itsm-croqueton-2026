@@ -9,6 +9,8 @@ import { SmallDogMascot } from '@/assets/icons/small-dog-mascot'
 import CommunityNavigation from '@/components/community-navigation'
 import { PostCard } from '@/components/post-card'
 import { LanguageToggle, ThemeToggle, CareAvatar } from '@/components/ui'
+import { Container } from '@/components/ui/container'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import { useNavigate } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
@@ -31,7 +33,7 @@ export default function ProfilePage() {
       <LanguageToggle />
       <ThemeToggle />
       <CommunityNavigation />
-      <section className="relative z-2 mx-auto w-[min(1240px,calc(100%-96px))] pt-16.5 pb-27.5 tablet:w-[min(100%-36px,680px)] phone:w-[min(100%-28px,680px)] phone:pt-10.5 laptop:w-[min(100%-48px,1040px)]">
+      <Container as="section" className="pt-16.5 pb-27.5 phone:pt-10.5">
         <div className="grid grid-cols-[170px_1fr_auto] items-center gap-7 rounded-3xl border-4 border-ink bg-card p-6.25 shadow-card tablet:grid-cols-[140px_1fr] phone:grid-cols-[1fr] phone:p-4.75">
           <div className="h-41.25 overflow-hidden rounded-card-sm bg-brand phone:size-33.75 [&_.care-avatar]:-mt-10.5 [&_.care-avatar]:h-63.75 [&_.care-avatar]:w-full">
             <CareAvatar
@@ -43,9 +45,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-              {isEnglish ? 'My profile' : 'Mi perfil'}
-            </span>
+            <Eyebrow>{isEnglish ? 'My profile' : 'Mi perfil'}</Eyebrow>
             <h1 className="mt-2.75 mb-5 text-[clamp(64px,7vw,104px)] leading-display">
               {user.name}
             </h1>
@@ -156,7 +156,7 @@ export default function ProfilePage() {
             )}
           </section>
         </div>
-      </section>
+      </Container>
     </main>
   )
 }

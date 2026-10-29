@@ -4,6 +4,8 @@ import Image from 'next/image'
 
 import { Paw } from '@/assets/icons/paw'
 import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { Container } from '@/components/ui/container'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import { donationMemeImage } from '@/lib/images'
 import { useLanguage } from '@/providers/language-provider'
 
@@ -21,11 +23,9 @@ export default function DonorsPage() {
       <SiteNavigation />
 
       <section className="bg-surface-bar pt-22.5 pb-26.25 phone:pt-15 phone:pb-20">
-        <div className="relative z-2 mx-auto grid w-[min(1240px,calc(100%-96px))] grid-cols-[1fr_0.7fr] items-center gap-21.25 tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container className="grid grid-cols-[1fr_0.7fr] items-center gap-21.25 tablet:grid-cols-[1fr]">
           <div>
-            <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-              {isEnglish ? 'Official donor wall' : 'Muro oficial de donadores'}
-            </span>
+            <Eyebrow>{isEnglish ? 'Official donor wall' : 'Muro oficial de donadores'}</Eyebrow>
             <h1 className="mt-3.5 mb-7 text-[clamp(60px,6vw,90px)] leading-display-tight font-extrabold phone:text-[52px]">
               {isEnglish ? 'Humans with' : 'Humanos con'}
               <br />
@@ -55,18 +55,18 @@ export default function DonorsPage() {
                 : 'Tu nombre podr\xEDa estar aqu\xED. Sin presi\xF3n.'}
             </figcaption>
           </figure>
-        </div>
+        </Container>
       </section>
 
       <section
         className="min-h-175 bg-surface-donor-wall pt-27.5 pb-31.25 phone:pt-18.75 phone:pb-22.5"
         aria-labelledby="official-donors-title"
       >
-        <div className="relative z-2 mx-auto w-[min(1240px,calc(100%-96px))] tablet:w-[min(100%-36px,680px)] phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
+        <Container>
           <div className="max-w-180">
-            <span className="mb-6.25 inline-flex items-center text-small leading-tight font-black tracking-[0.16em] text-accent uppercase">
+            <Eyebrow variant="section" tone="accent">
               {isEnglish ? 'Verified by the pack' : 'Verificado por la manada'}
-            </span>
+            </Eyebrow>
             <h2 id="official-donors-title" className="mb-5.5">
               {isEnglish ? 'The good human' : 'La lista de humanos'}
               <br />
@@ -108,7 +108,7 @@ export default function DonorsPage() {
               </div>
             )}
           </div>
-        </div>
+        </Container>
       </section>
     </main>
   )
