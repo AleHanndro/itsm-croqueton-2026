@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 import { Paw } from '@/assets/icons/paw'
+import { AdminPanelCard, AdminSidebar, AdminStatCard } from '@/components/admin-dashboard'
 import AdminIcon from '@/components/admin-icon'
 import { PageShell } from '@/components/page-shell'
 import { Button } from '@/components/ui/button'
@@ -60,82 +61,14 @@ export default function AdminPage() {
   return (
     <PageShell surface="admin" navigation="none">
       <div className="grid min-h-screen grid-cols-[250px_minmax(0,1fr)] tablet:grid-cols-[1fr]">
-        <aside className="sticky top-0 z-20 flex h-screen flex-col bg-surface-admin-sidebar px-5 pt-6.75 pb-5.5 text-card tablet:relative tablet:grid tablet:h-auto tablet:grid-cols-[auto_1fr_auto] tablet:items-center tablet:gap-5 tablet:px-5 tablet:py-4 phone:grid-cols-[1fr_auto] phone:gap-2.5 phone:p-3.5">
-          <Link
-            href="/"
-            className="inline-flex w-max items-center gap-2.5 px-2 font-heading text-[25px] font-extrabold tracking-heading phone:text-sub"
-            aria-label="Croquetón"
-          >
-            <span className="grid size-10.75 place-items-center rounded-circle bg-brand text-ink [&_svg]:size-6.25">
-              <Paw />
-            </span>
-            <span>Croquetón</span>
-          </Link>
-          <div className="mx-2 mt-4 mb-7.5 w-max rounded-pill border border-[#5c6272] px-2.5 py-1.25 text-micro font-black tracking-[0.14em] text-brand uppercase tablet:hidden">
-            Administrador
-          </div>
-          <nav
-            className="grid gap-1.75 tablet:flex tablet:justify-center tablet:overflow-x-auto phone:order-3 phone:col-span-full phone:row-2 phone:justify-start"
-            aria-label="Navegación del panel"
-          >
-            <a
-              className="grid min-h-11.5 grid-cols-[24px_1fr_auto] items-center gap-2.75 rounded-xl bg-brand px-3.25 text-small font-black text-ink [transition:background_0.2s_ease,color_0.2s_ease,transform_0.2s_ease] hover:transform-[translateX(2px)] tablet:min-w-max tablet:grid-cols-[21px_auto_auto] phone:min-h-10 phone:px-2.5 phone:text-caption [&_svg]:size-5.25"
-              href="#resumen"
-            >
-              <AdminIcon type="heart" />
-              <span>Resumen</span>
-            </a>
-            <a
-              className="grid min-h-11.5 grid-cols-[24px_1fr_auto] items-center gap-2.75 rounded-xl px-3.25 text-small font-black text-[#bfc3cd] [transition:background_0.2s_ease,color_0.2s_ease,transform_0.2s_ease] hover:transform-[translateX(2px)] hover:bg-[#2d3245] hover:text-card tablet:min-w-max tablet:grid-cols-[21px_auto_auto] phone:min-h-10 phone:px-2.5 phone:text-caption [&_svg]:size-5.25"
-              href="#moderacion"
-            >
-              <AdminIcon type="review" />
-              <span>Moderación</span>
-              {postReviewRequests.length > 0 && (
-                <strong className="grid size-5.75 min-w-5.75 place-items-center rounded-circle bg-accent text-tiny text-white">
-                  {postReviewRequests.length}
-                </strong>
-              )}
-            </a>
-            <a
-              className="grid min-h-11.5 grid-cols-[24px_1fr_auto] items-center gap-2.75 rounded-xl px-3.25 text-small font-black text-[#bfc3cd] [transition:background_0.2s_ease,color_0.2s_ease,transform_0.2s_ease] hover:transform-[translateX(2px)] hover:bg-[#2d3245] hover:text-card tablet:min-w-max tablet:grid-cols-[21px_auto_auto] phone:min-h-10 phone:px-2.5 phone:text-caption [&_svg]:size-5.25"
-              href="#comunidad"
-            >
-              <AdminIcon type="posts" />
-              <span>Comunidad</span>
-            </a>
-            <Link
-              href="/guaubook"
-              className="grid min-h-11.5 grid-cols-[24px_1fr_auto] items-center gap-2.75 rounded-xl px-3.25 text-small font-black text-[#bfc3cd] [transition:background_0.2s_ease,color_0.2s_ease,transform_0.2s_ease] hover:transform-[translateX(2px)] hover:bg-[#2d3245] hover:text-card tablet:min-w-max tablet:grid-cols-[21px_auto_auto] phone:hidden phone:min-h-10 phone:px-2.5 phone:text-caption [&_svg]:size-5.25"
-            >
-              <AdminIcon type="users" />
-              <span>Ver GuauBook</span>
-            </Link>
-          </nav>
-          <div className="mt-auto grid grid-cols-[39px_minmax(0,1fr)] items-center gap-2.5 border-t border-[#3c4152] px-2 py-4 tablet:hidden">
-            <span className="grid size-9.75 place-items-center rounded-xl bg-brand font-heading font-black text-ink">
-              A
-            </span>
-            <div>
-              <strong className="block overflow-hidden text-[12px] text-ellipsis whitespace-nowrap">
-                Admin Croquetón
-              </strong>
-              <small className="mt-0.5 block overflow-hidden text-micro font-bold text-ellipsis whitespace-nowrap text-[#959aa8]">
-                {user.email}
-              </small>
-            </div>
-          </div>
-          <Button
-            variant="underline"
-            className="px-2 py-2.5 text-left text-[11px] text-[#f19a89] tablet:text-right phone:col-2 phone:row-1 phone:text-[10px]"
-            onClick={() => {
-              signOut()
-              navigate('/')
-            }}
-          >
-            Cerrar sesión
-          </Button>
-        </aside>
+        <AdminSidebar
+          userEmail={user.email}
+          pendingCount={postReviewRequests.length}
+          onSignOut={() => {
+            signOut()
+            navigate('/')
+          }}
+        />
 
         <div className="min-w-0">
           <header className="flex min-h-18 items-center justify-between gap-5 border-b border-stroke-admin-topbar bg-surface-admin-topbar px-[clamp(24px,4vw,56px)] backdrop-blur-md tablet:px-6 phone:min-h-15.5 phone:px-3.5">
@@ -207,93 +140,41 @@ export default function AdminPage() {
               className="mb-5.5 grid grid-cols-4 gap-3.5 tablet:grid-cols-[1fr_1fr] phone:grid-cols-[1fr]"
               aria-label="Resumen de la comunidad"
             >
-              <article className="flex min-w-0 items-center gap-3.5 rounded-2xl border border-stroke-card-admin bg-surface-panel p-4.5 text-foreground [transition:transform_0.2s_ease,box-shadow_0.2s_ease] hover:transform-[translateY(-2px)] hover:shadow-[0_7px_20px_rgba(32,36,54,0.07)] phone:p-4">
-                <span className="grid size-11 flex-none place-items-center rounded-xl bg-[#ffe2da] text-accent-deep [&_svg]:size-5.75">
-                  <AdminIcon type="posts" />
-                </span>
-                <div className="grid min-w-0">
-                  <small className="text-micro font-black tracking-label-wide text-muted-foreground uppercase">
-                    Publicaciones
-                  </small>
-                  <strong className="mt-0.5 -mb-px font-heading text-[30px] leading-none">
-                    {posts.length}
-                  </strong>
-                  <span className="overflow-hidden text-tiny font-bold text-ellipsis whitespace-nowrap text-muted-foreground">
-                    contenido publicado
-                  </span>
-                </div>
-              </article>
-              <article className="flex min-w-0 items-center gap-3.5 rounded-2xl border border-stroke-card-admin bg-surface-panel p-4.5 text-foreground [transition:transform_0.2s_ease,box-shadow_0.2s_ease] hover:transform-[translateY(-2px)] hover:shadow-[0_7px_20px_rgba(32,36,54,0.07)] phone:p-4">
-                <span className="grid size-11 flex-none place-items-center rounded-xl bg-surface-note text-[#8b6500] [&_svg]:size-5.75">
-                  <AdminIcon type="review" />
-                </span>
-                <div className="grid min-w-0">
-                  <small className="text-micro font-black tracking-label-wide text-muted-foreground uppercase">
-                    Por revisar
-                  </small>
-                  <strong className="mt-0.5 -mb-px font-heading text-[30px] leading-none">
-                    {postReviewRequests.length}
-                  </strong>
-                  <span className="overflow-hidden text-tiny font-bold text-ellipsis whitespace-nowrap text-muted-foreground">
-                    {postReviewRequests.length ? 'requieren atenci\xF3n' : 'todo al d\xEDa'}
-                  </span>
-                </div>
-              </article>
-              <article className="flex min-w-0 items-center gap-3.5 rounded-2xl border border-stroke-card-admin bg-surface-panel p-4.5 text-foreground [transition:transform_0.2s_ease,box-shadow_0.2s_ease] hover:transform-[translateY(-2px)] hover:shadow-[0_7px_20px_rgba(32,36,54,0.07)] phone:p-4">
-                <span className="grid size-11 flex-none place-items-center rounded-xl bg-[#d9efef] text-[#287b7b] [&_svg]:size-5.75">
-                  <AdminIcon type="users" />
-                </span>
-                <div className="grid min-w-0">
-                  <small className="text-micro font-black tracking-label-wide text-muted-foreground uppercase">
-                    Miembros
-                  </small>
-                  <strong className="mt-0.5 -mb-px font-heading text-[30px] leading-none">
-                    {accountCount}
-                  </strong>
-                  <span className="overflow-hidden text-tiny font-bold text-ellipsis whitespace-nowrap text-muted-foreground">
-                    cuentas registradas
-                  </span>
-                </div>
-              </article>
-              <article className="flex min-w-0 items-center gap-3.5 rounded-2xl border border-stroke-card-admin bg-surface-panel p-4.5 text-foreground [transition:transform_0.2s_ease,box-shadow_0.2s_ease] hover:transform-[translateY(-2px)] hover:shadow-[0_7px_20px_rgba(32,36,54,0.07)] phone:p-4">
-                <span className="grid size-11 flex-none place-items-center rounded-xl bg-[#dff3e9] text-[#237d59] [&_svg]:size-5.75">
-                  <AdminIcon type="heart" />
-                </span>
-                <div className="grid min-w-0">
-                  <small className="text-micro font-black tracking-label-wide text-muted-foreground uppercase">
-                    Interacciones
-                  </small>
-                  <strong className="mt-0.5 -mb-px font-heading text-[30px] leading-none">
-                    {totalReactions}
-                  </strong>
-                  <span className="overflow-hidden text-tiny font-bold text-ellipsis whitespace-nowrap text-muted-foreground">
-                    reacciones totales
-                  </span>
-                </div>
-              </article>
+              <AdminStatCard
+                icon="posts"
+                label="Publicaciones"
+                value={posts.length}
+                meta="contenido publicado"
+              />
+              <AdminStatCard
+                icon="review"
+                label="Por revisar"
+                value={postReviewRequests.length}
+                meta={postReviewRequests.length ? 'requieren atenci\xF3n' : 'todo al d\xEDa'}
+              />
+              <AdminStatCard
+                icon="users"
+                label="Miembros"
+                value={accountCount}
+                meta="cuentas registradas"
+              />
+              <AdminStatCard
+                icon="heart"
+                label="Interacciones"
+                value={totalReactions}
+                meta="reacciones totales"
+              />
             </section>
 
             <div className="grid grid-cols-[minmax(0,1.1fr)_minmax(330px,0.9fr)] items-start gap-4.5 tablet:grid-cols-[1fr]">
-              <section
-                className="scroll-mt-5 overflow-hidden rounded-card-sm border border-stroke-card-admin bg-surface-panel text-foreground"
+              <AdminPanelCard
+                as="section"
                 id="moderacion"
+                eyebrow="Cola de trabajo"
+                title="Moderación"
+                description="Contenido que necesita una decisión antes de publicarse."
+                badge={postReviewRequests.length}
               >
-                <div className="flex min-h-26 items-center justify-between gap-5 border-b border-stroke-divider px-5.75 py-5.25 phone:p-4.5">
-                  <div>
-                    <Eyebrow variant="section" tone="accent" size="xs" className="mb-1">
-                      Cola de trabajo
-                    </Eyebrow>
-                    <h2 className="m-0 text-[27px] tracking-[-0.03em] phone:text-[24px]">
-                      Moderación
-                    </h2>
-                    <p className="mt-0.5 text-tiny font-bold text-[#777b87]">
-                      Contenido que necesita una decisión antes de publicarse.
-                    </p>
-                  </div>
-                  <span className="grid h-9 min-w-9 place-items-center rounded-[11px] bg-brand font-heading text-[16px] font-black">
-                    {postReviewRequests.length}
-                  </span>
-                </div>
                 {postReviewRequests.length ? (
                   <div className="grid">
                     {postReviewRequests.map((request) => (
@@ -355,25 +236,23 @@ export default function AdminPage() {
                     </p>
                   </div>
                 )}
-              </section>
+              </AdminPanelCard>
 
-              <aside
-                className="scroll-mt-5 overflow-hidden rounded-card-sm border border-stroke-card-admin bg-surface-panel text-foreground"
+              <AdminPanelCard
+                as="aside"
                 id="comunidad"
+                eyebrow="Actividad reciente"
+                title="Comunidad"
+                description="Últimas publicaciones en GuauBook."
+                footer={
+                  <Link
+                    className="flex min-h-12.5 items-center justify-between border-t border-stroke-divider px-5 text-tiny font-black text-fg-admin-view-all"
+                    href="/guaubook"
+                  >
+                    Gestionar toda la comunidad <span className="text-[18px]">→</span>
+                  </Link>
+                }
               >
-                <div className="flex min-h-26 items-center justify-between gap-5 border-b border-stroke-divider px-5.75 py-5.25 phone:p-4.5">
-                  <div>
-                    <Eyebrow variant="section" tone="accent" size="xs" className="mb-1">
-                      Actividad reciente
-                    </Eyebrow>
-                    <h2 className="m-0 text-[27px] tracking-[-0.03em] phone:text-[24px]">
-                      Comunidad
-                    </h2>
-                    <p className="mt-0.5 text-tiny font-bold text-[#777b87]">
-                      Últimas publicaciones en GuauBook.
-                    </p>
-                  </div>
-                </div>
                 {posts.length ? (
                   <div className="grid">
                     {posts.slice(0, 5).map((post) => (
@@ -440,13 +319,7 @@ export default function AdminPage() {
                     </p>
                   </div>
                 )}
-                <Link
-                  className="flex min-h-12.5 items-center justify-between border-t border-stroke-divider px-5 text-tiny font-black text-fg-admin-view-all"
-                  href="/guaubook"
-                >
-                  Gestionar toda la comunidad <span className="text-[18px]">→</span>
-                </Link>
-              </aside>
+              </AdminPanelCard>
             </div>
           </section>
         </div>
