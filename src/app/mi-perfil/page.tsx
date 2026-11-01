@@ -4,11 +4,15 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { useState } from 'react'
 
-import { Paw } from '@/assets/icons/paw'
 import { SmallDogMascot } from '@/assets/icons/small-dog-mascot'
-import CommunityNavigation from '@/components/community-navigation'
+import { EmptyStateCard } from '@/components/empty-state-card'
+import { PageShell } from '@/components/page-shell'
 import { PostCard } from '@/components/post-card'
-import { LanguageToggle, ThemeToggle, CareAvatar } from '@/components/ui'
+import { CareAvatar } from '@/components/ui'
+import { Button } from '@/components/ui/button'
+import { Container } from '@/components/ui/container'
+import { Eyebrow } from '@/components/ui/eyebrow'
+import { FieldLabel, TextInput } from '@/components/ui/field'
 import { useNavigate } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
@@ -27,11 +31,8 @@ export default function ProfilePage() {
   const userPosts = posts.filter((post) => post.author === user.name)
 
   return (
-    <main className="min-h-screen bg-surface-page-mint text-foreground">
-      <LanguageToggle />
-      <ThemeToggle />
-      <CommunityNavigation />
-      <section className="relative z-2 mx-auto w-[min(1240px,calc(100%-96px))] pt-16.5 pb-27.5 tablet:w-[min(100%-36px,680px)] phone:w-[min(100%-28px,680px)] phone:pt-10.5 laptop:w-[min(100%-48px,1040px)]">
+    <PageShell surface="mint" navigation="community">
+      <Container as="section" className="pt-16.5 pb-27.5 phone:pt-10.5">
         <div className="grid grid-cols-[170px_1fr_auto] items-center gap-7 rounded-3xl border-4 border-ink bg-card p-6.25 shadow-card tablet:grid-cols-[140px_1fr] phone:grid-cols-[1fr] phone:p-4.75">
           <div className="h-41.25 overflow-hidden rounded-card-sm bg-brand phone:size-33.75 [&_.care-avatar]:-mt-10.5 [&_.care-avatar]:h-63.75 [&_.care-avatar]:w-full">
             <CareAvatar
@@ -43,9 +44,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-              {isEnglish ? 'My profile' : 'Mi perfil'}
-            </span>
+            <Eyebrow>{isEnglish ? 'My profile' : 'Mi perfil'}</Eyebrow>
             <h1 className="mt-2.75 mb-5 text-[clamp(64px,7vw,104px)] leading-display">
               {user.name}
             </h1>
@@ -72,20 +71,15 @@ export default function ProfilePage() {
                 setMessage(isEnglish ? 'Profile updated.' : 'Perfil actualizado.')
               }}
             >
-              <label className="grid gap-1.75 text-[12px] font-black tracking-label uppercase">
+              <FieldLabel>
                 {isEnglish ? 'Name' : 'Nombre'}
-                <input
-                  className="min-h-13 w-full resize-none rounded-control border-3 border-ink bg-white p-3.5 font-bold text-ink"
+                <TextInput
+                  variant="control"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                 />
-              </label>
-              <button
-                className="relative inline-flex min-h-14 items-center justify-center gap-3.5 rounded-full border-3 border-current bg-ink pr-4.5 pl-6.75 font-black text-white shadow-[0_7px_0_var(--button-drop)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-7.5 after:flex-none after:place-items-center after:rounded-circle after:bg-white/18 after:text-lg after:leading-none after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none!"
-                type="submit"
-              >
-                {isEnglish ? 'Edit profile' : 'Editar perfil'}
-              </button>
+              </FieldLabel>
+              <Button type="submit">{isEnglish ? 'Edit profile' : 'Editar perfil'}</Button>
             </form>
             <form
               className="grid gap-3"
@@ -98,33 +92,30 @@ export default function ProfilePage() {
                 }
               }}
             >
-              <label className="grid gap-1.75 text-[12px] font-black tracking-label uppercase">
+              <FieldLabel>
                 {isEnglish ? 'New password' : 'Nueva contrase\xF1a'}
-                <input
+                <TextInput
                   type="password"
-                  className="min-h-13 w-full resize-none rounded-control border-3 border-ink bg-white p-3.5 font-bold text-ink"
+                  variant="control"
                   minLength={6}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                 />
-              </label>
-              <button
-                className="border-0 bg-transparent font-black text-ink underline underline-offset-4"
-                type="submit"
-              >
+              </FieldLabel>
+              <Button variant="underline" type="submit" className="text-ink">
                 {isEnglish ? 'Change password' : 'Cambiar contrase\xF1a'}
-              </button>
+              </Button>
             </form>
-            <button
-              className="border-0 bg-transparent text-left font-black text-accent-deep underline underline-offset-4"
-              type="button"
+            <Button
+              variant="underline"
+              className="text-left text-accent-deep"
               onClick={() => {
                 signOut()
                 navigate('/')
               }}
             >
               {isEnglish ? 'Sign out' : 'Cerrar sesi\xF3n'}
-            </button>
+            </Button>
             <small aria-live="polite" className="font-extrabold">
               {message}
             </small>
@@ -145,18 +136,17 @@ export default function ProfilePage() {
                 ))}
               </div>
             ) : (
-              <div className="grid min-h-55 place-items-center rounded-3xl border-3 border-dashed border-secondary text-center font-black [&_svg]:w-14.5 [&_svg]:text-secondary">
-                <Paw />
-                <p>
-                  {isEnglish
+              <EmptyStateCard
+                title={
+                  isEnglish
                     ? 'Your first post will appear here.'
-                    : 'Tu primera publicaci\xF3n aparecer\xE1 aqu\xED.'}
-                </p>
-              </div>
+                    : 'Tu primera publicaci\xF3n aparecer\xE1 aqu\xED.'
+                }
+              />
             )}
           </section>
         </div>
-      </section>
-    </main>
+      </Container>
+    </PageShell>
   )
 }

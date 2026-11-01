@@ -5,8 +5,14 @@ import Link from 'next/link'
 import { useState, type FormEvent } from 'react'
 
 import { Paw } from '@/assets/icons/paw'
+import { EmptyStateCard } from '@/components/empty-state-card'
+import { PageHero } from '@/components/page-hero'
+import { PageShell } from '@/components/page-shell'
 import { PostCard } from '@/components/post-card'
-import { LanguageToggle, ThemeToggle, SiteNavigation } from '@/components/ui'
+import { Button } from '@/components/ui/button'
+import { Container } from '@/components/ui/container'
+import { Eyebrow } from '@/components/ui/eyebrow'
+import { FieldLabel, TextareaInput } from '@/components/ui/field'
 import { assessPostRelevance } from '@/lib/content'
 import { useCommunity } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
@@ -65,42 +71,36 @@ export default function GuauBookPage() {
   }
 
   return (
-    <main className="min-h-screen bg-surface-page-mint text-foreground">
-      <LanguageToggle />
-      <ThemeToggle />
-      <SiteNavigation />
-      <section className="bg-surface-soft pt-21.5 pb-23 phone:pt-14.5 phone:pb-16.25">
-        <div className="relative z-2 mx-auto w-[min(1240px,calc(100%-96px))] tablet:w-[min(100%-36px,680px)] phone:w-[min(100%-28px,680px)] laptop:w-[min(100%-48px,1040px)]">
-          <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-            GuauBook
-          </span>
-          <h1 className="mt-2.75 mb-5 text-[clamp(64px,7vw,104px)] leading-display phone:text-[56px]">
-            {isEnglish ? 'Stories from' : 'Historias de'}
-            <br />
-            <span className="text-accent">{isEnglish ? 'the pack.' : 'la manada.'}</span>
-          </h1>
-          <p className="m-0 max-w-155 text-lg leading-copy font-extrabold">
-            {isEnglish
-              ? 'Share a moment, a photo or a little good news with the Croquet\xF3n community.'
-              : 'Comparte un momento, una foto o una buena noticia con la comunidad Croquet\xF3n.'}
-          </p>
-        </div>
-      </section>
-      <section className="relative z-2 mx-auto grid w-[min(1240px,calc(100%-96px))] grid-cols-[minmax(300px,0.72fr)_minmax(0,1fr)] items-start gap-13.75 pt-18 pb-27.5 tablet:w-[min(100%-36px,680px)] tablet:grid-cols-[1fr] tablet:gap-8.75 phone:w-[min(100%-28px,680px)] phone:pt-10.5 laptop:w-[min(100%-48px,1040px)]">
+    <PageShell surface="mint">
+      <PageHero
+        surface="soft"
+        spacing="guaubook"
+        eyebrow="GuauBook"
+        title={isEnglish ? 'Stories from' : 'Historias de'}
+        accentTitle={isEnglish ? 'the pack.' : 'la manada.'}
+        titleClassName="mt-2.75 mb-5 text-[clamp(64px,7vw,104px)] leading-[0.8] font-normal phone:text-[56px]"
+        description={
+          isEnglish
+            ? 'Share a moment, a photo or a little good news with the Croquet\xF3n community.'
+            : 'Comparte un momento, una foto o una buena noticia con la comunidad Croquet\xF3n.'
+        }
+        descriptionClassName="m-0 text-[18px] leading-[1.55]"
+      />
+      <Container
+        as="section"
+        className="grid grid-cols-[minmax(300px,0.72fr)_minmax(0,1fr)] items-start gap-13.75 pt-18 pb-27.5 tablet:grid-cols-[1fr] tablet:gap-8.75 phone:pt-10.5"
+      >
         {user ? (
           <form
             className="sticky top-31.5 grid gap-3.75 rounded-3xl border-4 border-ink bg-card p-6.25 shadow-card tablet:relative tablet:top-0 phone:p-4.75"
             onSubmit={handlePublish}
           >
-            <label
-              htmlFor="post-body"
-              className="grid gap-1.75 text-[12px] font-black tracking-label uppercase"
-            >
+            <FieldLabel htmlFor="post-body">
               {isEnglish ? 'What do you want to share?' : '\xBFQu\xE9 quieres compartir?'}
-            </label>
-            <textarea
+            </FieldLabel>
+            <TextareaInput
               id="post-body"
-              className="min-h-30 w-full resize-y rounded-control border-3 border-ink bg-white p-3.5 font-bold text-ink"
+              variant="control"
               value={body}
               onChange={(event) => setBody(event.target.value)}
               placeholder={isEnglish ? 'Write something kind\u2026' : 'Escribe algo bonito\u2026'}
@@ -127,12 +127,9 @@ export default function GuauBookPage() {
                 />
                 {isEnglish ? 'Add photo' : 'A\xF1adir foto'}
               </label>
-              <button
-                className="relative inline-flex min-h-12 items-center justify-center gap-3.5 rounded-full border-3 border-current bg-ink pr-4.5 pl-6.75 font-black text-white shadow-[0_7px_0_var(--button-drop)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-7.5 after:flex-none after:place-items-center after:rounded-circle after:bg-white/18 after:text-lg after:leading-none after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none!"
-                type="submit"
-              >
+              <Button size="sm" type="submit">
                 {isEnglish ? 'Publish' : 'Publicar'}
-              </button>
+              </Button>
             </div>
             <small
               className="block min-h-4.5 text-[12px] leading-label font-extrabold text-[#9e3b28]"
@@ -144,9 +141,7 @@ export default function GuauBookPage() {
         ) : (
           <aside className="sticky top-31.5 grid justify-items-start gap-3.25 rounded-3xl border-4 border-ink bg-card p-6.75 text-ink shadow-card tablet:relative tablet:top-0 phone:p-4.75">
             <Paw className="w-13.5 text-accent" />
-            <span className="mb-5 inline-flex items-center gap-2.25 text-small leading-tight font-black tracking-[0.16em] uppercase before:h-1 before:w-3.75 before:rounded-pill before:bg-current before:content-['']">
-              {isEnglish ? 'Your profile' : 'Tu perfil'}
-            </span>
+            <Eyebrow>{isEnglish ? 'Your profile' : 'Tu perfil'}</Eyebrow>
             <h2 className="m-0 min-[541px]:text-[42px]">
               {isEnglish ? 'Join the conversation.' : '\xDAnete a la conversaci\xF3n.'}
             </h2>
@@ -155,29 +150,25 @@ export default function GuauBookPage() {
                 ? "Everyone can read the pack's stories. Create an account or sign in to publish, love and comment."
                 : 'Todos pueden leer las historias de la manada. Crea una cuenta o inicia sesi\xF3n para publicar, dar Me encanta y comentar.'}
             </p>
-            <Link
-              className="relative inline-flex min-h-14 items-center justify-center gap-3.5 rounded-full border-3 border-current bg-ink pr-4.5 pl-6.75 font-black text-white shadow-[0_7px_0_var(--button-drop)] [transition:transform_0.2s_ease,box-shadow_0.2s_ease] after:inline-grid after:size-7.5 after:flex-none after:place-items-center after:rounded-circle after:bg-white/18 after:text-lg after:leading-none after:content-['→'] after:[transition:transform_0.2s_ease] hover:transform-[translateY(-3px)_rotate(-1deg)] hover:after:transform-[translateX(3px)] active:transform-[translateY(4px)] active:shadow-none!"
-              href="/iniciar-sesion"
-            >
+            <Button render={<Link href="/iniciar-sesion" />}>
               {isEnglish ? 'Join or sign in' : 'Unirme o iniciar sesi\xF3n'}
-            </Link>
+            </Button>
           </aside>
         )}
         <div className="grid gap-5" aria-live="polite">
           {posts.length ? (
             posts.map((post) => <PostCard key={post.id} post={post} />)
           ) : (
-            <div className="grid min-h-55 place-items-center rounded-3xl border-3 border-dashed border-secondary text-center font-black [&_svg]:w-14.5 [&_svg]:text-secondary">
-              <Paw />
-              <p>
-                {isEnglish
+            <EmptyStateCard
+              title={
+                isEnglish
                   ? "The pack's first story will appear here."
-                  : 'Aqu\xED aparecer\xE1 la primera publicaci\xF3n de la manada.'}
-              </p>
-            </div>
+                  : 'Aqu\xED aparecer\xE1 la primera publicaci\xF3n de la manada.'
+              }
+            />
           )}
         </div>
-      </section>
-    </main>
+      </Container>
+    </PageShell>
   )
 }
