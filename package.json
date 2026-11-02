@@ -10,7 +10,8 @@
     "fmt:check": "oxfmt --check",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "start": "next start"
+    "start": "next start",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "1.9.0",
