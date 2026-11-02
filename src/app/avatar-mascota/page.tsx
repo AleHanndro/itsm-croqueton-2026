@@ -8,9 +8,9 @@ import {
   CustomizerFieldset,
   TogglePillGroup
 } from '@/components/customizer-controls'
+import { CareAvatar } from '@/components/illustrations/care-avatar'
 import { PageHero } from '@/components/page-hero'
 import { PageShell } from '@/components/page-shell'
-import { CareAvatar } from '@/components/ui'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
 import { useCommunity } from '@/providers/community-provider'
