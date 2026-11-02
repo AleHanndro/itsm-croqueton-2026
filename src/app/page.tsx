@@ -14,13 +14,10 @@ import {
   SiteFooter,
   StoryChapter
 } from '@/components/home-sections'
-import {
-  LanguageToggle,
-  ThemeToggle,
-  SiteNavigation,
-  StoryImage,
-  MoodPollCard
-} from '@/components/ui'
+import { LanguageToggle } from '@/components/layout/language-toggle'
+import { SiteNavigation } from '@/components/layout/site-navigation'
+import { ThemeToggle } from '@/components/layout/theme-toggle'
+import { StoryImage, MoodPollCard } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'

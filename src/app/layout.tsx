@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Baloo_2, Nunito, Space_Mono } from 'next/font/google'
 
-import { MayaTranslationNotice } from '@/components/ui'
+import { MayaTranslationNotice } from '@/components/layout/maya-translation-notice'
 import { CommunityProvider } from '@/providers/community-provider'
 import { LanguageProvider } from '@/providers/language-provider'
 import { ThemeProvider } from '@/providers/theme-provider'

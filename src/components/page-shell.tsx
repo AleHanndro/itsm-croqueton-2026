@@ -5,7 +5,9 @@ import { cn } from 'cn'
 import type { ComponentProps } from 'react'
 
 import CommunityNavigation from '@/components/community-navigation'
-import { LanguageToggle, SiteNavigation, ThemeToggle } from '@/components/ui'
+import { LanguageToggle } from '@/components/layout/language-toggle'
+import { SiteNavigation } from '@/components/layout/site-navigation'
+import { ThemeToggle } from '@/components/layout/theme-toggle'
 
 export const pageShellVariants = cva('min-h-screen text-foreground', {
   variants: {
