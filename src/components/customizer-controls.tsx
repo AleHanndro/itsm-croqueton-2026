@@ -5,7 +5,7 @@ import { Toggle as TogglePrimitive } from '@base-ui/react/toggle'
 import { cn } from 'cn'
 import type { ReactNode } from 'react'
 
-import { PawColorButton } from '@/components/ui'
+import { PawColorButton } from '@/components/customizer/paw-color-button'
 
 export type CustomizerFieldsetProps = Omit<FieldsetPrimitive.Root.Props, 'className'> & {
   legend: ReactNode
