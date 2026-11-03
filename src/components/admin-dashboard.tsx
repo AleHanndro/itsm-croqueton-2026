@@ -8,32 +8,31 @@ import { Button } from '@/components/ui/button'
 import { Eyebrow } from '@/components/ui/eyebrow'
 
 const adminNavItemVariants = cva(
-  'grid min-h-11.5 grid-cols-[24px_1fr_auto] items-center gap-2.75 rounded-xl px-3.25 text-[13px] font-black [transition:background_0.2s_ease,color_0.2s_ease,transform_0.2s_ease] hover:transform-[translateX(2px)] tablet:min-w-max tablet:grid-cols-[21px_auto_auto] phone:min-h-10 phone:px-2.5 phone:text-[11px] [&_svg]:size-5.25',
+  'grid min-h-11.5 grid-cols-[24px_1fr_auto] items-center gap-2.75 rounded-xl border-0 px-3.25 text-left text-[13px] font-black [transition:background_0.2s_ease,color_0.2s_ease,transform_0.2s_ease] hover:transform-[translateX(2px)] tablet:min-w-max tablet:grid-cols-[21px_auto_auto] phone:min-h-10 phone:px-2.5 phone:text-[11px] [&_svg]:size-5.25',
   {
     variants: {
       active: {
         true: 'bg-brand text-ink',
-        false: 'text-[#bfc3cd] hover:bg-[#2d3245] hover:text-card'
-      },
-      hideOnPhone: {
-        true: 'phone:hidden',
-        false: ''
+        false: 'bg-transparent text-[#bfc3cd] hover:bg-[#2d3245] hover:text-card'
       }
     },
     defaultVariants: {
-      active: false,
-      hideOnPhone: false
+      active: false
     }
   }
 )
 
 export function AdminSidebar({
   userEmail,
+  userRole = 'admin',
   pendingCount,
+  requestCount = 0,
   onSignOut
 }: {
   userEmail: string
+  userRole?: 'admin' | 'superadmin'
   pendingCount: number
+  requestCount?: number
   onSignOut: () => void
 }) {
   return (
@@ -55,11 +54,11 @@ export function AdminSidebar({
         className="grid gap-1.75 tablet:flex tablet:justify-center tablet:overflow-x-auto phone:order-3 phone:col-span-full phone:row-2 phone:justify-start"
         aria-label="Navegación del panel"
       >
-        <a className={adminNavItemVariants({ active: true })} href="#resumen">
+        <Link className={adminNavItemVariants({ active: true })} href="/admin#resumen">
           <AdminIcon type="heart" />
           <span>Resumen</span>
-        </a>
-        <a className={adminNavItemVariants()} href="#moderacion">
+        </Link>
+        <Link className={adminNavItemVariants()} href="/admin#moderacion">
           <AdminIcon type="review" />
           <span>Moderación</span>
           {pendingCount > 0 && (
@@ -67,12 +66,31 @@ export function AdminSidebar({
               {pendingCount}
             </strong>
           )}
-        </a>
-        <a className={adminNavItemVariants()} href="#comunidad">
+        </Link>
+        <Link className={adminNavItemVariants()} href="/admin#comunidad">
           <AdminIcon type="posts" />
           <span>Comunidad</span>
-        </a>
-        <Link href="/guaubook" className={adminNavItemVariants({ hideOnPhone: true })}>
+        </Link>
+        {userRole === 'superadmin' && (
+          <Link className={adminNavItemVariants()} href="/admin/administradores">
+            <AdminIcon type="users" />
+            <span>Administradores</span>
+          </Link>
+        )}
+        <Link className={adminNavItemVariants()} href="/admin/donadores">
+          <AdminIcon type="posts" />
+          <span>Donadores</span>
+        </Link>
+        <Link className={adminNavItemVariants()} href="/admin/solicitudes">
+          <AdminIcon type="review" />
+          <span>Solicitudes</span>
+          {requestCount > 0 && (
+            <strong className="grid size-5.75 min-w-5.75 place-items-center rounded-circle bg-accent text-tiny text-white">
+              {requestCount}
+            </strong>
+          )}
+        </Link>
+        <Link className={adminNavItemVariants()} href="/admin/guaubook">
           <AdminIcon type="users" />
           <span>Ver GuauBook</span>
         </Link>

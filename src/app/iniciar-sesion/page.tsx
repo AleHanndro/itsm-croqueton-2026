@@ -1,7 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { useState, type FormEvent } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Suspense, useState, type FormEvent } from 'react'
 
 import { PageShell } from '@/components/page-shell'
 import { Button } from '@/components/ui/button'
@@ -12,10 +13,20 @@ import { useNavigate } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
 
-export default function LoginPage() {
+function safeInternalPath(value: string | null) {
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) {
+    return null
+  }
+
+  return value
+}
+
+function LoginContent() {
   const { language } = useLanguage()
   const { signIn, createAccount } = useCommunity()
   const navigate = useNavigate()
+  const searchParams = useSearchParams()
+  const redirectUrl = safeInternalPath(searchParams.get('redirect'))
   const [isCreatingAccount, setIsCreatingAccount] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -24,13 +35,14 @@ export default function LoginPage() {
 
   const isEnglish = language === 'en'
 
-  const requestAccess = (event: FormEvent<HTMLFormElement>) => {
+  const requestAccess = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (signIn(email, password)) {
+    if (await signIn(email, password)) {
       setLoginFailed(false)
       setLoginMessage('')
-      navigate(email.trim().toLowerCase() === 'admin@croqueton.mx' ? '/admin' : '/guaubook')
+      const isAdmin = email.trim().toLowerCase() === 'admin@croqueton.mx'
+      navigate(redirectUrl || (isAdmin ? '/admin' : '/mi-perfil'))
       return
     }
 
@@ -38,15 +50,15 @@ export default function LoginPage() {
     setLoginMessage(
       isEnglish
         ? 'Wrong password. The dog has already started laughing.'
-        : 'Contrase\xF1a incorrecta. El perrito ya empez\xF3 a re\xEDrse.'
+        : 'Contraseña incorrecta. El perro ya empezó a reírse.'
     )
   }
 
-  const requestAccount = (event: FormEvent<HTMLFormElement>) => {
+  const requestAccount = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (email.includes('@') && password.length >= 6 && createAccount(email, password)) {
-      navigate('/mi-perfil')
+    if (email.includes('@') && password.length >= 6 && (await createAccount(email, password))) {
+      navigate(redirectUrl || '/mi-perfil')
       return
     }
 
@@ -109,8 +121,8 @@ export default function LoginPage() {
               ? 'Join GuauBook, customize your profile and share moments with the pack.'
               : '\xDAnete a GuauBook, personaliza tu perfil y comparte momentos con la manada.'
             : isEnglish
-              ? 'Enter to see what the Croquet\xF3n pack is sharing.'
-              : 'Entra para ver lo que comparte la manada Croquet\xF3n.'}
+              ? 'Enter to see what the Croqueton pack is sharing.'
+              : 'Entra para ver lo que comparte la manada Croqueton.'}
         </p>
         <form
           className="mt-7 grid gap-4.5"
@@ -201,5 +213,13 @@ export default function LoginPage() {
         )}
       </section>
     </PageShell>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" aria-hidden="true" />}>
+      <LoginContent />
+    </Suspense>
   )
 }

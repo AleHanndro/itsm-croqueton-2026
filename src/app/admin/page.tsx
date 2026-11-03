@@ -4,90 +4,30 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 import { Paw } from '@/assets/icons/paw'
-import { AdminPanelCard, AdminSidebar, AdminStatCard } from '@/components/admin-dashboard'
+import { AdminPanelCard, AdminStatCard } from '@/components/admin-dashboard'
+import { AdminLayout } from '@/components/admin-layout'
 import AdminIcon from '@/components/admin-icon'
-import { PageShell } from '@/components/page-shell'
-import { Button } from '@/components/ui/button'
-import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
-import { useNavigate } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
 
 export default function AdminPage() {
   const {
-    user,
     posts,
     postReviewRequests,
     accountCount,
     approvePostReview,
     rejectPostReview,
-    adminDeletePost,
-    signOut
+    adminDeletePost
   } = useCommunity()
-  const navigate = useNavigate()
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
 
-  const isAdmin = user?.email === 'admin@croqueton.mx'
   const totalReactions = posts.reduce(
     (total, post) => total + post.likedBy.length + post.comments.length,
     0
   )
 
-  if (!user || !isAdmin) {
-    return (
-      <PageShell surface="mint" navigation="community" showToggles={false}>
-        <Container
-          as="section"
-          className="grid min-h-[calc(100vh-82px)] content-center justify-items-center gap-3 text-center"
-        >
-          <Paw className="w-18 text-accent" />
-          <Eyebrow>Acceso restringido</Eyebrow>
-          <h1 className="m-0 text-[62px] phone:text-[47px]">Panel de administración</h1>
-          <p className="max-w-125 font-extrabold">
-            Inicia sesión con la cuenta administradora para gestionar la comunidad.
-          </p>
-          <Button render={<Link href="/iniciar-sesion" />}>Ir al acceso</Button>
-        </Container>
-      </PageShell>
-    )
-  }
-
-  const today = new Intl.DateTimeFormat('es', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long'
-  }).format(new Date())
-
   return (
-    <PageShell surface="admin" navigation="none">
-      <div className="grid min-h-screen grid-cols-[250px_minmax(0,1fr)] tablet:grid-cols-[1fr]">
-        <AdminSidebar
-          userEmail={user.email}
-          pendingCount={postReviewRequests.length}
-          onSignOut={() => {
-            signOut()
-            navigate('/')
-          }}
-        />
-
-        <div className="min-w-0">
-          <header className="flex min-h-18 items-center justify-between gap-5 border-b border-stroke-admin-topbar bg-surface-admin-topbar px-[clamp(24px,4vw,56px)] backdrop-blur-md tablet:px-6 phone:min-h-15.5 phone:px-3.5">
-            <div className="flex items-baseline gap-3 phone:grid phone:gap-0">
-              <span className="font-heading text-body font-black phone:text-body-sm">
-                Panel de administración
-              </span>
-              <small className="text-caption font-extrabold text-[#7a7e89] capitalize">
-                {today}
-              </small>
-            </div>
-            <Link
-              href="/guaubook"
-              className="flex items-center gap-2 rounded-chip border border-stroke-admin-topbar-link bg-surface-panel px-3.25 py-2.25 text-caption font-black phone:p-2 phone:text-[0px]"
-            >
-              Abrir sitio público <span className="text-body-sm phone:text-[16px]">↗</span>
-            </Link>
-          </header>
-
+    <AdminLayout>
           <section
             className="mx-auto max-w-345 px-[clamp(24px,4vw,56px)] pt-11.5 pb-22.5 phone:px-3.5 phone:pt-8.75 phone:pb-18.75"
             id="resumen"
@@ -247,7 +187,7 @@ export default function AdminPage() {
                 footer={
                   <Link
                     className="flex min-h-12.5 items-center justify-between border-t border-stroke-divider px-5 text-tiny font-black text-fg-admin-view-all"
-                    href="/guaubook"
+                    href="/admin/guaubook"
                   >
                     Gestionar toda la comunidad <span className="text-[18px]">→</span>
                   </Link>
@@ -321,9 +261,7 @@ export default function AdminPage() {
                 )}
               </AdminPanelCard>
             </div>
-          </section>
-        </div>
-      </div>
-    </PageShell>
+      </section>
+    </AdminLayout>
   )
 }

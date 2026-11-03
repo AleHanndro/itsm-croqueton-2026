@@ -1,152 +1,81 @@
 'use client'
 
-import Link from 'next/link'
-import { redirect } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-import { SmallDogMascot } from '@/assets/icons/small-dog-mascot'
-import { EmptyStateCard } from '@/components/empty-state-card'
-import { CareAvatar } from '@/components/illustrations/care-avatar'
+import { AdminSidebar } from '@/components/admin-dashboard'
+import { GuaubookProfilePage } from '@/components/guaubook-profile'
 import { PageShell } from '@/components/page-shell'
-import { PostCard } from '@/components/post-card'
-import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
-import { FieldLabel, TextInput } from '@/components/ui/field'
-import { useNavigate } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
 
 export default function ProfilePage() {
+  const { user, isHydrated, signOut, postReviewRequests } = useCommunity()
+  const [requestCount, setRequestCount] = useState(0)
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem('croqueton-join-requests')
+      const requests = stored ? (JSON.parse(stored) as { status?: string }[]) : []
+      setRequestCount(requests.filter((request) => request.status === 'pending').length)
+    } catch {
+      setRequestCount(0)
+    }
+  }, [])
   const { language } = useLanguage()
-  const { user, posts, petFurColor, updateProfile, updatePassword, signOut } = useCommunity()
-  const navigate = useNavigate()
-  const [name, setName] = useState(user?.name ?? '')
-  const [password, setPassword] = useState('')
-  const [message, setMessage] = useState('')
-
-  if (!user) redirect('/guaubook')
-
+  const router = useRouter()
   const isEnglish = language === 'en'
-  const userPosts = posts.filter((post) => post.author === user.name)
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin'
+
+  useEffect(() => {
+    if (isHydrated && !user) {
+      router.replace('/iniciar-sesion?redirect=%2Fmi-perfil')
+    }
+  }, [isHydrated, router, user])
+
+  if (!isHydrated || !user) {
+    return (
+      <PageShell surface="mint" navigation="none">
+        <Container
+          as="section"
+          className="grid min-h-[60vh] content-center justify-items-center gap-3 text-center"
+        >
+          <Eyebrow>{isEnglish ? 'Loading profile' : 'Cargando perfil'}</Eyebrow>
+          <p className="m-0 font-extrabold opacity-65">
+            {isEnglish ? 'Checking your session…' : 'Verificando tu sesión…'}
+          </p>
+        </Container>
+      </PageShell>
+    )
+  }
+
+  if (isAdmin) {
+    return (
+      <PageShell surface="admin" navigation="none">
+        <div className="grid min-h-screen grid-cols-[250px_minmax(0,1fr)] tablet:grid-cols-[1fr]">
+          <AdminSidebar
+            userEmail={user.email}
+            userRole={user.role === 'superadmin' ? 'superadmin' : 'admin'}
+            pendingCount={postReviewRequests.length}
+            requestCount={requestCount}
+            onSignOut={() => {
+              signOut()
+              router.push('/')
+            }}
+          />
+          <div className="min-w-0">
+            <GuaubookProfilePage />
+          </div>
+        </div>
+      </PageShell>
+    )
+  }
 
   return (
-    <PageShell surface="mint" navigation="community">
-      <Container as="section" className="pt-16.5 pb-27.5 phone:pt-10.5">
-        <div className="grid grid-cols-[170px_1fr_auto] items-center gap-7 rounded-3xl border-4 border-ink bg-card p-6.25 shadow-card tablet:grid-cols-[140px_1fr] phone:grid-cols-[1fr] phone:p-4.75">
-          <div className="h-41.25 overflow-hidden rounded-card-sm bg-brand phone:size-33.75 [&_.care-avatar]:-mt-10.5 [&_.care-avatar]:h-63.75 [&_.care-avatar]:w-full">
-            <CareAvatar
-              furColor="#d98a4e"
-              shirtColor="#ef6547"
-              shortsColor="#647fa1"
-              shoesColor="#fff8df"
-              glassesColor="#202436"
-            />
-          </div>
-          <div>
-            <Eyebrow>{isEnglish ? 'My profile' : 'Mi perfil'}</Eyebrow>
-            <h1 className="mt-2.75 mb-5 text-[clamp(64px,7vw,104px)] leading-display">
-              {user.name}
-            </h1>
-            <p className="m-0 font-extrabold opacity-65">{user.email}</p>
-          </div>
-          <div className="grid justify-items-center font-black tablet:col-span-full tablet:grid-cols-[auto_1fr] tablet:justify-start tablet:gap-2.5 phone:col-auto">
-            <SmallDogMascot
-              furColor={petFurColor}
-              className="h-32.5 w-28.75 tablet:h-21.25 tablet:w-18.75"
-            />
-            <span>{isEnglish ? 'Pet' : 'Mascota'} · Chispita</span>
-          </div>
-        </div>
-        <div className="mt-13 grid grid-cols-[minmax(300px,0.72fr)_minmax(0,1fr)] items-start gap-13.75 tablet:grid-cols-[1fr] tablet:gap-8.75 phone:mt-8.75">
-          <section className="grid gap-6 rounded-3xl border-4 border-ink bg-card p-6.75 shadow-card phone:p-4.75">
-            <h2 className="m-0 min-[541px]:text-[42px]">
-              {isEnglish ? 'Your settings' : 'Tus ajustes'}
-            </h2>
-            <form
-              className="grid gap-3"
-              onSubmit={(event) => {
-                event.preventDefault()
-                updateProfile(name)
-                setMessage(isEnglish ? 'Profile updated.' : 'Perfil actualizado.')
-              }}
-            >
-              <FieldLabel>
-                {isEnglish ? 'Name' : 'Nombre'}
-                <TextInput
-                  variant="control"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                />
-              </FieldLabel>
-              <Button type="submit">{isEnglish ? 'Edit profile' : 'Editar perfil'}</Button>
-            </form>
-            <form
-              className="grid gap-3"
-              onSubmit={(event) => {
-                event.preventDefault()
-                if (password.length >= 6) {
-                  updatePassword(password)
-                  setPassword('')
-                  setMessage(isEnglish ? 'Password changed.' : 'Contrase\xF1a actualizada.')
-                }
-              }}
-            >
-              <FieldLabel>
-                {isEnglish ? 'New password' : 'Nueva contrase\xF1a'}
-                <TextInput
-                  type="password"
-                  variant="control"
-                  minLength={6}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                />
-              </FieldLabel>
-              <Button variant="underline" type="submit" className="text-ink">
-                {isEnglish ? 'Change password' : 'Cambiar contrase\xF1a'}
-              </Button>
-            </form>
-            <Button
-              variant="underline"
-              className="text-left text-accent-deep"
-              onClick={() => {
-                signOut()
-                navigate('/')
-              }}
-            >
-              {isEnglish ? 'Sign out' : 'Cerrar sesi\xF3n'}
-            </Button>
-            <small aria-live="polite" className="font-extrabold">
-              {message}
-            </small>
-          </section>
-          <section>
-            <div className="mb-5 flex items-baseline justify-between">
-              <h2 className="m-0 min-[541px]:text-[42px]">
-                {isEnglish ? 'Your posts' : 'Tus publicaciones'}
-              </h2>
-              <Link href="/guaubook" className="font-black underline">
-                {isEnglish ? 'Go to GuauBook' : 'Ir a GuauBook'}
-              </Link>
-            </div>
-            {userPosts.length ? (
-              <div className="grid gap-5">
-                {userPosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
-              </div>
-            ) : (
-              <EmptyStateCard
-                title={
-                  isEnglish
-                    ? 'Your first post will appear here.'
-                    : 'Tu primera publicaci\xF3n aparecer\xE1 aqu\xED.'
-                }
-              />
-            )}
-          </section>
-        </div>
-      </Container>
+    <PageShell surface="mint" navigation="none">
+      <GuaubookProfilePage />
     </PageShell>
   )
 }
