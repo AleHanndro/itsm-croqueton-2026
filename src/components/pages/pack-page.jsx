@@ -9,6 +9,7 @@ import { useLanguage, useTheme, useCommunity } from "@/context/app-context";
 import Link, { useLocation, useNavigate } from "@/lib/navigation";
 function PackPage() {
   const { language } = useLanguage();
+  const { generationPhotos } = useCommunity();
   const isEnglish = language === "en";
   return <main className="pack-page">
       <LanguageToggle />
@@ -34,10 +35,20 @@ function PackPage() {
             <p>{isEnglish ? "A home for each generation's official group photo, published by the Croquet\xF3n team." : "Un espacio para la foto grupal oficial de cada generaci\xF3n, publicada por el equipo Croquet\xF3n."}</p>
           </div>
           <div className="generation-grid">
-            <figure className="generation-card">
-              <img src={packGenerationImage} alt={isEnglish ? "Croquet\xF3n 2025 team posing with donated pet food" : "Equipo Croquet\xF3n 2025 posando con alimento donado para mascotas"} />
-              <figcaption><strong>{isEnglish ? "Generation 2025" : "Generaci\xF3n 2025"}</strong><span>{isEnglish ? "The founding pack" : "La manada fundadora"}</span></figcaption>
-            </figure>
+            {generationPhotos.length ? generationPhotos.map((photo) => (
+              <figure className="generation-card" key={photo.id}>
+                <img src={photo.image} alt={photo.label || (isEnglish ? "Croquetón generation photo" : "Foto de generación Croquetón")} />
+                <figcaption>
+                  <strong>{photo.year ? (isEnglish ? `Generation ${photo.year}` : `Generación ${photo.year}`) : (isEnglish ? "Generation" : "Generación")}</strong>
+                  <span>{photo.label || (isEnglish ? "Group photo" : "Foto grupal")}</span>
+                </figcaption>
+              </figure>
+            )) : (
+              <figure className="generation-card">
+                <img src={packGenerationImage} alt={isEnglish ? "Croquet\xF3n 2025 team posing with donated pet food" : "Equipo Croquet\xF3n 2025 posando con alimento donado para mascotas"} />
+                <figcaption><strong>{isEnglish ? "Generation 2025" : "Generaci\xF3n 2025"}</strong><span>{isEnglish ? "The founding pack" : "La manada fundadora"}</span></figcaption>
+              </figure>
+            )}
             <div className="generation-placeholder">
               <Paw />
               <strong>{isEnglish ? "Next group photo" : "Pr\xF3xima foto grupal"}</strong>

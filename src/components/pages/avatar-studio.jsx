@@ -9,15 +9,9 @@ import { useLanguage, useTheme, useCommunity } from "@/context/app-context";
 import Link, { useLocation, useNavigate } from "@/lib/navigation";
 function AvatarStudio() {
   const { language } = useLanguage();
-  const { petFurColor, updatePet } = useCommunity();
+  const { petFurColor, updatePet, avatarConfig, updateAvatar } = useCommunity();
   const isEnglish = language === "en";
-  const [furColor, setFurColor] = useState("#d98a4e");
-  const [shirtColor, setShirtColor] = useState("#ef6547");
-  const [shortsColor, setShortsColor] = useState("#647fa1");
-  const [shoesColor, setShoesColor] = useState("#fff8df");
-  const [glassesColor, setGlassesColor] = useState("#202436");
-  const [outfit, setOutfit] = useState("shirt");
-  const [hair, setHair] = useState("none");
+  const { furColor, shirtColor, shortsColor, shoesColor, glassesColor, outfit, hair } = avatarConfig;
   return <main className="avatar-studio">
       <LanguageToggle />
       <ThemeToggle />
@@ -67,7 +61,7 @@ function AvatarStudio() {
     ["shirt", isEnglish ? "T-shirt and shorts" : "Camiseta y shorts"],
     ["dress", isEnglish ? "Dress" : "Vestido"],
     ["overalls", isEnglish ? "Overalls" : "Overol"]
-  ].map(([value, label]) => <button key={value} type="button" aria-pressed={outfit === value} onClick={() => setOutfit(value)}>
+  ].map(([value, label]) => <button key={value} type="button" aria-pressed={outfit === value} onClick={() => updateAvatar({ outfit: value })}>
                     {label}
                   </button>)}
               </div>
@@ -80,7 +74,7 @@ function AvatarStudio() {
     ["none", isEnglish ? "No hair" : "Sin cabello"],
     ["short", isEnglish ? "Short" : "Corto"],
     ["long", isEnglish ? "Long" : "Largo"]
-  ].map(([value, label]) => <button key={value} type="button" aria-pressed={hair === value} onClick={() => setHair(value)}>
+  ].map(([value, label]) => <button key={value} type="button" aria-pressed={hair === value} onClick={() => updateAvatar({ hair: value })}>
                     {label}
                   </button>)}
               </div>
@@ -94,7 +88,7 @@ function AvatarStudio() {
     [isEnglish ? "Cream" : "Crema", "#efc88f"],
     ["Chocolate", "#805238"],
     [isEnglish ? "Gray" : "Gris", "#8b929b"]
-  ].map(([label, color]) => <PawColorButton key={color} color={color} label={label} selected={furColor === color} onClick={() => setFurColor(color)} />)}
+  ].map(([label, color]) => <PawColorButton key={color} color={color} label={label} selected={furColor === color} onClick={() => updateAvatar({ furColor: color })} />)}
               </div>
             </fieldset>
 
@@ -106,7 +100,7 @@ function AvatarStudio() {
     [isEnglish ? "Mustard" : "Mostaza", "#e7b62d"],
     [isEnglish ? "Turquoise" : "Turquesa", "#72bbba"],
     [isEnglish ? "Blue" : "Azul", "#647fa1"]
-  ].map(([label, color]) => <PawColorButton key={color} color={color} label={label} selected={shirtColor === color} onClick={() => setShirtColor(color)} />)}
+  ].map(([label, color]) => <PawColorButton key={color} color={color} label={label} selected={shirtColor === color} onClick={() => updateAvatar({ shirtColor: color })} />)}
               </div>
             </fieldset>
 
@@ -118,7 +112,7 @@ function AvatarStudio() {
     ["Coral", "#ef6547"],
     [isEnglish ? "Olive" : "Oliva", "#77845b"],
     [isEnglish ? "Cream" : "Crema", "#e3d6bf"]
-  ].map(([label, color]) => <PawColorButton key={color} color={color} label={label} selected={shortsColor === color} onClick={() => setShortsColor(color)} />)}
+  ].map(([label, color]) => <PawColorButton key={color} color={color} label={label} selected={shortsColor === color} onClick={() => updateAvatar({ shortsColor: color })} />)}
               </div>
             </fieldset>
 
@@ -129,7 +123,7 @@ function AvatarStudio() {
     ["#fff8df", isEnglish ? "Cream" : "Crema"],
     ["#72bbba", isEnglish ? "Turquoise" : "Turquesa"],
     ["#ef6547", "Coral"]
-  ].map(([color, label]) => <PawColorButton key={color} color={color} label={label} selected={shoesColor === color} onClick={() => setShoesColor(color)} />)}
+  ].map(([color, label]) => <PawColorButton key={color} color={color} label={label} selected={shoesColor === color} onClick={() => updateAvatar({ shoesColor: color })} />)}
               </div>
             </fieldset>
 
@@ -140,7 +134,7 @@ function AvatarStudio() {
     ["#202436", isEnglish ? "Dark blue" : "Azul oscuro"],
     ["#ef6547", "Coral"],
     ["#4f83bd", isEnglish ? "Blue" : "Azul"]
-  ].map(([color, label]) => <PawColorButton key={color} color={color} label={label} selected={glassesColor === color} onClick={() => setGlassesColor(color)} />)}
+  ].map(([color, label]) => <PawColorButton key={color} color={color} label={label} selected={glassesColor === color} onClick={() => updateAvatar({ glassesColor: color })} />)}
               </div>
             </fieldset>
 

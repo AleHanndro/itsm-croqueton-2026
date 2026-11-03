@@ -33,7 +33,7 @@ function GuauBookPage() {
       return;
     }
     if (relevance === "review") {
-      requestPostReview(body.trim());
+      requestPostReview(body.trim(), image);
       setNotice(isEnglish ? "We could not confirm the topic. Add details such as dog, cat, pet, adoption or animal care, or wait for review." : "No pudimos confirmar el tema. A\xF1ade detalles como perro, gato, mascota, adopci\xF3n o cuidado animal, o espera la revisi\xF3n.");
       return;
     }
@@ -53,7 +53,7 @@ function GuauBookPage() {
           {image && <img className="post-preview" src={image} alt={isEnglish ? "Selected post preview" : "Vista previa de la foto seleccionada"} />}
           <div><label className="photo-picker"><input type="file" accept="image/*" onChange={(event) => selectPostImage(event.target.files?.[0])} />{isEnglish ? "Add photo" : "A\xF1adir foto"}</label><button className="button button-dark" type="submit">{isEnglish ? "Publish" : "Publicar"}</button></div>
           <small className="post-notice" aria-live="polite">{notice}</small>
-        </form> : <aside className="post-signup-card"><Paw /><span className="eyebrow">{isEnglish ? "Your profile" : "Tu perfil"}</span><h2>{isEnglish ? "Join the conversation." : "\xDAnete a la conversaci\xF3n."}</h2><p>{isEnglish ? "Everyone can read the pack's stories. Create an account or sign in to publish, love and comment." : "Todos pueden leer las historias de la manada. Crea una cuenta o inicia sesi\xF3n para publicar, dar Me encanta y comentar."}</p><Link className="button button-dark" to="/iniciar-sesion">{isEnglish ? "Join or sign in" : "Unirme o iniciar sesi\xF3n"}</Link></aside>}
+        </form> : <aside className="post-signup-card"><Paw /><span className="eyebrow">{isEnglish ? "Your account" : "Tu cuenta"}</span><h2>{isEnglish ? "Publish in GuauBook." : "Publica en GuauBook."}</h2><p>{isEnglish ? "Sign in with your account to publish, love and comment on the pack's stories." : "Inicia sesi\xF3n con tu cuenta para publicar, dar Me encanta y comentar las historias de la manada."}</p><Link className="button button-dark" to="/login">{isEnglish ? "Publish" : "Publicar"}</Link></aside>}
         <div className="post-feed" aria-live="polite">{posts.length ? posts.map((post) => <PostCard key={post.id} post={post} />) : <div className="empty-posts"><Paw /><p>{isEnglish ? "The pack's first story will appear here." : "Aqu\xED aparecer\xE1 la primera publicaci\xF3n de la manada."}</p></div>}</div>
       </section>
     </main>;

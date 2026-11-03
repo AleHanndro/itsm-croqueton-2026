@@ -18,8 +18,8 @@ function CommunityNavigation() {
           </Link>
           <nav aria-label={isEnglish ? "Community navigation" : "Navegaci\xF3n de la comunidad"}>
             <Link to="/guaubook">{isEnglish ? "GuauBook" : "GuauBook"}</Link>
-            <Link to="/mi-perfil">{isEnglish ? "My profile" : "Mi perfil"}</Link>
-            <Link to="/avatar-mascota">{isEnglish ? "Avatar & pet" : "Avatar y mascota"}</Link>
+            {user && <Link to="/mi-panel">{isEnglish ? "My panel" : "Mi panel"}</Link>}
+            <Link to={user ? "/mi-panel/avatar" : "/avatar-mascota"}>{isEnglish ? "Avatar & pet" : "Avatar y mascota"}</Link>
           </nav>
           {user && <button className="community-logout" type="button" onClick={() => {
     signOut();

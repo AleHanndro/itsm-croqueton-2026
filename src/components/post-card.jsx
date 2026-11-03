@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useLanguage, useTheme, useCommunity } from "@/context/app-context";
+import { assessPostRelevance } from "@/lib/content";
 import Link, { useLocation, useNavigate } from "@/lib/navigation";
 import { LanguageToggle, MayaTranslationNotice, ThemeToggle, Dog, Bowl, Cloud, Paw, PawColorButton, Logo, SiteNavigation, ArrowDown, StoryImage, MoodPollCard, MemePlaceholder, CareAvatar, SmallDogMascot } from "@/components/ui";
 function PostCard({ post }) {
   const { language } = useLanguage();
-  const { user, editPost, deletePost, toggleLike, addComment } = useCommunity();
+  const { user, editPost, deletePost, toggleLike, addComment, toggleFollow, follows } = useCommunity();
   const navigate = useNavigate();
   const isEnglish = language === "en";
   const [comment, setComment] = useState("");
@@ -18,6 +19,8 @@ function PostCard({ post }) {
   const commentInputRef = useRef(null);
   const hasLiked = !!user && post.likedBy.includes(user.email);
   const isOwner = !!user && (post.authorEmail ? post.authorEmail === user.email : post.author === user.name);
+  const isFollowing = !!user && !!post.authorEmail && (follows?.[user.email] || []).includes(post.authorEmail);
+
   function saveEdit() {
     const nextBody = editedBody.trim();
     if (!nextBody) {
@@ -34,7 +37,7 @@ function PostCard({ post }) {
   }
   return <article className="post-card">
       <div className="post-header">
-        <div className="post-author"><span className="post-avatar"><Paw /></span><div><strong>{post.author}</strong><small>{post.createdAt}</small></div></div>
+        <div className="post-author"><span className="post-avatar"><Paw /></span><div><strong>{post.author}</strong><small>{post.createdAt}</small></div>{user && post.authorEmail && post.authorEmail !== user.email && <button type="button" className="post-follow-button" onClick={() => toggleFollow(post.authorEmail)}>{isFollowing ? "Siguiendo" : "Seguir"}</button>}</div>
         {isOwner && <div className="post-owner-actions">
           {isConfirmingDelete ? <>
             <button type="button" className="is-danger" onClick={() => deletePost(post.id)}>{isEnglish ? "Confirm" : "Confirmar"}</button>
@@ -63,10 +66,10 @@ function PostCard({ post }) {
       </div> : <p>{post.body}</p>}
       {post.image && <img src={post.image} alt="" />}
       <div className="post-actions">
-        <button type="button" className={hasLiked ? "is-liked" : ""} onClick={() => user ? toggleLike(post.id) : navigate("/iniciar-sesion")} aria-pressed={hasLiked}>
+        <button type="button" className={hasLiked ? "is-liked" : ""} onClick={() => user ? toggleLike(post.id) : navigate("/login")} aria-pressed={hasLiked}>
           {isEnglish ? "Love" : "Me encanta"} <span>{post.likedBy.length || ""}</span>
         </button>
-        <button type="button" onClick={() => user ? commentInputRef.current?.focus() : navigate("/iniciar-sesion")}>
+        <button type="button" onClick={() => user ? commentInputRef.current?.focus() : navigate("/login")}>
           {isEnglish ? "Comment" : "Comentar"}
         </button>
         <span>{post.comments.length ? `${post.comments.length} ${isEnglish ? "comments" : "comentarios"}` : ""}</span>
@@ -78,7 +81,7 @@ function PostCard({ post }) {
       addComment(post.id, comment.trim());
       setComment("");
     }
-  }}><input ref={commentInputRef} value={comment} onChange={(event) => setComment(event.target.value)} placeholder={isEnglish ? "Write a comment\u2026" : "Escribe un comentario\u2026"} /><button type="submit">{isEnglish ? "Comment" : "Comentar"}</button></form> : <p className="post-login-note">{isEnglish ? "Love this story or want to reply? " : "\xBFTe encant\xF3 o quieres responder? "}<Link to="/iniciar-sesion">{isEnglish ? "Join the pack" : "\xDAnete a la manada"}</Link>.</p>}
+  }}><input ref={commentInputRef} value={comment} onChange={(event) => setComment(event.target.value)} placeholder={isEnglish ? "Write a comment\u2026" : "Escribe un comentario\u2026"} /><button type="submit">{isEnglish ? "Comment" : "Comentar"}</button></form> : <p className="post-login-note">{isEnglish ? "Love this story or want to reply? " : "\xBFTe encant\xF3 o quieres responder? "}<Link to="/login">{isEnglish ? "Sign in" : "Inicia sesi\xF3n"}</Link>.</p>}
     </article>;
 }
 export default PostCard;

@@ -9,10 +9,12 @@ import { useLanguage, useTheme, useCommunity } from "@/context/app-context";
 import Link, { useLocation, useNavigate } from "@/lib/navigation";
 function JoinPage() {
   const { language } = useLanguage();
+  const { submitJoinApplication } = useCommunity();
   const isEnglish = language === "en";
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [joinResult, setJoinResult] = useState(null);
   const [applicantName, setApplicantName] = useState("");
+  const [applicantEmail, setApplicantEmail] = useState("");
   const [applicantAge, setApplicantAge] = useState("");
   const [motivation, setMotivation] = useState("");
   const [hasAvailability, setHasAvailability] = useState(false);
@@ -23,7 +25,20 @@ function JoinPage() {
   };
   const submitJoinForm = (event) => {
     event.preventDefault();
-    if (!applicantName.trim() || Number(applicantAge) < 18 || motivation.trim().length < 20 || !hasAvailability || !acceptsCommitment) {
+    const hasValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(applicantEmail.trim());
+    if (!applicantName.trim() || !hasValidEmail || Number(applicantAge) < 18 || motivation.trim().length < 20 || !hasAvailability || !acceptsCommitment) {
+      setJoinResult("requirements");
+      return;
+    }
+    const result = submitJoinApplication({
+      name: applicantName,
+      email: applicantEmail,
+      age: applicantAge,
+      motivation,
+      hasAvailability,
+      acceptsCommitment
+    });
+    if (!result?.ok) {
       setJoinResult("requirements");
       return;
     }
@@ -106,10 +121,14 @@ function JoinPage() {
                     <input value={applicantName} onChange={(event) => setApplicantName(event.target.value)} maxLength={40} placeholder={isEnglish ? "Human or heroic nickname" : "Nombre humano o apodo heroico"} />
                   </label>
                   <label>
+                    <span>{isEnglish ? "Your email" : "Tu correo electrónico"}</span>
+                    <input type="email" value={applicantEmail} onChange={(event) => setApplicantEmail(event.target.value)} maxLength={80} placeholder={isEnglish ? "you@email.com" : "tu@correo.com"} />
+                  </label>
+                  <label>
                     <span>{isEnglish ? "Your age" : "Tu edad"}</span>
                     <input type="number" min="0" max="99" value={applicantAge} onChange={(event) => setApplicantAge(event.target.value)} placeholder="18" />
                   </label>
-                  <label>
+                  <label className="join-full">
                     <span>{isEnglish ? "Why do you want to participate?" : "\xBFPor qu\xE9 quieres participar?"}</span>
                     <textarea
     value={motivation}
@@ -138,9 +157,9 @@ function JoinPage() {
     src={joinResult === "welcome" ? heroDogImage : rejectedApplicationImage}
     alt={joinResult === "welcome" ? isEnglish ? "Happy dog welcoming the new volunteer" : "Perrito feliz dando la bienvenida al nuevo voluntario" : isEnglish ? "Laughing dog reacting to the application" : "Perrito ri\xE9ndose de la solicitud"}
   />
-                <span className="chapter">{joinResult === "welcome" ? isEnglish ? "Registration complete" : "Registro completado" : isEnglish ? "Almost, human" : "Casi, humano"}</span>
-                <h2 id="join-dialog-title">{joinResult === "welcome" ? isEnglish ? `Thank you for joining, ${applicantName.trim()}!` : `\xA1Gracias por registrarte, ${applicantName.trim()}!` : isEnglish ? "Your checklist needs work." : "Te faltaron unas casillas."}</h2>
-                <p>{joinResult === "welcome" ? isEnglish ? "Your time and motivation can fill many bowls. The pack received your registration and will contact you to confirm the next steps." : "Tu tiempo y tu motivaci\xF3n pueden llenar muchos platos. La manada recibi\xF3 tu registro y se pondr\xE1 en contacto contigo para confirmar los siguientes pasos." : isEnglish ? "You need to be 18+, explain your motivation in at least 20 characters, be available and ready to work as a team. The dog is laughing with you, not at you. Probably." : "Necesitas ser mayor de edad, explicar tu motivaci\xF3n en al menos 20 caracteres, tener disponibilidad y aceptar el trabajo en equipo. El perrito se r\xEDe contigo, no de ti. Probablemente."}</p>
+                <span className="chapter">{joinResult === "welcome" ? isEnglish ? "Request sent" : "Solicitud enviada" : isEnglish ? "Almost, human" : "Casi, humano"}</span>
+                <h2 id="join-dialog-title">{joinResult === "welcome" ? isEnglish ? `Thank you for applying, ${applicantName.trim()}!` : `\xA1Gracias por postularte, ${applicantName.trim()}!` : isEnglish ? "Your checklist needs work." : "Te faltaron unas casillas."}</h2>
+                <p>{joinResult === "welcome" ? isEnglish ? "Your request was sent to the administrator. Once it is reviewed, the pack will contact you to confirm the next steps." : "Tu solicitud fue enviada al administrador. Cuando la revise, la manada se pondr\xE1 en contacto contigo para confirmar los siguientes pasos." : isEnglish ? "You need to be 18+, add a valid email, explain your motivation in at least 20 characters, be available and ready to work as a team. The dog is laughing with you, not at you. Probably." : "Necesitas ser mayor de edad, escribir un correo v\xE1lido, explicar tu motivaci\xF3n en al menos 20 caracteres, tener disponibilidad y aceptar el trabajo en equipo. El perrito se r\xEDe contigo, no de ti. Probablemente."}</p>
                 <button className="button button-dark" type="button" onClick={() => setJoinResult(null)}>
                   {joinResult === "welcome" ? isEnglish ? "Review my answers" : "Revisar mis respuestas" : isEnglish ? "Complete the form" : "Completar el formulario"}
                 </button>

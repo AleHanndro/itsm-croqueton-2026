@@ -249,7 +249,7 @@ function SiteNavigation({ home = false, isScrolled = false }) {
   >
               {isMenuOpen ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" /></svg>}
             </button>
-            <Link className={`user-login-button ${location.pathname === "/iniciar-sesion" || location.pathname === "/mi-perfil" ? "is-active" : ""}`} to={user ? "/mi-perfil" : "/iniciar-sesion"} aria-current={location.pathname === "/iniciar-sesion" || location.pathname === "/mi-perfil" ? "page" : void 0} aria-label={user ? isEnglish ? "My profile" : "Mi perfil" : isEnglish ? "User sign in" : "Iniciar sesi\xF3n de usuario"} title={user ? isEnglish ? "My profile" : "Mi perfil" : isEnglish ? "Sign in" : "Iniciar sesi\xF3n"}>
+            <Link className={`user-login-button ${location.pathname === "/login" || location.pathname === "/mi-panel" ? "is-active" : ""}`} to={user ? "/mi-panel" : "/login"} aria-current={location.pathname === "/login" || location.pathname === "/mi-panel" ? "page" : void 0} aria-label={user ? "Mi panel" : "Login"} title={user ? "Mi panel" : "Login"}>
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" strokeWidth="2.2" /><path d="M4.5 21c.7-5 3.2-7.5 7.5-7.5s6.8 2.5 7.5 7.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
             </Link>
           </div>
@@ -413,8 +413,8 @@ function CareAvatar({
       </g>
     </svg>;
 }
-function SmallDogMascot({ furColor = "#efc88f" }) {
-  return <svg className="kibble-mascot" viewBox="0 0 250 300" role="img" aria-label="Perrito pequeño sentado con pañuelo azul">
+function SmallDogMascot({ furColor = "#efc88f", className = "" }) {
+  return <svg className={`kibble-mascot ${className}`} viewBox="0 0 250 300" role="img" aria-label="Perrito pequeño sentado con pañuelo azul">
       <path d="M174 218c55-31 72 19 37 49-18 15-35 3-31-14" fill={furColor} stroke="#202436" strokeWidth="8" strokeLinecap="round" />
       <ellipse cx="125" cy="210" rx="72" ry="74" fill={furColor} stroke="#202436" strokeWidth="9" />
       <path d="M75 76L45 20c42 1 61 20 66 57M175 76l30-56c-42 1-61 20-66 57" fill={furColor} stroke="#202436" strokeWidth="8" strokeLinejoin="round" />
