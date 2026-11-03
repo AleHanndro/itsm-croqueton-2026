@@ -12,7 +12,8 @@ import { useLanguage } from '@/providers/language-provider'
 
 export function PostCard({ post }: { post: CommunityPost }) {
   const { language } = useLanguage()
-  const { user, editPost, deletePost, toggleLike, addComment } = useCommunity()
+  const { user, follows, editPost, deletePost, toggleLike, addComment, toggleFollow } =
+    useCommunity()
   const navigate = useNavigate()
   const [comment, setComment] = useState('')
   const [editedBody, setEditedBody] = useState(post.body)
@@ -25,6 +26,13 @@ export function PostCard({ post }: { post: CommunityPost }) {
   const hasLiked = !!user && post.likedBy.includes(user.email)
   const isOwner =
     !!user && (post.authorEmail ? post.authorEmail === user.email : post.author === user.name)
+  const postAuthorEmail = post.authorEmail?.trim().toLowerCase()
+  const canFollow = !!user && !!postAuthorEmail && postAuthorEmail !== user.email
+  const isFollowingAuthor =
+    !!user &&
+    !!postAuthorEmail &&
+    postAuthorEmail !== user.email &&
+    (follows[user.email] ?? []).includes(postAuthorEmail)
 
   function saveEdit() {
     const nextBody = editedBody.trim()
@@ -59,7 +67,30 @@ export function PostCard({ post }: { post: CommunityPost }) {
           </span>
           <div>
             <strong className="block font-heading text-[20px]">{post.author}</strong>
-            <small className="block font-extrabold opacity-55">{post.createdAt}</small>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <small className="block font-extrabold opacity-55">{post.createdAt}</small>
+              {canFollow && postAuthorEmail && (
+                <button
+                  type="button"
+                  className={cn(
+                    'rounded-pill border-2 border-ink px-2 py-0.5 text-micro font-black [transition:background_0.2s_ease]',
+                    isFollowingAuthor
+                      ? 'bg-brand text-ink'
+                      : 'bg-surface-warm text-ink hover:bg-brand'
+                  )}
+                  onClick={() => toggleFollow(postAuthorEmail)}
+                  aria-pressed={isFollowingAuthor}
+                >
+                  {isFollowingAuthor
+                    ? isEnglish
+                      ? 'Following'
+                      : 'Siguiendo'
+                    : isEnglish
+                      ? 'Follow'
+                      : 'Seguir'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
         {isOwner && (

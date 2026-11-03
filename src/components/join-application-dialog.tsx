@@ -31,9 +31,12 @@ export function JoinApplicationDialog({
   const [joinResult, setJoinResult] = useState<'requirements' | 'welcome' | null>(null)
   const [applicantName, setApplicantName] = useState('')
   const [applicantAge, setApplicantAge] = useState('')
+  const [applicantEmail, setApplicantEmail] = useState('')
+  const [applicantPhone, setApplicantPhone] = useState('')
   const [motivation, setMotivation] = useState('')
   const [hasAvailability, setHasAvailability] = useState(false)
   const [acceptsCommitment, setAcceptsCommitment] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (nextOpen) {
@@ -45,9 +48,16 @@ export function JoinApplicationDialog({
   const submitJoinForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
+    if (isSubmitting) return
+
+    const isEmailValid = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(applicantEmail.trim())
+    const isPhoneValid = /^[0-9+\\-\\s]{7,20}$/.test(applicantPhone.trim())
+
     if (
       !applicantName.trim() ||
       Number(applicantAge) < 18 ||
+      !isEmailValid ||
+      !isPhoneValid ||
       motivation.trim().length < 20 ||
       !hasAvailability ||
       !acceptsCommitment
@@ -56,6 +66,33 @@ export function JoinApplicationDialog({
       return
     }
 
+    setIsSubmitting(true)
+
+    const request = {
+      acceptsCommitment,
+      age: Number(applicantAge),
+      createdAt: new Date().toISOString(),
+      decidedAt: null,
+      decidedBy: null,
+      email: applicantEmail.trim(),
+      hasAvailability,
+      id: crypto.randomUUID(),
+      motivation: motivation.trim(),
+      name: applicantName.trim(),
+      phone: applicantPhone.trim(),
+      status: 'pending'
+    }
+
+    const existing = window.localStorage.getItem('croqueton-join-requests')
+    let requests: unknown[] = []
+    try {
+      requests = existing ? (JSON.parse(existing) as unknown[]) : []
+    } catch {
+      requests = []
+    }
+    window.localStorage.setItem('croqueton-join-requests', JSON.stringify([request, ...requests]))
+
+    setIsSubmitting(false)
     setJoinResult('welcome')
   }
 
@@ -106,11 +143,28 @@ export function JoinApplicationDialog({
                       placeholder="18"
                     />
                   </FieldLabel>
+                  <FieldLabel>
+                    <span>{isEnglish ? 'Email' : 'Correo electrónico'}</span>
+                    <TextInput
+                      type="email"
+                      value={applicantEmail}
+                      onChange={(event) => setApplicantEmail(event.target.value)}
+                      placeholder={isEnglish ? 'you@example.com' : 'tu@correo.com'}
+                    />
+                  </FieldLabel>
+                  <FieldLabel>
+                    <span>{isEnglish ? 'Phone' : 'Teléfono'}</span>
+                    <TextInput
+                      value={applicantPhone}
+                      onChange={(event) => setApplicantPhone(event.target.value)}
+                      placeholder="9991234567"
+                    />
+                  </FieldLabel>
                   <FieldLabel className="col-span-full phone:col-1">
                     <span>
                       {isEnglish
                         ? 'Why do you want to participate?'
-                        : '\xBFPor qu\xE9 quieres participar?'}
+                        : '\\xBFPor qu\\xE9 quieres participar?'}
                     </span>
                     <TextareaInput
                       value={motivation}
@@ -152,6 +206,7 @@ export function JoinApplicationDialog({
                   </NoteCallout>
                   <Button
                     type="submit"
+                    disabled={isSubmitting}
                     className="col-span-full mt-1.25 w-max phone:col-1 phone:w-full"
                   >
                     {isEnglish ? 'Check my application' : 'Revisar mi solicitud'}

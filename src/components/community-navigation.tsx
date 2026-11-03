@@ -37,7 +37,7 @@ function CommunityNavigation() {
               {isEnglish ? 'GuauBook' : 'GuauBook'}
             </Link>
             <Link
-              href="/mi-perfil"
+              href={user ? '/mi-perfil' : '/iniciar-sesion?redirect=%2Fmi-perfil'}
               className="border-b-3 border-transparent hover:border-current phone:flex-none phone:text-[12px]"
             >
               {isEnglish ? 'My profile' : 'Mi perfil'}
