@@ -58,6 +58,7 @@ export default function SolicitudesPage() {
   const [confirmAction, setConfirmAction] = useState<{ request: JoinRequest; status: JoinRequest['status'] } | null>(null)
 
   useEffect(() => {
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setRequests(readJson<JoinRequest[]>('croqueton-join-requests', []))
     setIsHydratedLocal(true)
   }, [])

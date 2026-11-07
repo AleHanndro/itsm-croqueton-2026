@@ -1,14 +1,10 @@
 'use client'
 
-import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-import { Paw } from '@/assets/icons/paw'
 import { AdminSidebar } from '@/components/admin-dashboard'
 import { PageShell } from '@/components/page-shell'
-import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
-import { Eyebrow } from '@/components/ui/eyebrow'
 import { useNavigate } from '@/lib/navigation'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -86,19 +82,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         <div className="min-w-0">
           <header className="flex min-h-18 items-center justify-between gap-5 border-b border-stroke-admin-topbar bg-surface-admin-topbar px-[clamp(24px,4vw,56px)] backdrop-blur-md tablet:px-6 phone:min-h-15.5 phone:px-3.5">
             <div className="flex items-baseline gap-3 phone:grid phone:gap-0">
-              <span className="font-heading text-body font-black phone:text-body-sm">
-                Panel de administración
-              </span>
               <small className="text-caption font-extrabold text-[#7a7e89] capitalize">
                 {today}
               </small>
             </div>
-            <Link
-              href="/guaubook"
-              className="flex items-center gap-2 rounded-chip border border-stroke-admin-topbar-link bg-surface-panel px-3.25 py-2.25 text-caption font-black phone:p-2 phone:text-[0px]"
-            >
-              Abrir sitio público <span className="text-body-sm phone:text-[16px]">↗</span>
-            </Link>
           </header>
 
           {children}

@@ -1,4 +1,8 @@
+'use client'
+
 import { cva, type VariantProps } from 'class-variance-authority'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
@@ -35,6 +39,29 @@ export function AdminSidebar({
   requestCount?: number
   onSignOut: () => void
 }) {
+  const pathname = usePathname()
+  const [activeHash, setActiveHash] = useState('')
+
+  useEffect(() => {
+    const update = () => setActiveHash(window.location.hash)
+    update()
+    window.addEventListener('hashchange', update)
+    return () => window.removeEventListener('hashchange', update)
+  }, [])
+
+  function isActive(href: string) {
+    if (href.startsWith('/admin#')) {
+      const targetHash = href.slice('/admin'.length)
+      if (pathname !== '/admin') return false
+      if (targetHash === '#resumen') return activeHash === '' || activeHash === '#resumen'
+      return activeHash === targetHash
+    }
+    if (href === '/admin/guaubook') {
+      return pathname === '/admin/guaubook' || pathname.startsWith('/admin/guaubook/')
+    }
+    return pathname === href || pathname.startsWith(`${href}/`)
+  }
+
   return (
     <aside className="sticky top-0 z-20 flex h-screen flex-col bg-surface-admin-sidebar px-5 pt-6.75 pb-5.5 text-card tablet:relative tablet:grid tablet:h-auto tablet:grid-cols-[auto_1fr_auto] tablet:items-center tablet:gap-5 tablet:px-5 tablet:py-4 phone:grid-cols-[1fr_auto] phone:gap-2.5 phone:p-3.5">
       <Link
@@ -54,11 +81,11 @@ export function AdminSidebar({
         className="grid gap-1.75 tablet:flex tablet:justify-center tablet:overflow-x-auto phone:order-3 phone:col-span-full phone:row-2 phone:justify-start"
         aria-label="Navegación del panel"
       >
-        <Link className={adminNavItemVariants({ active: true })} href="/admin#resumen">
+        <Link className={adminNavItemVariants({ active: isActive('/admin#resumen') })} href="/admin#resumen" onClick={() => setActiveHash('#resumen')}>
           <AdminIcon type="heart" />
           <span>Resumen</span>
         </Link>
-        <Link className={adminNavItemVariants()} href="/admin#moderacion">
+        <Link className={adminNavItemVariants({ active: isActive('/admin#moderacion') })} href="/admin#moderacion" onClick={() => setActiveHash('#moderacion')}>
           <AdminIcon type="review" />
           <span>Moderación</span>
           {pendingCount > 0 && (
@@ -67,21 +94,35 @@ export function AdminSidebar({
             </strong>
           )}
         </Link>
-        <Link className={adminNavItemVariants()} href="/admin#comunidad">
+        <Link className={adminNavItemVariants({ active: isActive('/admin#comunidad') })} href="/admin#comunidad" onClick={() => setActiveHash('#comunidad')}>
           <AdminIcon type="posts" />
           <span>Comunidad</span>
         </Link>
+        <Link className={adminNavItemVariants({ active: isActive('/admin/usuarios') })} href="/admin/usuarios">
+          <AdminIcon type="users" />
+          <span>Usuarios</span>
+        </Link>
         {userRole === 'superadmin' && (
-          <Link className={adminNavItemVariants()} href="/admin/administradores">
+          <Link className={adminNavItemVariants({ active: isActive('/admin/administradores') })} href="/admin/administradores">
             <AdminIcon type="users" />
             <span>Administradores</span>
           </Link>
         )}
-        <Link className={adminNavItemVariants()} href="/admin/donadores">
+        {userRole === 'superadmin' && (
+          <Link className={adminNavItemVariants({ active: isActive('/admin/bitacora') })} href="/admin/bitacora">
+            <AdminIcon type="review" />
+            <span>Bitácora</span>
+          </Link>
+        )}
+        <Link className={adminNavItemVariants({ active: isActive('/admin/donadores') })} href="/admin/donadores">
           <AdminIcon type="posts" />
           <span>Donadores</span>
         </Link>
-        <Link className={adminNavItemVariants()} href="/admin/solicitudes">
+        <Link className={adminNavItemVariants({ active: isActive('/admin/croquetones') })} href="/admin/croquetones">
+          <AdminIcon type="users" />
+          <span>Croquetones</span>
+        </Link>
+        <Link className={adminNavItemVariants({ active: isActive('/admin/solicitudes') })} href="/admin/solicitudes">
           <AdminIcon type="review" />
           <span>Solicitudes</span>
           {requestCount > 0 && (
@@ -90,7 +131,7 @@ export function AdminSidebar({
             </strong>
           )}
         </Link>
-        <Link className={adminNavItemVariants()} href="/admin/guaubook">
+        <Link className={adminNavItemVariants({ active: isActive('/admin/guaubook') })} href="/admin/guaubook">
           <AdminIcon type="users" />
           <span>Ver GuauBook</span>
         </Link>

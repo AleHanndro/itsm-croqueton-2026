@@ -52,10 +52,13 @@ function SiteNavigation({
     }
   ]
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setIsMenuOpen(false)
   }, [location.pathname, location.hash])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!isMenuOpen) return
 

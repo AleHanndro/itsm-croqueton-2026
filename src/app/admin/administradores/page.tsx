@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 
 import { AdminLayout } from '@/components/admin-layout'
 import { Button } from '@/components/ui/button'
@@ -16,65 +16,220 @@ import {
 } from '@/components/ui/dialog'
 import { FieldLabel, TextInput } from '@/components/ui/field'
 import { UserAvatar } from '@/components/user-visuals'
-import { useCommunity, type CommunityError } from '@/providers/community-provider'
+import { useCommunity } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
 
-const errorMessages: Record<CommunityError, { en: string; es: string }> = {
-  current_password_incorrect: { en: 'The current password is not correct.', es: 'La contraseña actual no es correcta.' },
-  email_invalid: { en: 'Write a valid email address.', es: 'Escribe un correo electrónico válido.' },
-  email_taken: { en: 'That email address is already registered.', es: 'Ese correo electrónico ya está registrado.' },
-  name_required: { en: "The full name cannot be empty.", es: 'El nombre completo no puede quedar vacío.' },
-  no_session: { en: 'There is no active session.', es: 'No hay una sesión activa.' },
-  password_same: { en: 'The new password must be different.', es: 'La nueva contraseña debe ser diferente.' },
-  password_too_short: { en: 'The password must have at least 6 characters.', es: 'La contraseña debe tener al menos 6 caracteres.' },
-  password_unavailable: { en: 'Password changes are not available.', es: 'El cambio de contraseña no está disponible.' },
-  pet_name_required: { en: "The pet's name cannot be empty.", es: 'El nombre de la mascota no puede quedar vacío.' },
-  username_invalid: { en: 'The username must have 3 to 24 characters.', es: 'El nombre de usuario debe tener entre 3 y 24 caracteres.' },
-  username_taken: { en: 'That username is already in use.', es: 'Ese nombre de usuario ya está en uso.' }
-}
-
-type StatusMessage = { text: string; type: 'error' | 'success' } | null
-
-type AdminForm = {
-  avatarImage: string | null | undefined
-  confirmPassword: string
+type AdminUser = {
+  avatarImage?: string
+  avatarConfig?: Record<string, unknown>
+  createdAt: string
   email: string
+  id: string
   isActive: boolean
   name: string
-  password: string
+  permissions?: Record<string, boolean>
+  role: 'admin' | 'superadmin' | 'user'
   username: string
 }
 
-const emptyForm: AdminForm = {
-  avatarImage: undefined,
-  confirmPassword: '',
+const emptyForm = {
+  avatarImage: undefined as string | null | undefined,
   email: '',
   isActive: true,
   name: '',
   password: '',
+  role: 'admin' as 'admin' | 'superadmin',
   username: ''
 }
 
 export default function AdministradoresPage() {
   const { language } = useLanguage()
-  const {
-    user,
-    isHydrated,
-    profiles,
-    createAdmin,
-    updateAdmin,
-    setAdminActive,
-    deleteAdmin
-  } = useCommunity()
+  const { user, isHydrated } = useCommunity()
   const isEnglish = language === 'en'
 
+  const [admins, setAdmins] = useState<AdminUser[]>([])
+  const [loading, setLoading] = useState(true)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
-  const [editingEmail, setEditingEmail] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
-  const [form, setForm] = useState<AdminForm>(emptyForm)
-  const [message, setMessage] = useState<StatusMessage>(null)
+  const [form, setForm] = useState(emptyForm)
+  const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  async function loadAdmins() {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/admin/admins')
+      if (!response.ok) throw new Error('request_failed')
+      const data = (await response.json()) as { admins: AdminUser[] }
+      setAdmins(data.admins)
+    } catch {
+      setMessage({ type: 'error', text: isEnglish ? 'Could not load administrators.' : 'No se pudieron cargar los administradores.' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    void loadAdmins()
+  }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const filteredAdmins = admins.filter((profile) => {
+    const query = search.trim().toLowerCase()
+    if (query && !profile.name.toLowerCase().includes(query) &&
+        !profile.username.toLowerCase().includes(query) &&
+        !profile.email.toLowerCase().includes(query)) {
+      return false
+    }
+    if (statusFilter === 'active' && profile.isActive === false) return false
+    if (statusFilter === 'inactive' && profile.isActive !== false) return false
+    return true
+  })
+
+  function openCreate() {
+    setForm(emptyForm)
+    setMessage(null)
+    setIsCreateOpen(true)
+  }
+
+  function openEdit(profile: AdminUser) {
+    setEditingId(profile.id)
+    setForm({
+      avatarImage: profile.avatarImage,
+      email: profile.email,
+      isActive: profile.isActive,
+      name: profile.name,
+      password: '',
+      role: profile.role === 'superadmin' ? 'superadmin' : 'admin',
+      username: profile.username
+    })
+    setMessage(null)
+    setIsEditOpen(true)
+  }
+
+  async function handleCreate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (saving) return
+
+    if (!/^[a-z0-9._]{3,24}$/.test(form.username.trim().toLowerCase())) {
+      setMessage({ type: 'error', text: isEnglish ? 'Username must have 3 to 24 characters: lowercase letters, numbers, dots or underscores.' : 'El nombre de usuario debe tener de 3 a 24 caracteres: minúsculas, números, puntos o guiones bajos.' })
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim())) {
+      setMessage({ type: 'error', text: isEnglish ? 'Enter a valid email address.' : 'Introduce un correo electrónico válido.' })
+      return
+    }
+    if (form.password.length < 8 || !/[A-Z]/.test(form.password) || !/[a-z]/.test(form.password) || !/[^A-Za-z]/.test(form.password)) {
+      setMessage({ type: 'error', text: isEnglish ? 'Password must have at least 8 characters, one uppercase, one lowercase and one number or symbol.' : 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número o símbolo.' })
+      return
+    }
+
+    setSaving(true)
+    setMessage(null)
+    try {
+      const response = await fetch('/api/admin/admins', {
+        body: JSON.stringify({
+          avatarImage: form.avatarImage,
+          email: form.email,
+          isActive: form.isActive,
+          name: form.name,
+          password: form.password,
+          role: form.role,
+          username: form.username
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST'
+      })
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data?.error || 'request_failed')
+      }
+      setIsCreateOpen(false)
+      setForm(emptyForm)
+      setMessage({ type: 'success', text: isEnglish ? 'Administrator created.' : 'Administrador creado.' })
+      await loadAdmins()
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : ''
+      setMessage({ type: 'error', text: isEnglish ? `Could not create administrator. ${detail}` : `No se pudo crear el administrador. ${detail}` })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleEdit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!editingId) return
+    if (saving) return
+    setSaving(true)
+    setMessage(null)
+    try {
+      const response = await fetch(`/api/admin/admins/${editingId}`, {
+        body: JSON.stringify({
+          avatarImage: form.avatarImage,
+          email: form.email,
+          isActive: form.isActive,
+          name: form.name,
+          role: form.role,
+          username: form.username
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'PATCH'
+      })
+      if (!response.ok) throw new Error('request_failed')
+      setIsEditOpen(false)
+      setEditingId(null)
+      setMessage({ type: 'success', text: isEnglish ? 'Administrator updated.' : 'Administrador actualizado.' })
+      await loadAdmins()
+    } catch {
+      setMessage({ type: 'error', text: isEnglish ? 'Could not update administrator.' : 'No se pudo actualizar el administrador.' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleSetActive(id: string, active: boolean) {
+    try {
+      const response = await fetch(`/api/admin/admins/${id}`, {
+        body: JSON.stringify({ isActive: active }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'PATCH'
+      })
+      if (!response.ok) throw new Error('request_failed')
+      await loadAdmins()
+    } catch {
+      setMessage({ type: 'error', text: isEnglish ? 'Could not update status.' : 'No se pudo actualizar el estado.' })
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!window.confirm(isEnglish ? 'Delete this administrator?' : '¿Eliminar este administrador?')) return
+    try {
+      const response = await fetch(`/api/admin/admins/${id}`, { method: 'DELETE' })
+      if (!response.ok) throw new Error('request_failed')
+      setMessage({ type: 'success', text: isEnglish ? 'Administrator deleted.' : 'Administrador eliminado.' })
+      await loadAdmins()
+    } catch {
+      setMessage({ type: 'error', text: isEnglish ? 'Could not delete administrator.' : 'No se pudo eliminar el administrador.' })
+    }
+  }
+
+  function handleAvatarFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) return
+    const reader = new FileReader()
+    reader.addEventListener('load', () => {
+      if (typeof reader.result === 'string') {
+        setForm((current) => ({ ...current, avatarImage: reader.result as string }))
+      }
+    })
+    reader.readAsDataURL(file)
+    event.target.value = ''
+  }
 
   if (!isHydrated || !user) {
     return (
@@ -100,123 +255,6 @@ export default function AdministradoresPage() {
     )
   }
 
-  const admins = Object.values(profiles).filter(
-    (profile) => profile.role === 'admin' || profile.role === 'superadmin'
-  )
-
-  const filteredAdmins = admins.filter((profile) => {
-    const query = search.trim().toLowerCase()
-    if (query && !profile.name.toLowerCase().includes(query) &&
-        !profile.username.toLowerCase().includes(query) &&
-        !profile.email.toLowerCase().includes(query)) {
-      return false
-    }
-    if (statusFilter === 'active' && profile.isActive === false) return false
-    if (statusFilter === 'inactive' && profile.isActive !== false) return false
-    return true
-  })
-
-  function openCreate() {
-    setForm(emptyForm)
-    setMessage(null)
-    setIsCreateOpen(true)
-  }
-
-  function openEdit(profile: (typeof admins)[number]) {
-    setEditingEmail(profile.email)
-    setForm({
-      avatarImage: profile.avatarImage,
-      confirmPassword: '',
-      email: profile.email,
-      isActive: profile.isActive ?? true,
-      name: profile.name,
-      password: '',
-      username: profile.username
-    })
-    setMessage(null)
-    setIsEditOpen(true)
-  }
-
-  async function handleCreate(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setMessage(null)
-
-    if (form.password !== form.confirmPassword) {
-      setMessage({
-        type: 'error',
-        text: isEnglish ? 'The passwords do not match.' : 'Las contraseñas no coinciden.'
-      })
-      return
-    }
-
-    const result = await createAdmin({
-      avatarImage: form.avatarImage ?? undefined,
-      email: form.email,
-      isActive: form.isActive,
-      name: form.name,
-      password: form.password,
-      username: form.username
-    })
-
-    if (!result.ok) {
-      setMessage({
-        type: 'error',
-        text: errorMessages[result.error]?.[isEnglish ? 'en' : 'es'] ?? result.error
-      })
-      return
-    }
-
-    setForm(emptyForm)
-    setIsCreateOpen(false)
-    setMessage({
-      type: 'success',
-      text: isEnglish ? 'Administrator created.' : 'Administrador creado.'
-    })
-  }
-
-  async function handleEdit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (!editingEmail) return
-    setMessage(null)
-
-    const result = updateAdmin(editingEmail, {
-      avatarImage: form.avatarImage,
-      email: form.email,
-      isActive: form.isActive,
-      name: form.name,
-      username: form.username
-    })
-
-    if (!result.ok) {
-      setMessage({
-        type: 'error',
-        text: errorMessages[result.error]?.[isEnglish ? 'en' : 'es'] ?? result.error
-      })
-      return
-    }
-
-    setIsEditOpen(false)
-    setEditingEmail(null)
-    setMessage({
-      type: 'success',
-      text: isEnglish ? 'Administrator updated.' : 'Administrador actualizado.'
-    })
-  }
-
-  function handleAvatarFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    if (!file) return
-    if (!file.type.startsWith('image/')) return
-    const reader = new FileReader()
-    reader.addEventListener('load', () => {
-      if (typeof reader.result === 'string') {
-        setForm((current) => ({ ...current, avatarImage: reader.result as string }))
-      }
-    })
-    reader.readAsDataURL(file)
-    event.target.value = ''
-  }
-
   return (
     <AdminLayout>
       <Container as="section" className="pt-10 pb-27.5 tablet:pt-8.75 phone:pt-6 phone:pb-22.5">
@@ -228,8 +266,8 @@ export default function AdministradoresPage() {
             </h1>
             <p className="m-0 max-w-162.5 text-body-sm font-extrabold text-fg-admin-welcome">
               {isEnglish
-                ? 'Manage administrator accounts and permissions.'
-                : 'Gestiona las cuentas y permisos de los administradores.'}
+                ? 'Manage administrator accounts, types and access.'
+                : 'Gestiona las cuentas, tipos y accesos de los administradores.'}
             </p>
           </div>
           <Button type="button" onClick={openCreate}>
@@ -275,86 +313,108 @@ export default function AdministradoresPage() {
                 <th className="px-4 py-3">{isEnglish ? 'Name' : 'Nombre'}</th>
                 <th className="px-4 py-3">{isEnglish ? 'Username' : 'Usuario'}</th>
                 <th className="px-4 py-3">{isEnglish ? 'Email' : 'Correo'}</th>
-                <th className="px-4 py-3">{isEnglish ? 'Created' : 'Creado'}</th>
+                <th className="px-4 py-3">{isEnglish ? 'Type' : 'Tipo'}</th>
                 <th className="px-4 py-3">{isEnglish ? 'Status' : 'Estado'}</th>
                 <th className="px-4 py-3">{isEnglish ? 'Actions' : 'Acciones'}</th>
               </tr>
             </thead>
             <tbody>
-              {filteredAdmins.map((profile) => (
-                <tr key={profile.email} className="border-b border-stroke-divider last:border-0">
-                  <td className="px-4 py-3">
-                    <UserAvatar user={profile} className="size-10" />
-                  </td>
-                  <td className="px-4 py-3 font-black">{profile.name}</td>
-                  <td className="px-4 py-3">@{profile.username}</td>
-                  <td className="px-4 py-3">{profile.email}</td>
-                  <td className="px-4 py-3">
-                    {new Intl.DateTimeFormat(isEnglish ? 'en' : 'es', { dateStyle: 'medium' }).format(
-                      new Date(profile.createdAt ?? '1970-01-01T00:00:00.000Z')
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    {profile.isActive === false
-                      ? isEnglish
-                        ? 'Inactive'
-                        : 'Inactivo'
-                      : isEnglish
-                        ? 'Active'
-                        : 'Activo'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-2">
-                      {profile.role === 'superadmin' ? (
-                        <span className="font-black opacity-60">
-                          {isEnglish ? 'Principal' : 'Principal'}
-                        </span>
-                      ) : (
-                        <>
-                          <button
-                            type="button"
-                            className="text-caption font-black underline"
-                            onClick={() => openEdit(profile)}
-                          >
-                            {isEnglish ? 'Edit' : 'Editar'}
-                          </button>
-                          <button
-                            type="button"
-                            className="text-caption font-black underline"
-                            onClick={() => setAdminActive(profile.email, profile.isActive === false)}
-                          >
-                            {profile.isActive === false
-                              ? isEnglish
-                                ? 'Activate'
-                                : 'Activar'
-                              : isEnglish
-                                ? 'Deactivate'
-                                : 'Desactivar'}
-                          </button>
-                          <button
-                            type="button"
-                            className="text-caption font-black text-[#9e3b28] underline"
-                            onClick={() => {
-                              if (window.confirm(isEnglish ? 'Delete this administrator?' : '¿Eliminar este administrador?')) {
-                                deleteAdmin(profile.email)
-                              }
-                            }}
-                          >
-                            {isEnglish ? 'Delete' : 'Eliminar'}
-                          </button>
-                        </>
-                      )}
-                    </div>
+              {loading ? (
+                <tr>
+                  <td className="px-4 py-6" colSpan={7}>
+                    {isEnglish ? 'Loading…' : 'Cargando…'}
                   </td>
                 </tr>
-              ))}
+              ) : filteredAdmins.length === 0 ? (
+                <tr>
+                  <td className="px-4 py-6" colSpan={7}>
+                    {isEnglish ? 'No administrators found.' : 'No se encontraron administradores.'}
+                  </td>
+                </tr>
+              ) : (
+                filteredAdmins.map((profile) => (
+                  <tr key={profile.id} className="border-b border-stroke-divider last:border-0">
+                    <td className="px-4 py-3">
+                      <UserAvatar
+                        user={{
+                          avatarConfig: (profile.avatarConfig as never) ?? {},
+                          avatarImage: profile.avatarImage,
+                          name: profile.name,
+                          petName: '',
+                          username: profile.username
+                        } as never}
+                        className="size-10"
+                      />
+                    </td>
+                    <td className="px-4 py-3 font-black">{profile.name}</td>
+                    <td className="px-4 py-3">@{profile.username}</td>
+                    <td className="px-4 py-3">{profile.email}</td>
+                    <td className="px-4 py-3">
+                      {profile.role === 'superadmin'
+                        ? isEnglish
+                          ? 'Superadmin'
+                          : 'Superadministrador'
+                        : profile.role === 'admin'
+                          ? isEnglish
+                            ? 'Administrator'
+                            : 'Administrador'
+                          : isEnglish
+                            ? 'User'
+                            : 'Usuario'}
+                    </td>
+                    <td className="px-4 py-3">
+                      {profile.isActive === false
+                        ? isEnglish
+                          ? 'Inactive'
+                          : 'Inactivo'
+                        : isEnglish
+                          ? 'Active'
+                          : 'Activo'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-2">
+                        {profile.role === 'superadmin' ? (
+                          <span className="font-black opacity-60">
+                            {isEnglish ? 'Principal' : 'Principal'}
+                          </span>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              className="text-caption font-black underline"
+                              onClick={() => openEdit(profile)}
+                            >
+                              {isEnglish ? 'Edit' : 'Editar'}
+                            </button>
+                            <button
+                              type="button"
+                              className="text-caption font-black underline"
+                              onClick={() => void handleSetActive(profile.id, profile.isActive === false)}
+                            >
+                              {profile.isActive === false
+                                ? isEnglish
+                                  ? 'Activate'
+                                  : 'Activar'
+                                : isEnglish
+                                  ? 'Deactivate'
+                                  : 'Desactivar'}
+                            </button>
+                            <button
+                              type="button"
+                              className="text-caption font-black text-[#9e3b28] underline"
+                              onClick={() => void handleDelete(profile.id)}
+                            >
+                              {isEnglish ? 'Delete' : 'Eliminar'}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-          {filteredAdmins.length === 0 && (
-            <p className="p-4 text-small font-extrabold opacity-65">
-              {isEnglish ? 'No administrators found.' : 'No se encontraron administradores.'}
-            </p>
-          )}
         </div>
 
         <DialogRoot open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -378,11 +438,18 @@ export default function AdministradoresPage() {
                   </FieldLabel>
                   <FieldLabel>
                     {isEnglish ? 'Password' : 'Contraseña'}
-                    <TextInput type="password" variant="control" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} />
+                    <TextInput type="password" variant="control" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={8} />
                   </FieldLabel>
                   <FieldLabel>
-                    {isEnglish ? 'Confirm password' : 'Confirmar contraseña'}
-                    <TextInput type="password" variant="control" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} required minLength={6} />
+                    {isEnglish ? 'Type' : 'Tipo'}
+                    <select
+                      className="rounded-control border border-stroke bg-card px-3 py-2 text-small font-black"
+                      value={form.role}
+                      onChange={(e) => setForm({ ...form, role: e.target.value as 'admin' | 'superadmin' })}
+                    >
+                      <option value="admin">{isEnglish ? 'Administrator' : 'Administrador'}</option>
+                      <option value="superadmin">{isEnglish ? 'Superadmin' : 'Superadministrador'}</option>
+                    </select>
                   </FieldLabel>
                   <FieldLabel>
                     {isEnglish ? 'Avatar' : 'Avatar'}
@@ -392,7 +459,9 @@ export default function AdministradoresPage() {
                     <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />
                     {isEnglish ? 'Active account' : 'Cuenta activa'}
                   </label>
-                  <Button type="submit">{isEnglish ? 'Create administrator' : 'Crear administrador'}</Button>
+                  <Button type="submit" disabled={saving}>
+                    {saving ? (isEnglish ? 'Saving…' : 'Guardando…') : isEnglish ? 'Create administrator' : 'Crear administrador'}
+                  </Button>
                 </form>
               </DialogPopup>
             </DialogViewport>
@@ -419,6 +488,18 @@ export default function AdministradoresPage() {
                     <TextInput type="email" variant="control" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
                   </FieldLabel>
                   <FieldLabel>
+                    {isEnglish ? 'Type' : 'Tipo'}
+                    <select
+                      className="rounded-control border border-stroke bg-card px-3 py-2 text-small font-black"
+                      value={form.role}
+                      onChange={(e) => setForm({ ...form, role: e.target.value as 'admin' | 'superadmin' })}
+                    >
+                      <option value="admin">{isEnglish ? 'Administrator' : 'Administrador'}</option>
+                      <option value="superadmin">{isEnglish ? 'Superadmin' : 'Superadministrador'}</option>
+                      <option value="user">{isEnglish ? 'Remove access (user)' : 'Quitar acceso (usuario)'}</option>
+                    </select>
+                  </FieldLabel>
+                  <FieldLabel>
                     {isEnglish ? 'Avatar' : 'Avatar'}
                     <input type="file" accept="image/*" onChange={handleAvatarFile} />
                   </FieldLabel>
@@ -426,7 +507,9 @@ export default function AdministradoresPage() {
                     <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />
                     {isEnglish ? 'Active account' : 'Cuenta activa'}
                   </label>
-                  <Button type="submit">{isEnglish ? 'Save changes' : 'Guardar cambios'}</Button>
+                  <Button type="submit" disabled={saving}>
+                    {saving ? (isEnglish ? 'Saving…' : 'Guardando…') : isEnglish ? 'Save changes' : 'Guardar cambios'}
+                  </Button>
                 </form>
               </DialogPopup>
             </DialogViewport>

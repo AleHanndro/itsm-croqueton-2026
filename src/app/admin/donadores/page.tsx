@@ -25,23 +25,40 @@ type DonorArticle = {
   unit: string
 }
 
-type DonorRecord = {
-  articles: DonorArticle[]
-  createdAt: string
-  croquetteAmount: number
-  croquetteUnit: 'g' | 'kg'
-  email: string
+type Donor = {
+  career?: string | null
+  email?: string | null
   firstName: string
   id: string
   isItsMotul: boolean
   lastName: string
-  memberType?: 'student' | 'directive' | 'general'
-  phone: string
-  year: number
+  memberType?: string | null
+  phone?: string | null
+}
+
+type DonationItem = {
+  customName?: string | null
+  id: string
+  quantity: number
+  type?: string | null
+  typeName?: string | null
+  unit?: string | null
+}
+
+type Donation = {
+  createdAt: string
+  croquetteAmount: number
+  croquetteKg: number
+  croquetteUnit: 'g' | 'kg'
+  donor: Donor
+  id: string
+  items: DonationItem[]
+  year?: number | null
 }
 
 type DonorForm = {
   articles: DonorArticle[]
+  career: string
   croquetteAmount: string
   croquetteUnit: 'g' | 'kg'
   email: string
@@ -55,6 +72,7 @@ type DonorForm = {
 
 const emptyForm: DonorForm = {
   articles: [],
+  career: '',
   croquetteAmount: '',
   croquetteUnit: 'kg',
   email: '',
@@ -67,27 +85,15 @@ const emptyForm: DonorForm = {
 }
 
 const ARTICLE_TYPES = [
-  'Trastes',
-  'Juguetes',
-  'Sobres de alimento',
-  'Accesorios',
-  'Camas',
-  'Cobijas',
-  'Correas',
-  'Platos para mascotas',
-  'Otros'
+  { label: 'Juguetes', slug: 'toys' },
+  { label: 'Sobres de alimento', slug: 'sachets' },
+  { label: 'Accesorios', slug: 'accessories' },
+  { label: 'Camas', slug: 'beds' },
+  { label: 'Cobijas', slug: 'blankets' },
+  { label: 'Correas', slug: 'leashes' },
+  { label: 'Platos para mascotas / Trastes', slug: 'bowls' },
+  { label: 'Otros', slug: 'other' }
 ]
-
-function readJson<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback
-  const stored = window.localStorage.getItem(key)
-  if (!stored) return fallback
-  try {
-    return JSON.parse(stored) as T
-  } catch {
-    return fallback
-  }
-}
 
 function isEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
@@ -98,85 +104,80 @@ export default function DonadoresAdminPage() {
   const { user, isHydrated } = useCommunity()
   const isEnglish = language === 'en'
 
-  const [currentYear, setCurrentYear] = useState(0)
   const [years, setYears] = useState<number[]>([])
   const [selectedYear, setSelectedYear] = useState<number>(0)
-  const [records, setRecords] = useState<DonorRecord[]>([])
-  const [isHydratedLocal, setIsHydratedLocal] = useState(false)
+  const [donations, setDonations] = useState<Donation[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [isYearOpen, setIsYearOpen] = useState(false)
   const [newYear, setNewYear] = useState('')
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [viewingRecord, setViewingRecord] = useState<DonorRecord | null>(null)
+  const [viewingRecord, setViewingRecord] = useState<Donation | null>(null)
   const [form, setForm] = useState<DonorForm>(emptyForm)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null)
+  const [saving, setSaving] = useState(false)
 
+  async function loadYears() {
+    const response = await fetch('/api/admin/donation-years')
+    if (!response.ok) return
+    const data = (await response.json()) as { years: { id: string; year: number }[] }
+    const list = data.years.map((item) => item.year).sort((a, b) => a - b)
+    setYears(list)
+    if (list.length && !selectedYear) setSelectedYear(list.includes(new Date().getFullYear()) ? new Date().getFullYear() : list[0])
+  }
+
+  async function loadDonations() {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (selectedYear) params.set('year', String(selectedYear))
+      if (search.trim()) params.set('search', search.trim())
+      const response = await fetch(`/api/admin/donations?${params.toString()}`)
+      if (!response.ok) throw new Error('request_failed')
+      const data = (await response.json()) as { donations: Donation[] }
+      setDonations(data.donations)
+    } catch {
+      setMessage({ type: 'error', text: isEnglish ? 'Could not load donations.' : 'No se pudieron cargar las donaciones.' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    const year = new Date().getFullYear()
-    setCurrentYear(year)
-    const savedYears = readJson<number[]>('croqueton-donor-years', [])
-    const savedRecords = readJson<DonorRecord[]>('croqueton-donors', [])
-    const nextYears = savedYears.length ? savedYears : [year]
-    setYears(nextYears)
-    setRecords(savedRecords)
-    setSelectedYear(nextYears.includes(year) ? year : nextYears[0])
-    setIsHydratedLocal(true)
+    void loadYears()
   }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (!isHydratedLocal) return
-    window.localStorage.setItem('croqueton-donor-years', JSON.stringify(years))
-  }, [years, isHydratedLocal])
+    if (selectedYear) void loadDonations()
+  }, [selectedYear, search])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
-  useEffect(() => {
-    if (!isHydratedLocal) return
-    window.localStorage.setItem('croqueton-donors', JSON.stringify(records))
-  }, [records, isHydratedLocal])
-
-  const yearRecords = records.filter((record) => record.year === selectedYear)
-
-  const filteredRecords = yearRecords.filter((record) => {
-    const query = search.trim().toLowerCase()
-    if (!query) return true
-    return (
-      record.firstName.toLowerCase().includes(query) ||
-      record.lastName.toLowerCase().includes(query) ||
-      record.email.toLowerCase().includes(query) ||
-      record.phone.toLowerCase().includes(query)
-    )
-  })
-
-  const totalDonors = yearRecords.length
-  const totalKg = yearRecords.reduce((total, record) => {
-    const amount =
-      record.croquetteUnit === 'g' ? record.croquetteAmount / 1000 : record.croquetteAmount
-    return total + amount
-  }, 0)
-  const totalArticles = yearRecords.reduce(
-    (total, record) =>
-      total + record.articles.reduce((sum, article) => sum + (Number(article.quantity) || 0), 0),
-    0
-  )
-  const itsCount = yearRecords.filter((record) => record.isItsMotul).length
-  const externalCount = yearRecords.filter((record) => !record.isItsMotul).length
-
-  function handleAddYear(event: FormEvent<HTMLFormElement>) {
+  async function handleAddYear(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const year = Number(newYear)
     if (!Number.isInteger(year) || year < 2000 || year > 2100) {
       setMessage({ type: 'error', text: isEnglish ? 'Enter a valid year.' : 'Ingresa un año válido.' })
       return
     }
-    if (years.includes(year)) {
-      setMessage({ type: 'error', text: isEnglish ? 'That year already exists.' : 'Ese año ya existe.' })
-      return
+    try {
+      const response = await fetch('/api/admin/donation-years', {
+        body: JSON.stringify({ year }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST'
+      })
+      if (!response.ok) throw new Error('request_failed')
+      await loadYears()
+      setSelectedYear(year)
+      setNewYear('')
+      setIsYearOpen(false)
+      setMessage({ type: 'success', text: isEnglish ? 'Year added.' : 'Año agregado.' })
+    } catch {
+      setMessage({ type: 'error', text: isEnglish ? 'Could not add year.' : 'No se pudo agregar el año.' })
     }
-    setYears((current) => [...current, year].sort((a, b) => a - b))
-    setSelectedYear(year)
-    setNewYear('')
-    setIsYearOpen(false)
-    setMessage({ type: 'success', text: isEnglish ? 'Year added.' : 'Año agregado.' })
   }
 
   function openCreate() {
@@ -186,19 +187,25 @@ export default function DonadoresAdminPage() {
     setIsFormOpen(true)
   }
 
-  function openEdit(record: DonorRecord) {
-    setEditingId(record.id)
+  function openEdit(donation: Donation) {
+    setEditingId(donation.id)
     setForm({
-      articles: record.articles,
-      croquetteAmount: String(record.croquetteAmount),
-      croquetteUnit: record.croquetteUnit,
-      email: record.email,
-      firstName: record.firstName,
-      hasOtherArticles: record.articles.length > 0,
-      isItsMotul: record.isItsMotul,
-      lastName: record.lastName,
-      memberType: record.memberType ?? 'student',
-      phone: record.phone
+      articles: donation.items.map((item) => ({
+        customName: item.customName ?? '',
+        quantity: item.quantity,
+        type: item.type ?? 'other',
+        unit: item.unit ?? 'unidad'
+      })),
+      career: donation.donor.career ?? '',
+      croquetteAmount: String(donation.croquetteAmount),
+      croquetteUnit: donation.croquetteUnit,
+      email: donation.donor.email ?? '',
+      firstName: donation.donor.firstName,
+      hasOtherArticles: donation.items.length > 0,
+      isItsMotul: donation.donor.isItsMotul,
+      lastName: donation.donor.lastName,
+      memberType: (donation.donor.memberType as DonorForm['memberType']) ?? 'student',
+      phone: donation.donor.phone ?? ''
     })
     setMessage(null)
     setIsFormOpen(true)
@@ -206,21 +213,22 @@ export default function DonadoresAdminPage() {
 
   function validateForm() {
     if (!form.firstName.trim() || !form.lastName.trim()) return isEnglish ? 'Name and last name are required.' : 'Nombre y apellido son obligatorios.'
-    if (!isEmail(form.email.trim())) return isEnglish ? 'Enter a valid email.' : 'Ingresa un correo válido.'
+    if (form.email.trim() && !isEmail(form.email.trim())) return isEnglish ? 'Enter a valid email.' : 'Ingresa un correo válido.'
     if (!/^[0-9+\-\s]{7,20}$/.test(form.phone.trim())) return isEnglish ? 'Enter a valid phone number.' : 'Ingresa un teléfono válido.'
     const amount = Number(form.croquetteAmount)
     if (Number.isNaN(amount) || amount < 0) return isEnglish ? 'Enter a valid croquette amount.' : 'Ingresa una cantidad válida de croquetas.'
+    if (form.isItsMotul && form.memberType === 'student' && !form.career.trim()) return isEnglish ? 'Select a career.' : 'Selecciona una carrera.'
     if (form.hasOtherArticles) {
       for (const article of form.articles) {
         if (!article.type) return isEnglish ? 'Select an article type.' : 'Selecciona un tipo de artículo.'
-        if (article.type === 'Otros' && !article.customName?.trim()) return isEnglish ? 'Write the article name.' : 'Escribe el nombre del artículo.'
+        if (article.type === 'other' && !article.customName?.trim()) return isEnglish ? 'Write the article name.' : 'Escribe el nombre del artículo.'
         if (Number(article.quantity) <= 0) return isEnglish ? 'Enter a valid quantity.' : 'Ingresa una cantidad válida.'
       }
     }
     return null
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const error = validateForm()
     if (error) {
@@ -228,46 +236,69 @@ export default function DonadoresAdminPage() {
       return
     }
 
-    const record: DonorRecord = {
-      articles: form.hasOtherArticles ? form.articles : [],
-      createdAt: editingId
-        ? records.find((item) => item.id === editingId)?.createdAt ?? new Date().toISOString()
-        : new Date().toISOString(),
+    const payload = {
       croquetteAmount: Number(form.croquetteAmount || 0),
       croquetteUnit: form.croquetteUnit,
-      email: form.email.trim(),
-      firstName: form.firstName.trim(),
-      id: editingId ?? crypto.randomUUID(),
-      isItsMotul: form.isItsMotul,
-      lastName: form.lastName.trim(),
-      memberType: form.isItsMotul ? form.memberType : undefined,
-      phone: form.phone.trim(),
+      donor: {
+        career: form.isItsMotul && form.memberType === 'student' ? form.career : null,
+        email: form.email.trim() || null,
+        firstName: form.firstName.trim(),
+        isItsMotul: form.isItsMotul,
+        lastName: form.lastName.trim(),
+        memberType: form.isItsMotul ? form.memberType : null,
+        phone: form.phone.trim() || null
+      },
+      items: form.hasOtherArticles
+        ? form.articles.map((article) => ({
+            customName: article.type === 'other' ? article.customName?.trim() || null : null,
+            quantity: Number(article.quantity),
+            type: article.type,
+            unit: article.unit
+          }))
+        : [],
       year: selectedYear
     }
 
-    if (editingId) {
-      setRecords((current) => current.map((item) => (item.id === editingId ? record : item)))
-      setMessage({ type: 'success', text: isEnglish ? 'Donation updated.' : 'Donación actualizada.' })
-    } else {
-      setRecords((current) => [record, ...current])
-      setMessage({ type: 'success', text: isEnglish ? 'Donation registered.' : 'Donación registrada.' })
-    }
+    setSaving(true)
+    try {
+      const response = await fetch(
+        editingId ? `/api/admin/donations/${editingId}` : '/api/admin/donations',
+        {
+          body: JSON.stringify(payload),
+          headers: { 'Content-Type': 'application/json' },
+          method: editingId ? 'PATCH' : 'POST'
+        }
+      )
+      if (!response.ok) throw new Error('request_failed')
 
-    setIsFormOpen(false)
-    setEditingId(null)
-    setForm(emptyForm)
+      setMessage({ type: 'success', text: editingId ? (isEnglish ? 'Donation updated.' : 'Donación actualizada.') : (isEnglish ? 'Donation registered.' : 'Donación registrada.') })
+      setIsFormOpen(false)
+      setEditingId(null)
+      setForm(emptyForm)
+      await loadDonations()
+    } catch {
+      setMessage({ type: 'error', text: isEnglish ? 'Could not save donation.' : 'No se pudo guardar la donación.' })
+    } finally {
+      setSaving(false)
+    }
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
     if (!window.confirm(isEnglish ? 'Delete this donation?' : '¿Eliminar esta donación?')) return
-    setRecords((current) => current.filter((record) => record.id !== id))
-    setMessage({ type: 'success', text: isEnglish ? 'Donation deleted.' : 'Donación eliminada.' })
+    try {
+      const response = await fetch(`/api/admin/donations/${id}`, { method: 'DELETE' })
+      if (!response.ok) throw new Error('request_failed')
+      setMessage({ type: 'success', text: isEnglish ? 'Donation deleted.' : 'Donación eliminada.' })
+      await loadDonations()
+    } catch {
+      setMessage({ type: 'error', text: isEnglish ? 'Could not delete donation.' : 'No se pudo eliminar la donación.' })
+    }
   }
 
   function addArticle() {
     setForm((current) => ({
       ...current,
-      articles: [...current.articles, { customName: '', quantity: 1, type: 'Juguetes', unit: 'unidad' }]
+      articles: [...current.articles, { customName: '', quantity: 1, type: 'toys', unit: 'unidad' }]
     }))
   }
 
@@ -285,7 +316,29 @@ export default function DonadoresAdminPage() {
     }))
   }
 
-  if (!isHydrated || !isHydratedLocal || !user) {
+  const yearRecords = donations
+
+  const filteredRecords = yearRecords.filter((record) => {
+    const query = search.trim().toLowerCase()
+    if (!query) return true
+    return (
+      record.donor.firstName.toLowerCase().includes(query) ||
+      record.donor.lastName.toLowerCase().includes(query) ||
+      (record.donor.email ?? '').toLowerCase().includes(query) ||
+      (record.donor.phone ?? '').toLowerCase().includes(query)
+    )
+  })
+
+  const totalDonors = donations.length
+  const totalKg = donations.reduce((total, record) => total + record.croquetteKg, 0)
+  const totalArticles = donations.reduce(
+    (total, record) => total + record.items.reduce((sum, article) => sum + (Number(article.quantity) || 0), 0),
+    0
+  )
+  const itsCount = donations.filter((record) => record.donor.isItsMotul).length
+  const externalCount = donations.filter((record) => !record.donor.isItsMotul).length
+
+  if (!isHydrated || !user) {
     return (
       <AdminLayout>
         <Container as="section" className="grid min-h-[60vh] content-center justify-items-center gap-3 text-center">
@@ -347,7 +400,7 @@ export default function DonadoresAdminPage() {
           </div>
           <div className="rounded-2xl border border-stroke-card-admin bg-surface-panel p-4">
             <small className="block text-micro font-black uppercase opacity-60">{isEnglish ? 'Croquettes (kg)' : 'Croquetas (kg)'}</small>
-            <strong className="font-heading text-[28px]">{totalKg.toFixed(2)}</strong>
+            <strong className="font-heading text-[28px]">{totalKg.toFixed(3)}</strong>
           </div>
           <div className="rounded-2xl border border-stroke-card-admin bg-surface-panel p-4">
             <small className="block text-micro font-black uppercase opacity-60">{isEnglish ? 'Articles' : 'Artículos'}</small>
@@ -384,53 +437,58 @@ export default function DonadoresAdminPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredRecords.map((record) => (
-                <tr key={record.id} className="border-b border-stroke-divider last:border-0">
-                  <td className="px-4 py-3 font-black">{record.firstName} {record.lastName}</td>
-                  <td className="px-4 py-3">
-                    {record.isItsMotul
-                      ? isEnglish
-                        ? `ITS Motul - ${record.memberType}`
-                        : `ITS Motul - ${record.memberType}`
-                      : isEnglish
-                        ? 'External donor'
-                        : 'Donador externo'}
-                  </td>
-                  <td className="px-4 py-3">{record.email}</td>
-                  <td className="px-4 py-3">{record.phone}</td>
-                  <td className="px-4 py-3">{record.croquetteAmount} {record.croquetteUnit}</td>
-                  <td className="px-4 py-3">
-                    {record.articles.length
-                      ? record.articles.map((article) => `${article.quantity} ${article.type === 'Otros' ? article.customName : article.type}`).join(', ')
-                      : '—'}
-                  </td>
-                  <td className="px-4 py-3">{new Date(record.createdAt).toLocaleDateString()}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-2">
-                      <button type="button" className="text-caption font-black underline" onClick={() => setViewingRecord(record)}>
-                        {isEnglish ? 'View' : 'Ver'}
-                      </button>
-                      <button type="button" className="text-caption font-black underline" onClick={() => openEdit(record)}>
-                        {isEnglish ? 'Edit' : 'Editar'}
-                      </button>
-                      <button
-                        type="button"
-                        className="text-caption font-black text-[#9e3b28] underline"
-                        onClick={() => handleDelete(record.id)}
-                      >
-                        {isEnglish ? 'Delete' : 'Eliminar'}
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td className="px-4 py-6" colSpan={8}>
+                    {isEnglish ? 'Loading…' : 'Cargando…'}
                   </td>
                 </tr>
-              ))}
+              ) : filteredRecords.length === 0 ? (
+                <tr>
+                  <td className="px-4 py-6" colSpan={8}>
+                    {isEnglish ? 'No donations found.' : 'No se encontraron donaciones.'}
+                  </td>
+                </tr>
+              ) : (
+                filteredRecords.map((record) => (
+                  <tr key={record.id} className="border-b border-stroke-divider last:border-0">
+                    <td className="px-4 py-3 font-black">{record.donor.firstName} {record.donor.lastName}</td>
+                    <td className="px-4 py-3">
+                      {record.donor.isItsMotul
+                        ? `ITS Motul - ${record.donor.memberType ?? ''}${record.donor.career ? ` - ${record.donor.career}` : ''}`
+                        : (isEnglish ? 'External donor' : 'Donador externo')}
+                    </td>
+                    <td className="px-4 py-3">{record.donor.email ?? '—'}</td>
+                    <td className="px-4 py-3">{record.donor.phone ?? '—'}</td>
+                    <td className="px-4 py-3">{record.croquetteAmount} {record.croquetteUnit}</td>
+                    <td className="px-4 py-3">
+                      {record.items.length
+                        ? record.items.map((article) => `${article.quantity} ${article.typeName ?? article.type ?? article.customName ?? ''}`).join(', ')
+                        : '—'}
+                    </td>
+                    <td className="px-4 py-3">{new Date(record.createdAt).toLocaleDateString()}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-2">
+                        <button type="button" className="text-caption font-black underline" onClick={() => setViewingRecord(record)}>
+                          {isEnglish ? 'View' : 'Ver'}
+                        </button>
+                        <button type="button" className="text-caption font-black underline" onClick={() => openEdit(record)}>
+                          {isEnglish ? 'Edit' : 'Editar'}
+                        </button>
+                        <button
+                          type="button"
+                          className="text-caption font-black text-[#9e3b28] underline"
+                          onClick={() => void handleDelete(record.id)}
+                        >
+                          {isEnglish ? 'Delete' : 'Eliminar'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-          {filteredRecords.length === 0 && (
-            <p className="p-4 text-small font-extrabold opacity-65">
-              {isEnglish ? 'No donations found for this year.' : 'No se encontraron donaciones para este año.'}
-            </p>
-          )}
         </div>
 
         <DialogRoot open={isYearOpen} onOpenChange={setIsYearOpen}>
@@ -511,10 +569,29 @@ export default function DonadoresAdminPage() {
                     </FieldLabel>
                   )}
 
+                  {form.isItsMotul && form.memberType === 'student' && (
+                    <FieldLabel>
+                      {isEnglish ? 'Career' : 'Carrera'}
+                      <select
+                        className="rounded-control border border-stroke bg-card px-3 py-2 text-small font-black"
+                        value={form.career}
+                        onChange={(e) => setForm({ ...form, career: e.target.value })}
+                        required
+                      >
+                        <option value="">{isEnglish ? 'Select a career' : 'Selecciona una carrera'}</option>
+                        <option value="ISC">ISC</option>
+                        <option value="II">II</option>
+                        <option value="IER">IER</option>
+                        <option value="IE">IE</option>
+                        <option value="IEM">IEM</option>
+                      </select>
+                    </FieldLabel>
+                  )}
+
                   <div className="grid grid-cols-2 gap-3 phone:grid-cols-1">
                     <FieldLabel>
                       {isEnglish ? 'Email' : 'Correo electrónico'}
-                      <TextInput type="email" variant="control" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+                      <TextInput type="email" variant="control" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
                     </FieldLabel>
                     <FieldLabel>
                       {isEnglish ? 'Phone' : 'Teléfono'}
@@ -569,13 +646,13 @@ export default function DonadoresAdminPage() {
                               onChange={(e) => updateArticle(index, { type: e.target.value })}
                             >
                               {ARTICLE_TYPES.map((type) => (
-                                <option key={type} value={type}>
-                                  {type}
+                                <option key={type.slug} value={type.slug}>
+                                  {type.label}
                                 </option>
                               ))}
                             </select>
                           </FieldLabel>
-                          {article.type === 'Otros' && (
+                          {article.type === 'other' && (
                             <FieldLabel>
                               {isEnglish ? 'Article name' : 'Nombre del artículo'}
                               <TextInput
@@ -620,45 +697,45 @@ export default function DonadoresAdminPage() {
                     </div>
                   )}
 
-                  <Button type="submit">
-                    {isEnglish ? 'Submit donation' : 'Enviar donación'}
+                  <Button type="submit" disabled={saving}>
+                    {saving ? (isEnglish ? 'Saving…' : 'Guardando…') : (isEnglish ? 'Submit donation' : 'Enviar donación')}
                   </Button>
                 </form>
               </DialogPopup>
             </DialogViewport>
           </DialogPortal>
         </DialogRoot>
-      <DialogRoot open={Boolean(viewingRecord)} onOpenChange={(open) => !open && setViewingRecord(null)}>
-        <DialogPortal>
-          <DialogViewport>
-            <DialogPopup>
-              <DialogClose />
-              <DialogTitle>{isEnglish ? 'Donation details' : 'Detalles de la donación'}</DialogTitle>
-              {viewingRecord && (
-                <div className="grid gap-2 text-small">
-                  <p><strong>{isEnglish ? 'Donor:' : 'Donador:'}</strong> {viewingRecord.firstName} {viewingRecord.lastName}</p>
-                  <p><strong>{isEnglish ? 'Type:' : 'Tipo:'}</strong> {viewingRecord.isItsMotul ? `ITS Motul - ${viewingRecord.memberType}` : (isEnglish ? 'External donor' : 'Donador externo')}</p>
-                  <p><strong>{isEnglish ? 'Email:' : 'Correo:'}</strong> {viewingRecord.email}</p>
-                  <p><strong>{isEnglish ? 'Phone:' : 'Teléfono:'}</strong> {viewingRecord.phone}</p>
-                  <p><strong>{isEnglish ? 'Croquettes:' : 'Croquetas:'}</strong> {viewingRecord.croquetteAmount} {viewingRecord.croquetteUnit}</p>
-                  {viewingRecord.articles.length > 0 && (
-                    <div>
-                      <strong>{isEnglish ? 'Other articles:' : 'Otros artículos:'}</strong>
-                      <ul className="m-0 pl-5">
-                        {viewingRecord.articles.map((article, index) => (
-                          <li key={index}>{article.quantity} {article.type === 'Otros' ? article.customName : article.type} {article.unit ? `(${article.unit})` : ''}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  <p><strong>{isEnglish ? 'Date:' : 'Fecha:'}</strong> {new Date(viewingRecord.createdAt).toLocaleDateString()}</p>
-                </div>
-              )}
-            </DialogPopup>
-          </DialogViewport>
-        </DialogPortal>
-      </DialogRoot>
 
+        <DialogRoot open={Boolean(viewingRecord)} onOpenChange={(open) => !open && setViewingRecord(null)}>
+          <DialogPortal>
+            <DialogViewport>
+              <DialogPopup>
+                <DialogClose />
+                <DialogTitle>{isEnglish ? 'Donation details' : 'Detalles de la donación'}</DialogTitle>
+                {viewingRecord && (
+                  <div className="grid gap-2 text-small">
+                    <p><strong>{isEnglish ? 'Donor:' : 'Donador:'}</strong> {viewingRecord.donor.firstName} {viewingRecord.donor.lastName}</p>
+                    <p><strong>{isEnglish ? 'Type:' : 'Tipo:'}</strong> {viewingRecord.donor.isItsMotul ? `ITS Motul - ${viewingRecord.donor.memberType}${viewingRecord.donor.career ? ` - ${viewingRecord.donor.career}` : ''}` : (isEnglish ? 'External donor' : 'Donador externo')}</p>
+                    <p><strong>{isEnglish ? 'Email:' : 'Correo:'}</strong> {viewingRecord.donor.email ?? '—'}</p>
+                    <p><strong>{isEnglish ? 'Phone:' : 'Teléfono:'}</strong> {viewingRecord.donor.phone ?? '—'}</p>
+                    <p><strong>{isEnglish ? 'Croquettes:' : 'Croquetas:'}</strong> {viewingRecord.croquetteAmount} {viewingRecord.croquetteUnit}</p>
+                    {viewingRecord.items.length > 0 && (
+                      <div>
+                        <strong>{isEnglish ? 'Other articles:' : 'Otros artículos:'}</strong>
+                        <ul className="m-0 pl-5">
+                          {viewingRecord.items.map((article, index) => (
+                            <li key={index}>{article.quantity} {article.typeName ?? article.type ?? article.customName ?? ''} {article.unit ? `(${article.unit})` : ''}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <p><strong>{isEnglish ? 'Date:' : 'Fecha:'}</strong> {new Date(viewingRecord.createdAt).toLocaleDateString()}</p>
+                  </div>
+                )}
+              </DialogPopup>
+            </DialogViewport>
+          </DialogPortal>
+        </DialogRoot>
       </Container>
     </AdminLayout>
   )

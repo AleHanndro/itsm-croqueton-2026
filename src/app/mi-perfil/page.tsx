@@ -16,6 +16,7 @@ export default function ProfilePage() {
   const [requestCount, setRequestCount] = useState(0)
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- Reading the admin badge count from localStorage. */
     try {
       const stored = window.localStorage.getItem('croqueton-join-requests')
       const requests = stored ? (JSON.parse(stored) as { status?: string }[]) : []
@@ -23,6 +24,7 @@ export default function ProfilePage() {
     } catch {
       setRequestCount(0)
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
   const { language } = useLanguage()
   const router = useRouter()
@@ -74,7 +76,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <PageShell surface="mint" navigation="none">
+    <PageShell surface="mint" navigation="community">
       <GuaubookProfilePage />
     </PageShell>
   )

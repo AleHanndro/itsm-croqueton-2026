@@ -24,6 +24,7 @@ export interface AvatarConfig {
 }
 
 export interface CommunityUser {
+  accountStatus?: 'active' | 'blocked' | 'blocked_expired'
   avatarConfig: AvatarConfig
   avatarImage?: string
   createdAt?: string
@@ -50,6 +51,7 @@ export interface CommunityPost {
   body: string
   comments: PostComment[]
   createdAt: string
+  createdAtIso?: string
   id: string
   image?: string
   likedBy: string[]
@@ -95,7 +97,7 @@ interface CommunityContextValue {
   addPost: (body: string, image?: string) => void
   adminDeletePost: (postId: string) => void
   approvePostReview: (requestId: string) => void
-  createAccount: (email: string, nextPassword: string) => Promise<boolean>
+  createAccount: (email: string, nextPassword: string, remember?: boolean) => Promise<boolean>
   createAdmin: (input: {
     avatarImage?: string
     email: string
@@ -116,7 +118,7 @@ interface CommunityContextValue {
   profiles: Record<string, CommunityUser>
   rejectPostReview: (requestId: string) => void
   requestPostReview: (body: string) => void
-  signIn: (email: string, nextPassword: string) => Promise<boolean>
+  signIn: (email: string, nextPassword: string, remember?: boolean) => Promise<boolean>
   signOut: () => void
   toggleFollow: (targetEmail: string) => void
   toggleLike: (postId: string) => void
@@ -181,11 +183,11 @@ function normalizeUser(raw?: Partial<CommunityUser> | null): CommunityUser {
   const fallbackName = email.split('@')[0]?.replace(/[._-]/g, ' ') || 'Croquetón'
   const name = String(raw?.name || fallbackName).trim() || fallbackName
   const petName = String(raw?.petName || DEFAULT_PET_NAME).trim() || DEFAULT_PET_NAME
-  const role =
-    raw?.role ??
-    (email === DEFAULT_ADMIN_EMAIL ? 'superadmin' : 'user')
+  const role = raw?.role ?? (email === DEFAULT_ADMIN_EMAIL ? 'superadmin' : 'user')
+  const accountStatus = (raw as { accountStatus?: string } | null)?.accountStatus ?? 'active'
 
   return {
+    accountStatus: accountStatus as CommunityUser['accountStatus'],
     avatarConfig: { ...DEFAULT_AVATAR_CONFIG, ...(raw?.avatarConfig ?? {}) },
     avatarImage: typeof raw?.avatarImage === 'string' ? raw.avatarImage : undefined,
     createdAt: raw?.createdAt || new Date().toISOString(),
@@ -198,6 +200,67 @@ function normalizeUser(raw?: Partial<CommunityUser> | null): CommunityUser {
     role,
     username: String(raw?.username || usernameFromEmail(email)).toLowerCase()
   }
+}
+
+function normalizePost(raw: CommunityPost): CommunityPost {
+  const comments = Array.isArray(raw.comments)
+    ? raw.comments
+        .filter((comment) => comment && typeof comment.body === 'string')
+        .map((comment) => ({
+          ...comment,
+          author: String(comment.author || ''),
+          authorEmail: typeof comment.authorEmail === 'string' ? comment.authorEmail : undefined,
+          body: String(comment.body),
+          id: String(comment.id || crypto.randomUUID())
+        }))
+    : []
+
+  const likedBy = Array.isArray(raw.likedBy)
+    ? Array.from(
+        new Set(
+          raw.likedBy
+            .filter((email): email is string => typeof email === 'string')
+            .map((email) => email.trim().toLowerCase())
+            .filter(Boolean)
+        )
+      )
+    : []
+
+  return {
+    ...raw,
+    author: String(raw.author || ''),
+    authorEmail:
+      typeof raw.authorEmail === 'string' ? raw.authorEmail.trim().toLowerCase() : undefined,
+    body: String(raw.body || ''),
+    comments,
+    createdAt: String(raw.createdAt || ''),
+    createdAtIso:
+      typeof raw.createdAtIso === 'string' && !Number.isNaN(Date.parse(raw.createdAtIso))
+        ? raw.createdAtIso
+        : undefined,
+    id: String(raw.id || crypto.randomUUID()),
+    image: typeof raw.image === 'string' ? raw.image : undefined,
+    likedBy
+  }
+}
+
+function normalizeFollows(raw: Record<string, string[]>): Record<string, string[]> {
+  const normalized: Record<string, string[]> = {}
+
+  for (const [followerEmail, followedEmails] of Object.entries(raw ?? {})) {
+    if (!Array.isArray(followedEmails)) continue
+
+    normalized[followerEmail.trim().toLowerCase()] = Array.from(
+      new Set(
+        followedEmails
+          .filter((email): email is string => typeof email === 'string')
+          .map((email) => email.trim().toLowerCase())
+          .filter(Boolean)
+      )
+    )
+  }
+
+  return normalized
 }
 
 function isEmail(value: string) {
@@ -287,17 +350,32 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
 
     const savedPetFurColor = window.localStorage.getItem('croqueton-pet-color')
     const savedFollows = readJson<Record<string, string[]>>('croqueton-follows', {})
+    const nextFollows = normalizeFollows(savedFollows)
     const savedPosts = readJson<CommunityPost[]>('croqueton-posts', [])
+    const nextPosts = Array.isArray(savedPosts) ? savedPosts.map(normalizePost) : []
     const savedRequests = readJson<PostReviewRequest[]>('croqueton-post-review-requests', [])
 
+    /* eslint-disable react-hooks/set-state-in-effect -- Hydrating client-only state from localStorage. */
     setAccounts(nextAccounts)
     setProfiles(nextProfiles)
-    setFollows(savedFollows)
+    setFollows(nextFollows)
     setPetFurColor(savedPetFurColor || '#efc88f')
-    setPosts(savedPosts)
-    setPostReviewRequests(savedRequests)
+    setPosts(nextPosts)
+    setPostReviewRequests(Array.isArray(savedRequests) ? savedRequests : [])
     setUser(normalizedUser)
     setIsHydrated(true)
+    /* eslint-enable react-hooks/set-state-in-effect */
+
+    void fetch('/api/auth/session')
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data?.user) {
+          const sessionUser = normalizeUser(data.user)
+          setUser(sessionUser)
+          setProfiles((current) => ({ ...current, [sessionUser.email]: sessionUser }))
+        }
+      })
+      .catch(() => {})
 
     void migrateLegacyPasswords().catch(() => setIsAccountStorageReady(true))
   }, [])
@@ -358,79 +436,109 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
       follows,
       profiles,
       accountCount: Object.keys(accounts).length,
-      signIn: async (email, nextPassword) => {
+      signIn: async (email, nextPassword, remember = false) => {
         const normalizedEmail = email.trim().toLowerCase()
-        const storedPassword = accounts[normalizedEmail]
-
-        if (!storedPassword) return false
-
-        let passwordMatches = false
 
         try {
-          passwordMatches = await verifyPassword(nextPassword, storedPassword)
-        } catch {
-          return false
-        }
+          const response = await fetch('/api/auth/login', {
+            body: JSON.stringify({ email: normalizedEmail, password: nextPassword, remember }),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST'
+          })
 
-        if (!passwordMatches) return false
-
-        if (!isHashedPassword(storedPassword)) {
-          try {
-            const hashedPassword = await hashPassword(nextPassword)
-            setAccounts((current) => ({ ...current, [normalizedEmail]: hashedPassword }))
-          } catch {}
-        }
-
-        const profile = normalizeUser(
-          profiles[normalizedEmail] ?? {
-            email: normalizedEmail
+          if (response.ok) {
+            const data = (await response.json()) as { user?: Record<string, unknown> }
+            if (data.user) {
+              const profile = normalizeUser(data.user as Partial<CommunityUser>)
+              setUser(profile)
+              setProfiles((current) => ({ ...current, [profile.email]: profile }))
+              window.localStorage.setItem('croqueton-user', JSON.stringify(profile))
+              return true
+            }
           }
-        )
+          return false
+        } catch {
+          const storedPassword = accounts[normalizedEmail]
 
-        if (profile.isActive === false) return false
+          if (!storedPassword) return false
 
-        window.localStorage.setItem('croqueton-user', JSON.stringify(profile))
-        setUser(profile)
-        setProfiles((current) => ({ ...current, [normalizedEmail]: profile }))
-        return true
+          let passwordMatches = false
+
+          try {
+            passwordMatches = await verifyPassword(nextPassword, storedPassword)
+          } catch {
+            return false
+          }
+
+          if (!passwordMatches) return false
+
+          const profile = normalizeUser(
+            profiles[normalizedEmail] ?? {
+              email: normalizedEmail
+            }
+          )
+
+          if (profile.isActive === false) return false
+
+          window.localStorage.setItem('croqueton-user', JSON.stringify(profile))
+          setUser(profile)
+          setProfiles((current) => ({ ...current, [normalizedEmail]: profile }))
+          return true
+        }
       },
-      createAccount: async (email, nextPassword) => {
+      createAccount: async (email, nextPassword, remember = false) => {
         const normalizedEmail = email.trim().toLowerCase()
 
-        if (
-          !isEmail(normalizedEmail) ||
-          accounts[normalizedEmail] ||
-          nextPassword.length < MIN_PASSWORD_LENGTH
-        ) {
-          return false
-        }
-
-        const baseProfile = normalizeUser({ email: normalizedEmail })
-        let username = baseProfile.username
-        let suffix = 1
-
-        while (isUsernameTaken(profiles, username, normalizedEmail)) {
-          username = `${baseProfile.username}${suffix++}`.slice(0, 24)
-        }
-
-        const profile = { ...baseProfile, username }
-        let hashedPassword = ''
+        if (!isEmail(normalizedEmail) || nextPassword.length < MIN_PASSWORD_LENGTH) return false
 
         try {
-          hashedPassword = await hashPassword(nextPassword)
-        } catch {
-          return false
-        }
+          const response = await fetch('/api/auth/register', {
+            body: JSON.stringify({ email: normalizedEmail, password: nextPassword, remember }),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST'
+          })
 
-        window.localStorage.setItem('croqueton-user', JSON.stringify(profile))
-        setAccounts((current) => ({ ...current, [normalizedEmail]: hashedPassword }))
-        setProfiles((current) => ({ ...current, [normalizedEmail]: profile }))
-        setUser(profile)
-        return true
+          if (!response.ok) return false
+
+          const data = (await response.json()) as { user?: Record<string, unknown> }
+          if (!data.user) return false
+
+          const profile = normalizeUser(data.user as Partial<CommunityUser>)
+          setUser(profile)
+          setProfiles((current) => ({ ...current, [profile.email]: profile }))
+          window.localStorage.setItem('croqueton-user', JSON.stringify(profile))
+          return true
+        } catch {
+          if (accounts[normalizedEmail]) return false
+
+          const baseProfile = normalizeUser({ email: normalizedEmail })
+          let username = baseProfile.username
+          let suffix = 1
+
+          while (isUsernameTaken(profiles, username, normalizedEmail)) {
+            username = `${baseProfile.username}${suffix++}`.slice(0, 24)
+          }
+
+          const profile = { ...baseProfile, username }
+          let hashedPassword = ''
+
+          try {
+            hashedPassword = await hashPassword(nextPassword)
+          } catch {
+            return false
+          }
+
+          window.localStorage.setItem('croqueton-user', JSON.stringify(profile))
+          setAccounts((current) => ({ ...current, [normalizedEmail]: hashedPassword }))
+          setProfiles((current) => ({ ...current, [normalizedEmail]: profile }))
+          setUser(profile)
+          return true
+        }
       },
       signOut: () => {
         window.localStorage.removeItem('croqueton-user')
         setUser(null)
+        void fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
       },
       updateProfile: (value) => {
         if (!user) return { ok: false, error: 'no_session' }
@@ -511,13 +619,9 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
 
         setPosts((current) =>
           current.map((post) => {
-            const isOwner = post.authorEmail
-              ? post.authorEmail === user.email
-              : post.author === user.name
+            const isOwner = post.authorEmail === user.email
             const comments = post.comments.map((comment) => {
-              const isCommentOwner = comment.authorEmail
-                ? comment.authorEmail === user.email
-                : comment.author === user.name
+              const isCommentOwner = comment.authorEmail === user.email
 
               return isCommentOwner
                 ? { ...comment, author: nextName, authorEmail: nextEmail }
@@ -736,13 +840,9 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
 
           setPosts((current) =>
             current.map((post) => {
-              const isOwner = post.authorEmail
-                ? post.authorEmail === normalizedTarget
-                : post.author === targetProfile.name
+              const isOwner = post.authorEmail === normalizedTarget
               const comments = post.comments.map((comment) => {
-                const isCommentOwner = comment.authorEmail
-                  ? comment.authorEmail === normalizedTarget
-                  : comment.author === targetProfile.name
+                const isCommentOwner = comment.authorEmail === normalizedTarget
                 return isCommentOwner
                   ? { ...comment, author: nextName, authorEmail: nextEmail }
                   : comment
@@ -765,13 +865,21 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
         if (!user) return
 
         const normalizedTarget = targetEmail.trim().toLowerCase()
-        if (!normalizedTarget || normalizedTarget === user.email) return
+        const targetProfile = profiles[normalizedTarget]
+        if (
+          !normalizedTarget ||
+          normalizedTarget === user.email ||
+          !targetProfile ||
+          targetProfile.isActive === false
+        ) {
+          return
+        }
 
         setFollows((current) => {
           const currentFollowing = current[user.email] ?? []
           const nextFollowing = currentFollowing.includes(normalizedTarget)
             ? currentFollowing.filter((email) => email !== normalizedTarget)
-            : [...currentFollowing, normalizedTarget]
+            : Array.from(new Set([...currentFollowing, normalizedTarget]))
 
           return { ...current, [user.email]: nextFollowing }
         })
@@ -789,6 +897,7 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
                   body,
                   image,
                   createdAt: formatDate(),
+                  createdAtIso: new Date().toISOString(),
                   likedBy: [],
                   comments: []
                 },
@@ -820,6 +929,7 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
             authorEmail: request.authorEmail,
             body: request.body,
             createdAt: formatDate(),
+            createdAtIso: new Date().toISOString(),
             likedBy: [],
             comments: []
           },
@@ -839,9 +949,7 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
         if (!user) return
         setPosts((current) =>
           current.map((post) => {
-            const isOwner = post.authorEmail
-              ? post.authorEmail === user.email
-              : post.author === user.name
+            const isOwner = post.authorEmail === user.email
             return post.id === postId && isOwner ? { ...post, body } : post
           })
         )
@@ -850,9 +958,7 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
         if (!user) return
         setPosts((current) =>
           current.filter((post) => {
-            const isOwner = post.authorEmail
-              ? post.authorEmail === user.email
-              : post.author === user.name
+            const isOwner = post.authorEmail === user.email
             return post.id !== postId || !isOwner
           })
         )

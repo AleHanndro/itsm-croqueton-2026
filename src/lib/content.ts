@@ -60,7 +60,8 @@ function assessPostRelevance(body: string, hasImage: boolean): 'approved' | 'blo
   const normalizedBody = normalizePostText(body)
   if (animalTopicPattern.test(normalizedBody)) return 'approved'
   if (clearlyUnrelatedPattern.test(normalizedBody)) return 'blocked'
-  return hasImage || body.trim() ? 'review' : 'blocked'
+  if (hasImage) return 'approved'
+  return body.trim() ? 'review' : 'blocked'
 }
 
 export { dogFacts, dogFactsEn, normalizePostText, assessPostRelevance }

@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { Eye, EyeOff } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useState, type FormEvent } from 'react'
 
@@ -21,6 +22,29 @@ function safeInternalPath(value: string | null) {
   return value
 }
 
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim())
+}
+
+function passwordChecks(value: string) {
+  return {
+    length: value.length >= 8,
+    lowercase: /[a-z]/.test(value),
+    numberOrSymbol: /[^A-Za-z]/.test(value),
+    uppercase: /[A-Z]/.test(value)
+  }
+}
+
+function passwordStrength(value: string) {
+  const checks = passwordChecks(value)
+  const score = Object.values(checks).filter(Boolean).length
+
+  if (value.length === 0) return ''
+  if (score <= 1) return 'weak'
+  if (score <= 3) return 'medium'
+  return 'strong'
+}
+
 function LoginContent() {
   const { language } = useLanguage()
   const { signIn, createAccount } = useCommunity()
@@ -30,45 +54,117 @@ function LoginContent() {
   const [isCreatingAccount, setIsCreatingAccount] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [remember, setRemember] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [loginMessage, setLoginMessage] = useState('')
   const [loginFailed, setLoginFailed] = useState(false)
 
   const isEnglish = language === 'en'
+  const checks = passwordChecks(password)
+  const strength = passwordStrength(password)
+  const emailValid = email.trim() === '' || isValidEmail(email)
 
   const requestAccess = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (isSubmitting) return
 
-    if (await signIn(email, password)) {
-      setLoginFailed(false)
-      setLoginMessage('')
-      const isAdmin = email.trim().toLowerCase() === 'admin@croqueton.mx'
-      navigate(redirectUrl || (isAdmin ? '/admin' : '/mi-perfil'))
-      return
+    setIsSubmitting(true)
+    try {
+      if (await signIn(email, password, remember)) {
+        setLoginFailed(false)
+        setLoginMessage('')
+        const isAdmin = email.trim().toLowerCase() === 'admin@croqueton.mx'
+        navigate(redirectUrl || (isAdmin ? '/admin' : '/mi-perfil'))
+        return
+      }
+
+      setLoginFailed(true)
+      setLoginMessage(
+        isEnglish
+          ? 'Wrong password. The dog has already started laughing.'
+          : 'Contraseña incorrecta. El perro ya empezó a reírse.'
+      )
+    } finally {
+      setIsSubmitting(false)
     }
-
-    setLoginFailed(true)
-    setLoginMessage(
-      isEnglish
-        ? 'Wrong password. The dog has already started laughing.'
-        : 'Contraseña incorrecta. El perro ya empezó a reírse.'
-    )
   }
 
   const requestAccount = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (isSubmitting) return
 
-    if (email.includes('@') && password.length >= 6 && (await createAccount(email, password))) {
-      navigate(redirectUrl || '/mi-perfil')
+    if (!isValidEmail(email)) {
+      setLoginFailed(true)
+      setLoginMessage(
+        isEnglish ? 'Enter a valid email address.' : 'Introduce un correo electrónico válido.'
+      )
       return
     }
 
-    setLoginFailed(true)
-    setLoginMessage(
-      isEnglish
-        ? 'Use an unused email and a password with at least 6 characters.'
-        : 'Usa un correo que no exista y una contrase\xF1a de al menos 6 caracteres.'
-    )
+    if (!Object.values(checks).every(Boolean)) {
+      setLoginFailed(true)
+      setLoginMessage(
+        isEnglish
+          ? 'Your password does not meet all the requirements.'
+          : 'Tu contraseña no cumple todos los requisitos.'
+      )
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      if (await createAccount(email, password, remember)) {
+        setLoginFailed(false)
+        setLoginMessage('')
+        navigate(redirectUrl || '/mi-perfil')
+        return
+      }
+
+      setLoginFailed(true)
+      setLoginMessage(
+        isEnglish
+          ? 'That email is already registered or the password is invalid.'
+          : 'Ese correo ya está registrado o la contraseña no es válida.'
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
+
+  const requirementItems = [
+    {
+      label: isEnglish ? 'At least 8 characters.' : 'Mínimo 8 caracteres.',
+      met: checks.length
+    },
+    {
+      label: isEnglish ? 'At least one uppercase letter.' : 'Al menos una mayúscula.',
+      met: checks.uppercase
+    },
+    {
+      label: isEnglish ? 'At least one lowercase letter.' : 'Al menos una minúscula.',
+      met: checks.lowercase
+    },
+    {
+      label: isEnglish ? 'At least one number or special symbol.' : 'Al menos un número o símbolo especial.',
+      met: checks.numberOrSymbol
+    }
+  ]
+
+  const strengthLabel =
+    strength === 'weak'
+      ? isEnglish
+        ? 'Weak'
+        : 'Débil'
+      : strength === 'medium'
+        ? isEnglish
+          ? 'Medium'
+          : 'Media'
+        : strength === 'strong'
+          ? isEnglish
+            ? 'Strong'
+            : 'Fuerte'
+          : ''
 
   return (
     <PageShell
@@ -119,7 +215,7 @@ function LoginContent() {
           {isCreatingAccount
             ? isEnglish
               ? 'Join GuauBook, customize your profile and share moments with the pack.'
-              : '\xDAnete a GuauBook, personaliza tu perfil y comparte momentos con la manada.'
+              : 'Únete a GuauBook, personaliza tu perfil y comparte momentos con la manada.'
             : isEnglish
               ? 'Enter to see what the Croqueton pack is sharing.'
               : 'Entra para ver lo que comparte la manada Croqueton.'}
@@ -129,7 +225,7 @@ function LoginContent() {
           onSubmit={isCreatingAccount ? requestAccount : requestAccess}
         >
           <FieldLabel>
-            <span>{isEnglish ? 'Email' : 'Correo electr\xF3nico'}</span>
+            <span>{isEnglish ? 'Email' : 'Correo electrónico'}</span>
             <TextInput
               type="email"
               variant="auth"
@@ -138,38 +234,116 @@ function LoginContent() {
               autoComplete="email"
               placeholder="tu@correo.com"
             />
+            {!emailValid && (
+              <small className="mt-1 block font-extrabold text-[#9e3b28]">
+                {isEnglish
+                  ? 'Enter a valid email address.'
+                  : 'Introduce un correo electrónico válido.'}
+              </small>
+            )}
           </FieldLabel>
           <FieldLabel>
-            <span>{isEnglish ? 'Password' : 'Contrase\xF1a'}</span>
-            <TextInput
-              type="password"
-              variant="auth"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoComplete={isCreatingAccount ? 'new-password' : 'current-password'}
-              minLength={isCreatingAccount ? 6 : void 0}
-              placeholder="••••••••"
-            />
+            <span>{isEnglish ? 'Password' : 'Contraseña'}</span>
+            <div className="relative">
+              <TextInput
+                type={showPassword ? 'text' : 'password'}
+                variant="auth"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete={isCreatingAccount ? 'new-password' : 'current-password'}
+                placeholder="••••••••"
+                className="pr-11"
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink opacity-70 transition hover:opacity-100"
+                onClick={() => setShowPassword((current) => !current)}
+                aria-label={
+                  showPassword
+                    ? isEnglish
+                      ? 'Hide password'
+                      : 'Ocultar contraseña'
+                    : isEnglish
+                      ? 'Show password'
+                      : 'Mostrar contraseña'
+                }
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </FieldLabel>
-          <Button type="submit" className="mt-1 w-full">
-            {isCreatingAccount
+
+          {isCreatingAccount && (
+            <div className="rounded-xl bg-surface-warm px-3.5 py-3 text-small font-bold">
+              <p className="m-0 mb-2 font-black">
+                {isEnglish
+                  ? 'Your password must include:'
+                  : 'Tu contraseña debe cumplir con lo siguiente:'}
+              </p>
+              <ul className="m-0 grid gap-1 pl-0" style={{ listStyle: 'none' }}>
+                {requirementItems.map((item) => (
+                  <li
+                    key={item.label}
+                    className={item.met ? 'text-[#2f6b45]' : 'opacity-65'}
+                  >
+                    <span className="mr-1.5 font-black">{item.met ? '✓' : '•'}</span>
+                    {item.label}
+                  </li>
+                ))}
+              </ul>
+              {strengthLabel && (
+                <p className="mt-2 mb-0 font-black">
+                  {isEnglish ? 'Strength:' : 'Seguridad:'}{' '}
+                  <span
+                    className={
+                      strength === 'weak'
+                        ? 'text-[#9e3b28]'
+                        : strength === 'medium'
+                          ? 'text-[#8b6500]'
+                          : 'text-[#2f6b45]'
+                    }
+                  >
+                    {strengthLabel}
+                  </span>
+                </p>
+              )}
+            </div>
+          )}
+
+          <label className="flex items-center gap-2 text-small font-bold">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(event) => setRemember(event.target.checked)}
+              className="size-4 rounded border-2 border-ink"
+            />
+            {isEnglish ? 'Remember me' : 'Recordarme'}
+          </label>
+
+          <Button type="submit" className="mt-1 w-full" disabled={isSubmitting}>
+            {isSubmitting
               ? isEnglish
-                ? 'Create my account'
-                : 'Crear mi cuenta'
-              : isEnglish
-                ? 'Sign in'
-                : 'Iniciar sesi\xF3n'}
+                ? 'Please wait…'
+                : 'Procesando…'
+              : isCreatingAccount
+                ? isEnglish
+                  ? 'Create my account'
+                  : 'Crear mi cuenta'
+                : isEnglish
+                  ? 'Sign in'
+                  : 'Iniciar sesión'}
           </Button>
           {!isCreatingAccount && (
             <small className="min-h-4.5 rounded-lg bg-surface-warm px-3 py-2.25 text-center font-extrabold text-ink">
               {isEnglish
-                ? 'Demo: admin@croqueton.mx \xB7 croqueton2026'
-                : 'Demo: admin@croqueton.mx \xB7 croqueton2026'}
+                ? 'Demo: admin@croqueton.mx · croqueton2026'
+                : 'Demo: admin@croqueton.mx · croqueton2026'}
             </small>
           )}
           <Button
             variant="link-border"
             className="justify-self-center py-1 text-ink"
+            type="button"
             onClick={() => {
               setIsCreatingAccount((current) => !current)
               setLoginFailed(false)
@@ -188,11 +362,11 @@ function LoginContent() {
             {loginMessage ||
               (isCreatingAccount
                 ? isEnglish
-                  ? 'Your password must have at least 6 characters.'
-                  : 'Tu contrase\xF1a debe tener al menos 6 caracteres.'
+                  ? 'Your password must have at least 8 characters.'
+                  : 'Tu contraseña debe tener al menos 8 caracteres.'
                 : isEnglish
                   ? 'Use your email and password to continue.'
-                  : 'Usa tu correo y contrase\xF1a para continuar.')}
+                  : 'Usa tu correo y contraseña para continuar.')}
           </small>
         </form>
         {loginFailed && (
@@ -203,7 +377,7 @@ function LoginContent() {
               alt={
                 isEnglish
                   ? 'Puppy laughing at the wrong password'
-                  : 'Perrito ri\xE9ndose por la contrase\xF1a incorrecta'
+                  : 'Perrito riéndose por la contraseña incorrecta'
               }
             />
             <figcaption className="mx-auto -mt-2.25 w-max rotate-2 rounded-tag bg-ink px-3 py-1.75 font-heading font-black text-card">

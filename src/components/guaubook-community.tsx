@@ -2,295 +2,261 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useId, useState, type FormEvent } from 'react'
+import { useState } from 'react'
 
 import { Paw } from '@/assets/icons/paw'
 import { EmptyStateCard } from '@/components/empty-state-card'
+import { GuaubookComposer } from '@/components/guaubook-composer'
 import { GuaubookProfileButton } from '@/components/guaubook-profile-button'
 import { PostCard } from '@/components/post-card'
 import { Button } from '@/components/ui/button'
 import { Eyebrow } from '@/components/ui/eyebrow'
-import { FieldLabel, TextareaInput } from '@/components/ui/field'
-import { assessPostRelevance } from '@/lib/content'
+import { getCommunityFeed, getFollowingFeed, OPEN_COMPOSER_EVENT } from '@/lib/community'
 import { useCommunity } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
+
+type FeedFilter = 'all' | 'following'
+
+function FeedTabs({
+  filter,
+  counts,
+  isEnglish,
+  onChange
+}: {
+  filter: FeedFilter
+  counts: Record<FeedFilter, number>
+  isEnglish: boolean
+  onChange: (filter: FeedFilter) => void
+}) {
+  const tabs: { id: FeedFilter; label: string }[] = [
+    { id: 'all', label: isEnglish ? 'Community' : 'Comunidad' },
+    { id: 'following', label: isEnglish ? 'Following' : 'Seguidos' }
+  ]
+
+  return (
+    <div
+      role="tablist"
+      aria-label={isEnglish ? 'GuauBook feed' : 'Muro de GuauBook'}
+      className="flex flex-wrap items-center gap-2"
+    >
+      {tabs.map((tab) => {
+        const isActive = filter === tab.id
+
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => onChange(tab.id)}
+            className={
+              isActive
+                ? 'inline-flex items-center gap-2 rounded-pill border-2 border-ink bg-brand px-3.5 py-2 text-small font-black text-ink'
+                : 'inline-flex items-center gap-2 rounded-pill border-2 border-ink bg-card px-3.5 py-2 text-small font-black text-ink transition hover:bg-surface-warm'
+            }
+          >
+            {tab.label}
+            <span
+              className={
+                isActive
+                  ? 'rounded-pill bg-ink px-1.75 py-0.5 text-micro leading-none text-white'
+                  : 'rounded-pill bg-surface-warm px-1.75 py-0.5 text-micro leading-none text-ink'
+              }
+            >
+              {counts[tab.id]}
+            </span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
 export function GuaubookCommunity({ variant = 'page' }: { variant?: 'page' | 'admin' }) {
   const { language } = useLanguage()
   const pathname = usePathname()
-  const { user, posts, follows, petFurColor, addPost, requestPostReview } = useCommunity()
+  const { user, posts, follows, profiles, petFurColor } = useCommunity()
   const profileHref = pathname.startsWith('/admin')
     ? '/admin/guaubook/perfil'
     : user
       ? '/mi-perfil'
       : '/iniciar-sesion?redirect=%2Fmi-perfil'
-  const [body, setBody] = useState('')
-  const [image, setImage] = useState<string>()
-  const [notice, setNotice] = useState('')
-  const [isComposerOpen, setIsComposerOpen] = useState(false)
-  const [isPromptDismissed, setIsPromptDismissed] = useState(false)
-  const [feedFilter, setFeedFilter] = useState<'all' | 'following'>('all')
-  const bodyId = useId()
+  const [feedFilter, setFeedFilter] = useState<FeedFilter>('all')
 
   const isEnglish = language === 'en'
   const isAdminView = variant === 'admin'
 
-  const followingEmails = user ? (follows[user.email] ?? []) : []
-  const visiblePosts =
-    feedFilter === 'following'
-      ? posts.filter((post) =>
-          post.authorEmail ? followingEmails.includes(post.authorEmail) : false
-        )
-      : posts
-
-  useEffect(() => {
-    if (!isComposerOpen) return
-
-    const focusTimeout = window.setTimeout(() => {
-      document.getElementById(bodyId)?.focus()
-    }, 80)
-
-    return () => window.clearTimeout(focusTimeout)
-  }, [bodyId, isComposerOpen])
-
-  const openComposer = () => {
-    setIsPromptDismissed(false)
-    setIsComposerOpen(true)
+  const communityPosts = getCommunityFeed(posts)
+  const followingPosts = user ? getFollowingFeed(posts, follows, user.email, profiles) : []
+  const visiblePosts = feedFilter === 'following' ? followingPosts : communityPosts
+  const counts = {
+    all: communityPosts.length,
+    following: followingPosts.length
   }
 
-  const handleSelectPostImage = (file: File | undefined) => {
-    if (!file) return
-
-    const reader = new FileReader()
-
-    reader.addEventListener('load', () => {
-      if (typeof reader.result === 'string') setImage(reader.result)
+  function openComposer() {
+    window.dispatchEvent(new Event(OPEN_COMPOSER_EVENT))
+    document.getElementById('crear-publicacion')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
     })
-    reader.readAsDataURL(file)
   }
 
-  const handlePublish = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-
-    if (!body.trim() && !image) return
-
-    const relevance = assessPostRelevance(body.trim(), !!image)
-    if (relevance === 'blocked') {
-      setNotice(
-        isEnglish
-          ? 'This post does not appear to be related to pets or animal care, so it was not published.'
-          : 'Esta publicación no parece estar relacionada con mascotas o cuidado animal, por eso no se publicó.'
+  function renderEmptyFeed() {
+    if (feedFilter === 'following' && !user) {
+      return (
+        <div className="grid justify-items-center gap-3 rounded-3xl border-4 border-dashed border-stroke bg-card p-6 text-center">
+          <Paw className="size-14 text-secondary" />
+          <strong className="font-heading text-[24px]">
+            {isEnglish
+              ? 'Sign in to see the people you follow.'
+              : 'Inicia sesión para ver a quienes sigues.'}
+          </strong>
+          <p className="m-0 max-w-90 font-extrabold opacity-65">
+            {isEnglish
+              ? 'Create an account or sign in to build your pack and see their posts here.'
+              : 'Crea una cuenta o inicia sesión para formar tu manada y ver sus publicaciones aquí.'}
+          </p>
+          <Button size="sm" render={<Link href="/iniciar-sesion?redirect=%2Fguaubook" />}>
+            {isEnglish ? 'Sign in' : 'Iniciar sesión'}
+          </Button>
+        </div>
       )
-      return
     }
 
-    if (relevance === 'review') {
-      requestPostReview(body.trim())
-      setNotice(
-        isEnglish
-          ? 'We could not confirm the topic. Add details such as dog, cat, pet, adoption or animal care, or wait for review.'
-          : 'No pudimos confirmar el tema. Añade detalles como perro, gato, mascota, adopción o cuidado animal, o espera la revisión.'
+    if (feedFilter === 'following') {
+      return (
+        <EmptyStateCard
+          title={
+            isEnglish
+              ? 'No posts from the people you follow yet.'
+              : 'Aún no hay publicaciones de las personas que sigues.'
+          }
+          description={
+            isEnglish
+              ? 'Follow other members from their posts to see their stories here.'
+              : 'Sigue a otros miembros desde sus publicaciones para ver sus historias aquí.'
+          }
+        />
       )
-      return
     }
 
-    addPost(body.trim(), image)
-    setBody('')
-    setImage(void 0)
-    setNotice(isEnglish ? 'Your post is now in GuauBook.' : 'Tu publicación ya está en GuauBook.')
+    return (
+      <div className="grid justify-items-center gap-3">
+        <EmptyStateCard
+          title={isEnglish ? 'Do you want to post something?' : '¿Quieres publicar algo?'}
+          description={
+            isEnglish
+              ? 'Share a photo, a story or a moment with the pack.'
+              : 'Comparte una foto, una historia o un momento con la manada.'
+          }
+        />
+        {user ? (
+          <Button size="sm" type="button" onClick={openComposer}>
+            {isEnglish ? 'Create post' : 'Crear publicación'}
+          </Button>
+        ) : (
+          <Button size="sm" render={<Link href="/iniciar-sesion?redirect=%2Fguaubook" />}>
+            {isEnglish ? 'Join the pack' : 'Únete a la manada'}
+          </Button>
+        )}
+      </div>
+    )
+  }
+
+  const tabs = (
+    <FeedTabs filter={feedFilter} counts={counts} isEnglish={isEnglish} onChange={setFeedFilter} />
+  )
+
+  const feed = (
+    <div className="grid gap-5" aria-live="polite">
+      {visiblePosts.length
+        ? visiblePosts.map((post) => <PostCard key={post.id} post={post} />)
+        : renderEmptyFeed()}
+    </div>
+  )
+
+  const guestCard = (
+    <aside className="grid justify-items-start gap-3.25 rounded-3xl border-4 border-ink bg-card p-6.75 text-ink shadow-card phone:p-4.75">
+      <Paw className="w-13.5 text-accent" />
+      <Eyebrow>{isEnglish ? 'Your profile' : 'Tu perfil'}</Eyebrow>
+      <h2 className="m-0 min-[541px]:text-[42px]">
+        {isEnglish ? 'Join the conversation.' : 'Únete a la conversación.'}
+      </h2>
+      <p className="mb-2 leading-normal font-extrabold">
+        {isEnglish
+          ? "Everyone can read the pack's stories. Create an account or sign in to publish, like and comment."
+          : 'Todos pueden leer las historias de la manada. Crea una cuenta o inicia sesión para publicar, dar Me gusta y comentar.'}
+      </p>
+      <Button render={<Link href="/iniciar-sesion" />}>
+        {isEnglish ? 'Join or sign in' : 'Unirme o iniciar sesión'}
+      </Button>
+    </aside>
+  )
+
+  if (isAdminView) {
+    return (
+      <>
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <Button type="button" render={<Link href={profileHref} />}>
+            {isEnglish ? 'View my profile' : 'Ver mi perfil'}
+          </Button>
+        </div>
+        <div className="mb-6">
+          <GuaubookProfileButton user={user} petFurColor={petFurColor} />
+        </div>
+
+        <div className="grid grid-cols-[minmax(260px,0.72fr)_minmax(0,1fr)] items-start gap-8 tablet:grid-cols-[1fr] tablet:gap-7 phone:gap-5">
+          <div className="relative top-0 grid gap-3.75 phone:gap-3">
+            {user ? <GuaubookComposer /> : guestCard}
+          </div>
+          <div className="grid min-w-0 gap-4">
+            {tabs}
+            {feed}
+          </div>
+        </div>
+      </>
+    )
   }
 
   return (
-    <>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <Button
-          type="button"
-          render={<Link href={profileHref} />}
-        >
-          {isEnglish ? 'View my profile' : 'Ver mi perfil'}
-        </Button>
-      </div>
-      <div className={isAdminView ? 'mb-6' : 'mb-8 tablet:mb-7 phone:mb-6'}>
-        <GuaubookProfileButton user={user} petFurColor={petFurColor} />
-      </div>
+    <div className="grid gap-5">
+      <header className="rounded-3xl border-4 border-ink bg-surface-warm p-6.25 shadow-card phone:p-4.75">
+        <Eyebrow variant="section" tone="accent">
+          GuauBook
+        </Eyebrow>
+        <h1 className="mt-2 mb-2 text-[clamp(42px,6vw,72px)] leading-[0.88]">
+          {isEnglish ? 'The pack wall' : 'El muro de la manada'}
+        </h1>
+        <p className="m-0 max-w-160 text-[18px] leading-[1.55] font-extrabold opacity-75">
+          {isEnglish
+            ? 'See what the community is sharing, follow the members you like and post your own moments.'
+            : 'Mira lo que comparte la comunidad, sigue a los miembros que te gusten y publica tus propios momentos.'}
+        </p>
+      </header>
 
-      <div
-        className={
-          isAdminView
-            ? 'grid grid-cols-[minmax(260px,0.72fr)_minmax(0,1fr)] items-start gap-8 tablet:grid-cols-[1fr] tablet:gap-7 phone:gap-5'
-            : 'grid grid-cols-[minmax(300px,0.72fr)_minmax(0,1fr)] items-start gap-13.75 tablet:grid-cols-[1fr] tablet:gap-8.75'
-        }
-      >
-        <div
-          className={
-            isAdminView
-              ? 'relative top-0 grid gap-3.75 phone:gap-3'
-              : 'sticky top-31.5 grid gap-3.75 tablet:relative tablet:top-0 phone:gap-3'
-          }
-        >
-          {user ? (
-            <>
-              {!isComposerOpen && !isPromptDismissed && (
-                <section className="grid gap-3.25 rounded-3xl border-4 border-ink bg-card p-6.25 text-ink shadow-card phone:p-4.75">
-                  <Paw className="w-12 text-accent phone:w-10" />
-                  <Eyebrow>{isEnglish ? 'GuauBook' : 'GuauBook'}</Eyebrow>
-                  <h2 className="m-0 text-[clamp(30px,3.6vw,44px)] leading-[0.95]">
-                    {isEnglish ? 'Do you want to post something?' : '¿Quieres publicar algo?'}
-                  </h2>
-                  <p className="m-0 leading-normal font-extrabold">
-                    {isEnglish
-                      ? 'Share a photo, a story or a moment with the pack.'
-                      : 'Comparte una foto, una historia o un momento con la manada.'}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5">
-                    <Button type="button" size="sm" onClick={openComposer}>
-                      {isEnglish ? 'Yes, publish' : 'Sí, publicar'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="underline"
-                      className="text-ink"
-                      onClick={() => setIsPromptDismissed(true)}
-                    >
-                      {isEnglish ? 'Not now' : 'Ahora no'}
-                    </Button>
-                  </div>
-                </section>
-              )}
+      <div className="grid grid-cols-[minmax(280px,0.78fr)_minmax(0,1.45fr)] items-start gap-8 tablet:grid-cols-[1fr] tablet:gap-6">
+        <aside className="sticky top-31.5 grid gap-3.75 tablet:static phone:gap-3">
+          {user ? <GuaubookComposer /> : guestCard}
+        </aside>
 
-              {!isComposerOpen && isPromptDismissed && (
-                <section className="grid justify-items-start gap-3 rounded-3xl border-4 border-ink bg-card p-5 text-ink shadow-card phone:p-4">
-                  <p className="m-0 text-small font-extrabold opacity-65">
-                    {isEnglish
-                      ? 'You can publish whenever you feel like it.'
-                      : 'Puedes publicar cuando tú quieras.'}
-                  </p>
-                  <Button type="button" size="sm" onClick={openComposer}>
-                    {isEnglish ? 'Open composer' : 'Abrir compositor'}
-                  </Button>
-                </section>
-              )}
-
-              {isComposerOpen && (
-                <form
-                  className="grid gap-3.75 rounded-3xl border-4 border-ink bg-card p-6.25 shadow-card phone:p-4.75"
-                  onSubmit={handlePublish}
-                >
-                  <FieldLabel htmlFor={bodyId}>
-                    {isEnglish ? 'What do you want to share?' : '¿Qué quieres compartir?'}
-                  </FieldLabel>
-                  <TextareaInput
-                    id={bodyId}
-                    variant="control"
-                    value={body}
-                    onChange={(event) => setBody(event.target.value)}
-                    placeholder={isEnglish ? 'Write something kind…' : 'Escribe algo bonito…'}
-                  />
-                  <small className="-mt-1.75 block text-[12px] leading-label font-extrabold text-[#526165]">
-                    {isEnglish
-                      ? 'Please share pets, care, food, animal health, adoption or experiences with animals.'
-                      : 'Comparte sobre mascotas, cuidados, alimentación, salud animal, adopción o experiencias con animales.'}
-                  </small>
-                  {image && (
-                    <img
-                      className="block max-h-90 w-full rounded-control object-cover"
-                      src={image}
-                      alt={
-                        isEnglish ? 'Selected post preview' : 'Vista previa de la foto seleccionada'
-                      }
-                    />
-                  )}
-                  <div className="flex items-center justify-between gap-3">
-                    <label className="cursor-(--paw-cursor) text-small font-black underline">
-                      <input
-                        type="file"
-                        className="absolute size-px opacity-0"
-                        accept="image/*"
-                        onChange={(event) => handleSelectPostImage(event.target.files?.[0])}
-                      />
-                      {isEnglish ? 'Add photo' : 'Añadir foto'}
-                    </label>
-                    <Button size="sm" type="submit">
-                      {isEnglish ? 'Publish' : 'Publicar'}
-                    </Button>
-                  </div>
-                  <small
-                    className="block min-h-4.5 text-[12px] leading-label font-extrabold text-[#9e3b28]"
-                    aria-live="polite"
-                  >
-                    {notice}
-                  </small>
-                </form>
-              )}
-            </>
-          ) : (
-            <aside
-              className={
-                isAdminView
-                  ? 'grid justify-items-start gap-3.25 rounded-3xl border-4 border-ink bg-card p-6.75 text-ink shadow-card phone:p-4.75'
-                  : 'sticky top-31.5 grid justify-items-start gap-3.25 rounded-3xl border-4 border-ink bg-card p-6.75 text-ink shadow-card tablet:relative tablet:top-0 phone:p-4.75'
-              }
-            >
-              <Paw className="w-13.5 text-accent" />
-              <Eyebrow>{isEnglish ? 'Your profile' : 'Tu perfil'}</Eyebrow>
-              <h2 className="m-0 min-[541px]:text-[42px]">
-                {isEnglish ? 'Join the conversation.' : 'Únete a la conversación.'}
-              </h2>
-              <p className="mb-2 leading-normal font-extrabold">
-                {isEnglish
-                  ? "Everyone can read the pack's stories. Create an account or sign in to publish, love and comment."
-                  : 'Todos pueden leer las historias de la manada. Crea una cuenta o inicia sesión para publicar, dar Me encanta y comentar.'}
-              </p>
-              <Button render={<Link href="/iniciar-sesion" />}>
-                {isEnglish ? 'Join or sign in' : 'Unirme o iniciar sesión'}
-              </Button>
-            </aside>
-          )}
-        </div>
-
-        <div className="mb-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setFeedFilter('all')}
-            className={
-              feedFilter === 'all'
-                ? 'rounded-pill border-2 border-ink bg-brand px-3 py-1.5 text-small font-black'
-                : 'rounded-pill border-2 border-ink bg-card px-3 py-1.5 text-small font-black'
-            }
-          >
-            {isEnglish ? 'Community' : 'Comunidad'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setFeedFilter('following')}
-            className={
-              feedFilter === 'following'
-                ? 'rounded-pill border-2 border-ink bg-brand px-3 py-1.5 text-small font-black'
-                : 'rounded-pill border-2 border-ink bg-card px-3 py-1.5 text-small font-black'
-            }
-          >
-            {isEnglish ? 'Following' : 'Siguiendo'}
-          </button>
-        </div>
-        <div className="grid gap-5" aria-live="polite">
-          {visiblePosts.length ? (
-            visiblePosts.map((post) => <PostCard key={post.id} post={post} />)
-          ) : (
-            <EmptyStateCard
-              title={
-                feedFilter === 'following'
-                  ? isEnglish
-                    ? 'No posts available.'
-                    : 'No hay publicaciones disponibles.'
-                  : isEnglish
-                    ? "The pack's first story will appear here."
-                    : 'Aquí aparecerá la primera publicación de la manada.'
-              }
-            />
-          )}
+        <div className="grid min-w-0 gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border-4 border-ink bg-card p-2.5 shadow-card">
+            {tabs}
+            <span className="px-2 text-small font-extrabold opacity-60">
+              {visiblePosts.length}{' '}
+              {isEnglish
+                ? visiblePosts.length === 1
+                  ? 'post'
+                  : 'posts'
+                : visiblePosts.length === 1
+                  ? 'publicación'
+                  : 'publicaciones'}
+            </span>
+          </div>
+          {feed}
         </div>
       </div>
-
-      </>
+    </div>
   )
 }
