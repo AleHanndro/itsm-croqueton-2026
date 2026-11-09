@@ -10,14 +10,52 @@ import { Container } from '@/components/ui/container'
 import { goalImage } from '@/lib/images'
 import { useLanguage } from '@/providers/language-provider'
 
-const collectedKilograms = 640
-const goalProgress = 64
+type DonorRecord = {
+  croquetteAmount: number
+  croquetteUnit: 'g' | 'kg'
+}
+
+function readDonors(): DonorRecord[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = window.localStorage.getItem('croqueton-donors')
+    return stored ? (JSON.parse(stored) as DonorRecord[]) : []
+  } catch {
+    return []
+  }
+}
+
+function collectedFromDonors() {
+  return readDonors().reduce((total, record) => {
+    const amount =
+      record.croquetteUnit === 'g' ? record.croquetteAmount / 1000 : record.croquetteAmount
+    return total + (Number.isFinite(amount) ? amount : 0)
+  }, 0)
+}
 
 export default function GoalPage() {
   const { language } = useLanguage()
   const [showGoal, setShowGoal] = useState(false)
+  const [collectedKilograms, setCollectedKilograms] = useState(0)
+  const [goalKg, setGoalKg] = useState(1000)
   const goalRef = useRef(null)
   const isEnglish = language === 'en'
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const response = await fetch('/api/meta')
+        if (!response.ok) throw new Error('request_failed')
+        const data = (await response.json()) as { collectedKg: number; goalKg: number }
+        setCollectedKilograms(data.collectedKg)
+        setGoalKg(data.goalKg)
+      } catch {
+        setCollectedKilograms(0)
+        setGoalKg(1000)
+      }
+    }
+    void load()
+  }, [])
 
   useEffect(() => {
     const goal = goalRef.current
@@ -36,6 +74,8 @@ export default function GoalPage() {
     observer.observe(goal)
     return () => observer.disconnect()
   }, [])
+
+  const goalProgress = Math.min(100, goalKg > 0 ? (collectedKilograms / goalKg) * 100 : 0)
 
   return (
     <PageShell surface="warm">
@@ -81,15 +121,15 @@ export default function GoalPage() {
             titleClassName="mb-6.25 min-[541px]:text-[clamp(48px,4.6vw,70px)]"
             title={
               <>
-                1,000 kg
+                {goalKg} kg
                 <br />
                 {isEnglish ? 'of kibble.' : 'de croquetas.'}
               </>
             }
             description={
               isEnglish
-                ? `We have collected ${collectedKilograms} kg. We need ${Math.max(0, 1e3 - collectedKilograms)} more to make the scale say \u201Cwow\u201D and many tails say \u201Cthank you.\u201D`
-                : `Llevamos ${collectedKilograms} kg reunidos. Faltan ${Math.max(0, 1e3 - collectedKilograms)} para que la b\xE1scula diga \u201Cguau\u201D y muchas colitas digan \u201Cgracias\u201D.`
+                ? `We have collected ${collectedKilograms} kg. We need ${Math.max(0, goalKg - collectedKilograms)} more to make the scale say \u201Cwow\u201D and many tails say \u201Cthank you.\u201D`
+                : `Llevamos ${collectedKilograms} kg reunidos. Faltan ${Math.max(0, goalKg - collectedKilograms)} para que la b\xE1scula diga \u201Cguau\u201D y muchas colitas digan \u201Cgracias\u201D.`
             }
             descriptionClassName="max-w-135 text-[18px] leading-[1.55]"
           />

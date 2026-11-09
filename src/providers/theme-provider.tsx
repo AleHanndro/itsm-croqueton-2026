@@ -22,6 +22,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem('croqueton-theme')
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     if (savedTheme === 'light' || savedTheme === 'dark') setTheme(savedTheme)
     else if (window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark')
   }, [])

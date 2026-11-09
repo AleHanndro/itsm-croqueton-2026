@@ -21,6 +21,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const savedLanguage = window.localStorage.getItem('croqueton-language')
     if (savedLanguage === 'en' || savedLanguage === 'es' || savedLanguage === 'yua')
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
       setLanguage(savedLanguage)
   }, [])
 

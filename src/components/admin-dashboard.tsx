@@ -1,4 +1,8 @@
+'use client'
+
 import { cva, type VariantProps } from 'class-variance-authority'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
@@ -8,34 +12,56 @@ import { Button } from '@/components/ui/button'
 import { Eyebrow } from '@/components/ui/eyebrow'
 
 const adminNavItemVariants = cva(
-  'grid min-h-11.5 grid-cols-[24px_1fr_auto] items-center gap-2.75 rounded-xl px-3.25 text-[13px] font-black [transition:background_0.2s_ease,color_0.2s_ease,transform_0.2s_ease] hover:transform-[translateX(2px)] tablet:min-w-max tablet:grid-cols-[21px_auto_auto] phone:min-h-10 phone:px-2.5 phone:text-[11px] [&_svg]:size-5.25',
+  'grid min-h-11.5 grid-cols-[24px_1fr_auto] items-center gap-2.75 rounded-xl border-0 px-3.25 text-left text-[13px] font-black [transition:background_0.2s_ease,color_0.2s_ease,transform_0.2s_ease] hover:transform-[translateX(2px)] tablet:min-w-max tablet:grid-cols-[21px_auto_auto] phone:min-h-10 phone:px-2.5 phone:text-[11px] [&_svg]:size-5.25',
   {
     variants: {
       active: {
         true: 'bg-brand text-ink',
-        false: 'text-[#bfc3cd] hover:bg-[#2d3245] hover:text-card'
-      },
-      hideOnPhone: {
-        true: 'phone:hidden',
-        false: ''
+        false: 'bg-transparent text-[#bfc3cd] hover:bg-[#2d3245] hover:text-card'
       }
     },
     defaultVariants: {
-      active: false,
-      hideOnPhone: false
+      active: false
     }
   }
 )
 
 export function AdminSidebar({
   userEmail,
+  userRole = 'admin',
   pendingCount,
+  requestCount = 0,
   onSignOut
 }: {
   userEmail: string
+  userRole?: 'admin' | 'superadmin'
   pendingCount: number
+  requestCount?: number
   onSignOut: () => void
 }) {
+  const pathname = usePathname()
+  const [activeHash, setActiveHash] = useState('')
+
+  useEffect(() => {
+    const update = () => setActiveHash(window.location.hash)
+    update()
+    window.addEventListener('hashchange', update)
+    return () => window.removeEventListener('hashchange', update)
+  }, [])
+
+  function isActive(href: string) {
+    if (href.startsWith('/admin#')) {
+      const targetHash = href.slice('/admin'.length)
+      if (pathname !== '/admin') return false
+      if (targetHash === '#resumen') return activeHash === '' || activeHash === '#resumen'
+      return activeHash === targetHash
+    }
+    if (href === '/admin/guaubook') {
+      return pathname === '/admin/guaubook' || pathname.startsWith('/admin/guaubook/')
+    }
+    return pathname === href || pathname.startsWith(`${href}/`)
+  }
+
   return (
     <aside className="sticky top-0 z-20 flex h-screen flex-col bg-surface-admin-sidebar px-5 pt-6.75 pb-5.5 text-card tablet:relative tablet:grid tablet:h-auto tablet:grid-cols-[auto_1fr_auto] tablet:items-center tablet:gap-5 tablet:px-5 tablet:py-4 phone:grid-cols-[1fr_auto] phone:gap-2.5 phone:p-3.5">
       <Link
@@ -55,11 +81,11 @@ export function AdminSidebar({
         className="grid gap-1.75 tablet:flex tablet:justify-center tablet:overflow-x-auto phone:order-3 phone:col-span-full phone:row-2 phone:justify-start"
         aria-label="Navegación del panel"
       >
-        <a className={adminNavItemVariants({ active: true })} href="#resumen">
+        <Link className={adminNavItemVariants({ active: isActive('/admin#resumen') })} href="/admin#resumen" onClick={() => setActiveHash('#resumen')}>
           <AdminIcon type="heart" />
           <span>Resumen</span>
-        </a>
-        <a className={adminNavItemVariants()} href="#moderacion">
+        </Link>
+        <Link className={adminNavItemVariants({ active: isActive('/admin#moderacion') })} href="/admin#moderacion" onClick={() => setActiveHash('#moderacion')}>
           <AdminIcon type="review" />
           <span>Moderación</span>
           {pendingCount > 0 && (
@@ -67,12 +93,45 @@ export function AdminSidebar({
               {pendingCount}
             </strong>
           )}
-        </a>
-        <a className={adminNavItemVariants()} href="#comunidad">
+        </Link>
+        <Link className={adminNavItemVariants({ active: isActive('/admin#comunidad') })} href="/admin#comunidad" onClick={() => setActiveHash('#comunidad')}>
           <AdminIcon type="posts" />
           <span>Comunidad</span>
-        </a>
-        <Link href="/guaubook" className={adminNavItemVariants({ hideOnPhone: true })}>
+        </Link>
+        <Link className={adminNavItemVariants({ active: isActive('/admin/usuarios') })} href="/admin/usuarios">
+          <AdminIcon type="users" />
+          <span>Usuarios</span>
+        </Link>
+        {userRole === 'superadmin' && (
+          <Link className={adminNavItemVariants({ active: isActive('/admin/administradores') })} href="/admin/administradores">
+            <AdminIcon type="users" />
+            <span>Administradores</span>
+          </Link>
+        )}
+        {userRole === 'superadmin' && (
+          <Link className={adminNavItemVariants({ active: isActive('/admin/bitacora') })} href="/admin/bitacora">
+            <AdminIcon type="review" />
+            <span>Bitácora</span>
+          </Link>
+        )}
+        <Link className={adminNavItemVariants({ active: isActive('/admin/donadores') })} href="/admin/donadores">
+          <AdminIcon type="posts" />
+          <span>Donadores</span>
+        </Link>
+        <Link className={adminNavItemVariants({ active: isActive('/admin/croquetones') })} href="/admin/croquetones">
+          <AdminIcon type="users" />
+          <span>Croquetones</span>
+        </Link>
+        <Link className={adminNavItemVariants({ active: isActive('/admin/solicitudes') })} href="/admin/solicitudes">
+          <AdminIcon type="review" />
+          <span>Solicitudes</span>
+          {requestCount > 0 && (
+            <strong className="grid size-5.75 min-w-5.75 place-items-center rounded-circle bg-accent text-tiny text-white">
+              {requestCount}
+            </strong>
+          )}
+        </Link>
+        <Link className={adminNavItemVariants({ active: isActive('/admin/guaubook') })} href="/admin/guaubook">
           <AdminIcon type="users" />
           <span>Ver GuauBook</span>
         </Link>
