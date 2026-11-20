@@ -19,7 +19,7 @@ export type GoalProgressCardProps = {
 
 export function GoalProgressCard({
   collectedKilograms,
-  goalKilograms = 1000,
+  goalKilograms = 250,
   goalProgress,
   showGoal,
   isEnglish,
@@ -49,7 +49,7 @@ export function GoalProgressCard({
         </div>
         <div className="grid text-right">
           <strong className="font-heading text-[48px] leading-display phone:text-[40px]">
-            1,000 kg
+            {goalKilograms} kg
           </strong>
           <span className="mt-1.75 text-caption font-black tracking-label-wide uppercase">
             {isEnglish ? 'the goal' : 'la meta'}
@@ -64,8 +64,8 @@ export function GoalProgressCard({
         style={{ '--goal-progress': `${goalProgress}%` } as CSSProperties}
         aria-label={
           isEnglish
-            ? `${collectedKilograms} of 1,000 kilograms collected`
-            : `${collectedKilograms} de 1,000 kilogramos reunidos`
+            ? `${collectedKilograms} of ${goalKilograms} kilograms collected`
+            : `${collectedKilograms} de ${goalKilograms} kilogramos reunidos`
         }
       >
         <span
