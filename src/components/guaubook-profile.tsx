@@ -36,6 +36,7 @@ import {
   type CommunityUser
 } from '@/providers/community-provider'
 import { useLanguage } from '@/providers/language-provider'
+import { useToast } from '@/providers/toast-provider'
 
 type StatusMessage = { text: string; type: 'error' | 'success' } | null
 
@@ -210,6 +211,7 @@ export function GuaubookProfilePage() {
   } = useCommunity()
   const navigate = useNavigate()
   const isEnglish = language === 'en'
+  const { toast } = useToast()
 
   const [name, setName] = useState(user?.name ?? '')
   const [username, setUsername] = useState(user?.username ?? '')
@@ -314,6 +316,7 @@ export function GuaubookProfilePage() {
       type: 'success',
       text: isEnglish ? 'Information updated.' : 'Información actualizada correctamente.'
     })
+    toast(isEnglish ? 'Information updated.' : 'Información actualizada correctamente.')
   }
 
   function handleAvatarFile(event: ChangeEvent<HTMLInputElement>) {
