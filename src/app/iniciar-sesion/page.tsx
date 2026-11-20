@@ -9,6 +9,7 @@ import { PageShell } from '@/components/page-shell'
 import { Button } from '@/components/ui/button'
 import { Eyebrow } from '@/components/ui/eyebrow'
 import { FieldLabel, TextInput } from '@/components/ui/field'
+import { DialogClose, DialogPopup, DialogPortal, DialogRoot, DialogTitle, DialogViewport } from '@/components/ui/dialog'
 import { errorDogImage, packAccessDogImage } from '@/lib/images'
 import { useNavigate } from '@/lib/navigation'
 import { useCommunity } from '@/providers/community-provider'
@@ -59,6 +60,7 @@ function LoginContent() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loginMessage, setLoginMessage] = useState('')
   const [loginFailed, setLoginFailed] = useState(false)
+  const [isErrorOpen, setIsErrorOpen] = useState(false)
 
   const isEnglish = language === 'en'
   const checks = passwordChecks(password)
@@ -85,6 +87,7 @@ function LoginContent() {
           ? 'Wrong password. The dog has already started laughing.'
           : 'Contraseña incorrecta. El perro ya empezó a reírse.'
       )
+      setIsErrorOpen(true)
     } finally {
       setIsSubmitting(false)
     }
@@ -99,6 +102,7 @@ function LoginContent() {
       setLoginMessage(
         isEnglish ? 'Enter a valid email address.' : 'Introduce un correo electrónico válido.'
       )
+      setIsErrorOpen(true)
       return
     }
 
@@ -109,6 +113,7 @@ function LoginContent() {
           ? 'Your password does not meet all the requirements.'
           : 'Tu contraseña no cumple todos los requisitos.'
       )
+      setIsErrorOpen(true)
       return
     }
 
@@ -127,6 +132,7 @@ function LoginContent() {
           ? 'That email is already registered or the password is invalid.'
           : 'Ese correo ya está registrado o la contraseña no es válida.'
       )
+      setIsErrorOpen(true)
     } finally {
       setIsSubmitting(false)
     }
@@ -333,13 +339,6 @@ function LoginContent() {
                   ? 'Sign in'
                   : 'Iniciar sesión'}
           </Button>
-          {!isCreatingAccount && (
-            <small className="min-h-4.5 rounded-lg bg-surface-warm px-3 py-2.25 text-center font-extrabold text-ink">
-              {isEnglish
-                ? 'Demo: admin@croqueton.mx · croqueton2026'
-                : 'Demo: admin@croqueton.mx · croqueton2026'}
-            </small>
-          )}
           <Button
             variant="link-border"
             className="justify-self-center py-1 text-ink"
@@ -369,22 +368,26 @@ function LoginContent() {
                   : 'Usa tu correo y contraseña para continuar.')}
           </small>
         </form>
-        {loginFailed && (
-          <figure className="mt-6.25 border-t-2 border-dashed border-divider pt-5.75 text-center">
-            <Image
-              src={errorDogImage}
-              className="mx-auto block aspect-square w-[min(230px,75%)] -rotate-2 rounded-dialog-sm border-6 border-ink object-cover shadow-[7px_8px_0_var(--accent)]"
-              alt={
-                isEnglish
-                  ? 'Puppy laughing at the wrong password'
-                  : 'Perrito riéndose por la contraseña incorrecta'
-              }
-            />
-            <figcaption className="mx-auto -mt-2.25 w-max rotate-2 rounded-tag bg-ink px-3 py-1.75 font-heading font-black text-card">
-              {isEnglish ? 'Nice try, human.' : 'Buen intento, humano.'}
-            </figcaption>
-          </figure>
-        )}
+
+      <DialogRoot open={isErrorOpen} onOpenChange={setIsErrorOpen}>
+        <DialogPortal>
+          <DialogViewport>
+            <DialogPopup className="w-[min(420px,100%)] p-8 text-center">
+              <DialogClose />
+              <Image
+                src={errorDogImage}
+                className="mx-auto mb-4 block aspect-square w-[min(180px,60%)] -rotate-2 rounded-dialog-sm border-6 border-ink object-cover shadow-[7px_8px_0_var(--accent)]"
+                alt={isEnglish ? 'Puppy laughing' : 'Perrito riéndose'}
+              />
+              <h2 className="mb-3 font-heading text-[24px]">{isEnglish ? 'Something is wrong' : 'Algo salió mal'}</h2>
+              <p className="mb-5 text-small font-extrabold text-[#9e3b28]">{loginMessage}</p>
+              <Button type="button" onClick={() => setIsErrorOpen(false)}>
+                {isEnglish ? 'OK' : 'Entendido'}
+              </Button>
+            </DialogPopup>
+          </DialogViewport>
+        </DialogPortal>
+      </DialogRoot>
       </section>
     </PageShell>
   )

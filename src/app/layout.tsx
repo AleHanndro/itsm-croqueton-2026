@@ -5,6 +5,8 @@ import { MayaTranslationNotice } from '@/components/layout/maya-translation-noti
 import { CommunityProvider } from '@/providers/community-provider'
 import { LanguageProvider } from '@/providers/language-provider'
 import { ThemeProvider } from '@/providers/theme-provider'
+import { ToastProvider } from '@/providers/toast-provider'
+import { ConfirmProvider } from '@/providers/confirm-provider'
 
 import './globals.css'
 
@@ -37,8 +39,12 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         <LanguageProvider>
           <CommunityProvider>
             <ThemeProvider>
-              <MayaTranslationNotice />
-              <div className="isolate">{children}</div>
+              <ToastProvider>
+                <ConfirmProvider>
+                  <MayaTranslationNotice />
+                  <div className="isolate">{children}</div>
+                </ConfirmProvider>
+              </ToastProvider>
             </ThemeProvider>
           </CommunityProvider>
         </LanguageProvider>

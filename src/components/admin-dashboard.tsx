@@ -186,16 +186,16 @@ export type AdminStatCardProps = VariantProps<typeof adminStatIconVariants> & {
 
 export function AdminStatCard({ icon, tone, label, value, meta }: AdminStatCardProps) {
   return (
-    <article className="flex min-w-0 items-center gap-3.5 rounded-2xl border border-stroke-card-admin bg-surface-panel p-4.5 text-foreground [transition:transform_0.2s_ease,box-shadow_0.2s_ease] hover:transform-[translateY(-2px)] hover:shadow-[0_7px_20px_rgba(32,36,54,0.07)] phone:p-4">
+    <article className="flex min-w-0 items-center gap-3.5 overflow-hidden rounded-2xl border border-stroke-card-admin bg-surface-panel p-4.5 text-foreground [transition:transform_0.2s_ease,box-shadow_0.2s_ease] hover:transform-[translateY(-2px)] hover:shadow-[0_7px_20px_rgba(32,36,54,0.07)] phone:p-4">
       <span className={adminStatIconVariants({ tone: tone ?? icon })}>
         <AdminIcon type={icon} />
       </span>
-      <div className="grid min-w-0">
-        <small className="text-micro font-black tracking-label-wide text-muted-foreground uppercase">
+      <div className="grid min-w-0 flex-1">
+        <small className="break-words text-micro font-black tracking-label-wide text-muted-foreground uppercase">
           {label}
         </small>
         <strong className="mt-0.5 -mb-px font-heading text-[30px] leading-none">{value}</strong>
-        <span className="overflow-hidden text-tiny font-bold text-ellipsis whitespace-nowrap text-muted-foreground">
+        <span className="break-words text-tiny font-bold text-muted-foreground">
           {meta}
         </span>
       </div>
