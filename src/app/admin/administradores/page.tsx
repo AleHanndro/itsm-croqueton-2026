@@ -17,6 +17,8 @@ import {
 import { FieldLabel, TextInput } from '@/components/ui/field'
 import { UserAvatar } from '@/components/user-visuals'
 import { useCommunity } from '@/providers/community-provider'
+import { useToast } from '@/providers/toast-provider'
+import { useConfirm } from '@/providers/confirm-provider'
 import { useLanguage } from '@/providers/language-provider'
 
 type AdminUser = {
@@ -46,6 +48,8 @@ export default function AdministradoresPage() {
   const { language } = useLanguage()
   const { user, isHydrated } = useCommunity()
   const isEnglish = language === 'en'
+  const { toast } = useToast()
+  const { confirm } = useConfirm()
 
   const [admins, setAdmins] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
@@ -56,6 +60,7 @@ export default function AdministradoresPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [form, setForm] = useState(emptyForm)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string; username?: string }>({})
   const [saving, setSaving] = useState(false)
 
   async function loadAdmins() {
@@ -93,6 +98,7 @@ export default function AdministradoresPage() {
   function openCreate() {
     setForm(emptyForm)
     setMessage(null)
+    setFieldErrors({})
     setIsCreateOpen(true)
   }
 
@@ -108,6 +114,7 @@ export default function AdministradoresPage() {
       username: profile.username
     })
     setMessage(null)
+    setFieldErrors({})
     setIsEditOpen(true)
   }
 
@@ -115,16 +122,17 @@ export default function AdministradoresPage() {
     event.preventDefault()
     if (saving) return
 
-    if (!/^[a-z0-9._]{3,24}$/.test(form.username.trim().toLowerCase())) {
-      setMessage({ type: 'error', text: isEnglish ? 'Username must have 3 to 24 characters: lowercase letters, numbers, dots or underscores.' : 'El nombre de usuario debe tener de 3 a 24 caracteres: minúsculas, números, puntos o guiones bajos.' })
+    const sanitizedUsername = form.username.trim().toLowerCase().split('@')[0].replace(/[^a-z0-9._]/g, '').slice(0, 24)
+    if (!/^[a-z0-9._]{3,24}$/.test(sanitizedUsername)) {
+      setFieldErrors({ username: isEnglish ? 'Username must have 3 to 24 characters: lowercase letters, numbers, dots or underscores.' : 'El nombre de usuario debe tener de 3 a 24 caracteres: minúsculas, números, puntos o guiones bajos.' })
       return
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim())) {
-      setMessage({ type: 'error', text: isEnglish ? 'Enter a valid email address.' : 'Introduce un correo electrónico válido.' })
+      setFieldErrors({ email: isEnglish ? 'Enter a valid email address.' : 'Introduce un correo electrónico válido.' })
       return
     }
     if (form.password.length < 8 || !/[A-Z]/.test(form.password) || !/[a-z]/.test(form.password) || !/[^A-Za-z]/.test(form.password)) {
-      setMessage({ type: 'error', text: isEnglish ? 'Password must have at least 8 characters, one uppercase, one lowercase and one number or symbol.' : 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número o símbolo.' })
+      setFieldErrors({ password: isEnglish ? 'Password must have at least 8 characters, one uppercase, one lowercase and one number or symbol.' : 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número o símbolo.' })
       return
     }
 
@@ -150,7 +158,8 @@ export default function AdministradoresPage() {
       }
       setIsCreateOpen(false)
       setForm(emptyForm)
-      setMessage({ type: 'success', text: isEnglish ? 'Administrator created.' : 'Administrador creado.' })
+      setFieldErrors({})
+      toast(isEnglish ? 'Administrator created.' : 'Administrador creado.')
       await loadAdmins()
     } catch (error) {
       const detail = error instanceof Error ? error.message : ''
@@ -182,7 +191,8 @@ export default function AdministradoresPage() {
       if (!response.ok) throw new Error('request_failed')
       setIsEditOpen(false)
       setEditingId(null)
-      setMessage({ type: 'success', text: isEnglish ? 'Administrator updated.' : 'Administrador actualizado.' })
+      setFieldErrors({})
+      toast(isEnglish ? 'Administrator updated.' : 'Administrador actualizado.')
       await loadAdmins()
     } catch {
       setMessage({ type: 'error', text: isEnglish ? 'Could not update administrator.' : 'No se pudo actualizar el administrador.' })
@@ -206,14 +216,20 @@ export default function AdministradoresPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm(isEnglish ? 'Delete this administrator?' : '¿Eliminar este administrador?')) return
+    const ok = await confirm({
+      title: isEnglish ? 'Delete administrator?' : '¿Eliminar administrador?',
+      description: isEnglish ? 'This action cannot be undone.' : 'Esta acción no se puede deshacer.',
+      confirmLabel: isEnglish ? 'Delete' : 'Eliminar',
+      cancelLabel: isEnglish ? 'Cancel' : 'Cancelar'
+    })
+    if (!ok) return
     try {
       const response = await fetch(`/api/admin/admins/${id}`, { method: 'DELETE' })
       if (!response.ok) throw new Error('request_failed')
-      setMessage({ type: 'success', text: isEnglish ? 'Administrator deleted.' : 'Administrador eliminado.' })
+      toast(isEnglish ? 'Administrator deleted.' : 'Administrador eliminado.')
       await loadAdmins()
     } catch {
-      setMessage({ type: 'error', text: isEnglish ? 'Could not delete administrator.' : 'No se pudo eliminar el administrador.' })
+      toast(isEnglish ? 'Could not delete administrator.' : 'No se pudo eliminar el administrador.', 'error')
     }
   }
 
@@ -430,15 +446,18 @@ export default function AdministradoresPage() {
                   </FieldLabel>
                   <FieldLabel>
                     {isEnglish ? 'Username' : 'Nombre de usuario'}
-                    <TextInput variant="control" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase() })} required />
+                    <TextInput variant="control" value={form.username} onChange={(e) => { setForm({ ...form, username: e.target.value.toLowerCase() }); setFieldErrors((current) => ({ ...current, username: undefined })) }} required />
+                    {fieldErrors.username && <p className="text-tiny font-extrabold text-[#9e3b28]">{fieldErrors.username}</p>}
                   </FieldLabel>
                   <FieldLabel>
                     {isEnglish ? 'Email' : 'Correo electrónico'}
-                    <TextInput type="email" variant="control" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+                    <TextInput type="email" variant="control" value={form.email} onChange={(e) => { setForm({ ...form, email: e.target.value }); setFieldErrors((current) => ({ ...current, email: undefined })) }} required />
+                    {fieldErrors.email && <p className="text-tiny font-extrabold text-[#9e3b28]">{fieldErrors.email}</p>}
                   </FieldLabel>
                   <FieldLabel>
                     {isEnglish ? 'Password' : 'Contraseña'}
-                    <TextInput type="password" variant="control" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={8} />
+                    <TextInput type="password" variant="control" value={form.password} onChange={(e) => { setForm({ ...form, password: e.target.value }); setFieldErrors((current) => ({ ...current, password: undefined })) }} required minLength={8} />
+                    {fieldErrors.password && <p className="text-tiny font-extrabold text-[#9e3b28]">{fieldErrors.password}</p>}
                   </FieldLabel>
                   <FieldLabel>
                     {isEnglish ? 'Type' : 'Tipo'}
@@ -459,6 +478,11 @@ export default function AdministradoresPage() {
                     <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />
                     {isEnglish ? 'Active account' : 'Cuenta activa'}
                   </label>
+                  {message && (
+                    <p className={message.type === 'error' ? 'text-small font-extrabold text-[#9e3b28]' : 'text-small font-extrabold text-[#2f6b45]'}>
+                      {message.text}
+                    </p>
+                  )}
                   <Button type="submit" disabled={saving}>
                     {saving ? (isEnglish ? 'Saving…' : 'Guardando…') : isEnglish ? 'Create administrator' : 'Crear administrador'}
                   </Button>
@@ -481,11 +505,13 @@ export default function AdministradoresPage() {
                   </FieldLabel>
                   <FieldLabel>
                     {isEnglish ? 'Username' : 'Nombre de usuario'}
-                    <TextInput variant="control" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase() })} required />
+                    <TextInput variant="control" value={form.username} onChange={(e) => { setForm({ ...form, username: e.target.value.toLowerCase() }); setFieldErrors((current) => ({ ...current, username: undefined })) }} required />
+                    {fieldErrors.username && <p className="text-tiny font-extrabold text-[#9e3b28]">{fieldErrors.username}</p>}
                   </FieldLabel>
                   <FieldLabel>
                     {isEnglish ? 'Email' : 'Correo electrónico'}
-                    <TextInput type="email" variant="control" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+                    <TextInput type="email" variant="control" value={form.email} onChange={(e) => { setForm({ ...form, email: e.target.value }); setFieldErrors((current) => ({ ...current, email: undefined })) }} required />
+                    {fieldErrors.email && <p className="text-tiny font-extrabold text-[#9e3b28]">{fieldErrors.email}</p>}
                   </FieldLabel>
                   <FieldLabel>
                     {isEnglish ? 'Type' : 'Tipo'}
@@ -507,6 +533,11 @@ export default function AdministradoresPage() {
                     <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />
                     {isEnglish ? 'Active account' : 'Cuenta activa'}
                   </label>
+                  {message && (
+                    <p className={message.type === 'error' ? 'text-small font-extrabold text-[#9e3b28]' : 'text-small font-extrabold text-[#2f6b45]'}>
+                      {message.text}
+                    </p>
+                  )}
                   <Button type="submit" disabled={saving}>
                     {saving ? (isEnglish ? 'Saving…' : 'Guardando…') : isEnglish ? 'Save changes' : 'Guardar cambios'}
                   </Button>
