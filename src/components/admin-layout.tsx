@@ -79,7 +79,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             }}
           />
 
-        <div className="min-w-0">
+        <div className="min-w-0 overflow-x-hidden">
           <header className="flex min-h-18 items-center justify-between gap-5 border-b border-stroke-admin-topbar bg-surface-admin-topbar px-[clamp(24px,4vw,56px)] backdrop-blur-md tablet:px-6 phone:min-h-15.5 phone:px-3.5">
             <div className="flex items-baseline gap-3 phone:grid phone:gap-0">
               <small className="text-caption font-extrabold text-[#7a7e89] capitalize">

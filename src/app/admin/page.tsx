@@ -29,7 +29,7 @@ export default function AdminPage() {
   return (
     <AdminLayout>
           <section
-            className="mx-auto max-w-345 px-[clamp(24px,4vw,56px)] pt-11.5 pb-22.5 phone:px-3.5 phone:pt-8.75 phone:pb-18.75"
+            className="mx-auto max-w-[min(1380px,calc(100vw-48px))] px-[clamp(24px,4vw,56px)] pt-11.5 pb-22.5 phone:px-3.5 phone:pt-8.75 phone:pb-18.75"
             id="resumen"
           >
             <div className="mb-7.5 flex items-end justify-between gap-8.75 tablet:flex-col tablet:items-start">
