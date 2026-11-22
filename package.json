@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "next build",
+    "db:migrate": "node scripts/migrate.mjs",
     "dev": "next dev",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",

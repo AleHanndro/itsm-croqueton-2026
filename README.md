@@ -3,6 +3,27 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with
 [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Base de datos
+
+El proyecto usa PostgreSQL con el driver `pg` directamente (sin ORM). El esquema
+vive en `db/migrations/*.sql` y se aplica en orden con `scripts/migrate.mjs`,
+que registra lo aplicado en la tabla `schema_migrations`.
+
+1. Instala PostgreSQL (14 o superior) y asegúrate de que el servicio esté corriendo.
+2. Copia `.env.example` a `.env.local` y ajusta `DATABASE_URL` con tu usuario y
+   contraseña.
+3. Ejecuta:
+
+   ```bash
+   pnpm db:migrate
+   ```
+
+   El script crea la base si no existe, aplica las migraciones pendientes y crea
+   el superadmin definido en `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD`.
+
+Para cambiar el esquema, agrega un archivo nuevo (`003_algo.sql`, …) en lugar de
+editar uno ya aplicado.
+
 ## Getting Started
 
 First, run the development server:

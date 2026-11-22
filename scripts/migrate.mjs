@@ -1,5 +1,5 @@
-import { readdir, readFile } from 'node:fs/promises'
 import { pbkdf2Sync, randomBytes } from 'node:crypto'
+import { readdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -20,10 +20,33 @@ if (!databaseUrl) {
   process.exit(1)
 }
 
-const pool = new Pool({
-  connectionString: databaseUrl,
-  ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined
-})
+const ssl = process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined
+
+// Crea la base de datos indicada en DATABASE_URL si todavía no existe.
+async function ensureDatabase() {
+  const url = new URL(databaseUrl)
+  const database = decodeURIComponent(url.pathname.slice(1))
+  if (!database) return
+
+  url.pathname = '/postgres'
+  const admin = new Pool({ connectionString: url.toString(), ssl, max: 1 })
+  try {
+    const exists = await admin.query('SELECT 1 FROM pg_database WHERE datname = $1', [database])
+    if (!exists.rowCount) {
+      await admin.query(`CREATE DATABASE "${database.replaceAll('"', '""')}"`)
+      console.log(`created database ${database}`)
+    }
+  } catch (error) {
+    // Sin permisos para crear bases (p. ej. en un proveedor administrado): se asume que ya existe.
+    console.warn(`could not verify/create database ${database}: ${error.message}`)
+  } finally {
+    await admin.end()
+  }
+}
+
+await ensureDatabase()
+
+const pool = new Pool({ connectionString: databaseUrl, ssl })
 
 function hashPassword(password) {
   const iterations = 150000
