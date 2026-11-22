@@ -1,9 +1,12 @@
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
 
 import { query, withTransaction } from '@/lib/db'
 import { ApiError, apiErrorResponse, requireAdmin } from '@/lib/server/auth'
 import { actorFromUser, getClientIp } from '@/lib/server/auth'
 import { writeAudit } from '@/lib/server/audit'
+import { moneyToKg, mxnPerKg } from '@/lib/server/config'
+import { donationThanksEmail } from '@/lib/server/email-templates'
+import { sendEmail } from '@/lib/server/mailer'
 
 interface DonationRow {
   created_at: Date
@@ -19,6 +22,8 @@ interface DonationRow {
   donor_member_type: string | null
   donor_phone: string | null
   id: string
+  money_amount: string
+  money_kg: string
   year: number | null
 }
 
@@ -49,6 +54,7 @@ export async function GET(request: Request) {
 
     const result = await query<DonationRow>(
       `SELECT dn.id, dn.croquette_amount, dn.croquette_unit, dn.croquette_kg, dn.created_at,
+              dn.money_amount, dn.money_kg,
               d.id AS donor_id, d.first_name AS donor_first_name, d.last_name AS donor_last_name,
               d.is_its_motul AS donor_is_its_motul, d.member_type AS donor_member_type,
               d.career AS donor_career, d.email AS donor_email, d.phone AS donor_phone,
@@ -90,6 +96,7 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({
+      mxnPerKg: mxnPerKg(),
       donations: result.rows.map((row) => ({
         createdAt: new Date(row.created_at).toISOString(),
         croquetteAmount: Number(row.croquette_amount),
@@ -106,6 +113,9 @@ export async function GET(request: Request) {
           phone: row.donor_phone
         },
         id: row.id,
+        moneyAmount: Number(row.money_amount),
+        moneyKg: Number(row.money_kg),
+        totalKg: Number(row.croquette_kg) + Number(row.money_kg),
         items: (itemsByDonation.get(row.id) ?? []).map((item) => ({
           customName: item.custom_name,
           id: item.id,
@@ -152,6 +162,9 @@ export async function POST(request: Request) {
     const croquetteAmount = Number(input.croquetteAmount ?? 0)
     if (Number.isNaN(croquetteAmount) || croquetteAmount < 0) throw new ApiError(400, 'invalid_amount')
     const croquetteUnit = input.croquetteUnit === 'g' ? 'g' : 'kg'
+    const moneyAmount = Math.round(Number(input.moneyAmount ?? 0) * 100) / 100
+    if (Number.isNaN(moneyAmount) || moneyAmount < 0) throw new ApiError(400, 'invalid_money_amount')
+    const moneyKg = moneyToKg(moneyAmount)
 
     const items = Array.isArray(input.items) ? input.items : []
 
@@ -173,12 +186,22 @@ export async function POST(request: Request) {
       const donorId = donorResult.rows[0].id
 
       const donationResult = await client.query<{ id: string }>(
-        `INSERT INTO donations (donor_id, donation_year_id, croquette_amount, croquette_unit, croquette_kg)
-         VALUES ($1, $2, $3, $4, $5)
+        `INSERT INTO donations
+          (donor_id, donation_year_id, croquette_amount, croquette_unit, croquette_kg, money_amount, money_kg)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING id`,
-        [donorId, donationYearId, croquetteAmount, croquetteUnit, toKg(croquetteAmount, croquetteUnit)]
+        [
+          donorId,
+          donationYearId,
+          croquetteAmount,
+          croquetteUnit,
+          toKg(croquetteAmount, croquetteUnit),
+          moneyAmount,
+          moneyKg
+        ]
       )
       const donationId = donationResult.rows[0].id
+      const emailItems: { name: string; quantity: number; unit: string | null }[] = []
 
       for (const item of items) {
         if (!item || typeof item !== 'object') continue
@@ -189,11 +212,16 @@ export async function POST(request: Request) {
         const customName = typeof itemInput.customName === 'string' ? itemInput.customName.trim() : null
         const typeSlug = typeof itemInput.type === 'string' ? itemInput.type.trim() : 'other'
 
-        const typeResult = await client.query<{ id: string }>(
-          `SELECT id FROM donation_item_types WHERE slug = $1`,
+        const typeResult = await client.query<{ id: string; name_es: string }>(
+          `SELECT id, name_es FROM donation_item_types WHERE slug = $1`,
           [typeSlug || 'other']
         )
         const itemTypeId = typeResult.rows[0]?.id ?? null
+        emailItems.push({
+          name: (customName || typeResult.rows[0]?.name_es || 'otros artículos').toLowerCase(),
+          quantity,
+          unit
+        })
 
         await client.query(
           `INSERT INTO donation_items (donation_id, item_type_id, custom_name, quantity, unit)
@@ -207,13 +235,27 @@ export async function POST(request: Request) {
         affectedUserName: `${firstName} ${lastName}`,
         description: `${admin.name} registró una donación de ${firstName} ${lastName}.`,
         ip: getClientIp(request),
-        metadata: { croquetteAmount, croquetteUnit, itemCount: items.length, year }
+        metadata: { croquetteAmount, croquetteUnit, itemCount: items.length, moneyAmount, year }
       }, client)
 
-      return donationId
+      return { donationId, emailItems }
     })
 
-    return NextResponse.json({ id: created }, { status: 201 })
+    if (email) {
+      const template = donationThanksEmail({
+        croquetteAmount,
+        croquetteUnit,
+        firstName,
+        items: created.emailItems,
+        moneyAmount,
+        moneyKg
+      })
+      after(() =>
+        sendEmail({ ...template, kind: 'donation_thanks', relatedId: created.donationId, to: email })
+      )
+    }
+
+    return NextResponse.json({ id: created.donationId }, { status: 201 })
   } catch (error) {
     return apiErrorResponse(error)
   }

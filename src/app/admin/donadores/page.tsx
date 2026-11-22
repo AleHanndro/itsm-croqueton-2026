@@ -55,6 +55,9 @@ type Donation = {
   donor: Donor
   id: string
   items: DonationItem[]
+  moneyAmount: number
+  moneyKg: number
+  totalKg: number
   year?: number | null
 }
 
@@ -69,6 +72,7 @@ type DonorForm = {
   isItsMotul: boolean
   lastName: string
   memberType: 'student' | 'directive' | 'general'
+  moneyAmount: string
   phone: string
 }
 
@@ -83,6 +87,7 @@ const emptyForm: DonorForm = {
   isItsMotul: false,
   lastName: '',
   memberType: 'student',
+  moneyAmount: '',
   phone: ''
 }
 
@@ -123,6 +128,8 @@ export default function DonadoresAdminPage() {
   const [form, setForm] = useState<DonorForm>(emptyForm)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null)
   const [saving, setSaving] = useState(false)
+  // Pesos que equivalen a 1 kg; lo manda el servidor (DONATION_MXN_PER_KG).
+  const [mxnPerKg, setMxnPerKg] = useState(20)
 
   async function loadYears() {
     const response = await fetch('/api/admin/donation-years')
@@ -141,8 +148,9 @@ export default function DonadoresAdminPage() {
       if (search.trim()) params.set('search', search.trim())
       const response = await fetch(`/api/admin/donations?${params.toString()}`)
       if (!response.ok) throw new Error('request_failed')
-      const data = (await response.json()) as { donations: Donation[] }
+      const data = (await response.json()) as { donations: Donation[]; mxnPerKg?: number }
       setDonations(data.donations)
+      if (data.mxnPerKg) setMxnPerKg(data.mxnPerKg)
     } catch {
       setMessage({ type: 'error', text: isEnglish ? 'Could not load donations.' : 'No se pudieron cargar las donaciones.' })
     } finally {
@@ -211,6 +219,7 @@ export default function DonadoresAdminPage() {
       isItsMotul: donation.donor.isItsMotul,
       lastName: donation.donor.lastName,
       memberType: (donation.donor.memberType as DonorForm['memberType']) ?? 'student',
+      moneyAmount: donation.moneyAmount ? String(donation.moneyAmount) : '',
       phone: donation.donor.phone ?? ''
     })
     setMessage(null)
@@ -223,6 +232,8 @@ export default function DonadoresAdminPage() {
     if (!/^\d{10}$/.test(form.phone.trim())) return isEnglish ? 'Phone must have 10 digits.' : 'El teléfono debe tener 10 dígitos.'
     const amount = Number(form.croquetteAmount)
     if (Number.isNaN(amount) || amount < 0) return isEnglish ? 'Enter a valid croquette amount.' : 'Ingresa una cantidad válida de croquetas.'
+    const money = Number(form.moneyAmount || 0)
+    if (Number.isNaN(money) || money < 0) return isEnglish ? 'Enter a valid money amount.' : 'Ingresa un monto válido en pesos.'
     if (form.isItsMotul && form.memberType === 'student' && !form.career.trim()) return isEnglish ? 'Select a career.' : 'Selecciona una carrera.'
     if (form.hasOtherArticles) {
       for (const article of form.articles) {
@@ -245,6 +256,7 @@ export default function DonadoresAdminPage() {
     const payload = {
       croquetteAmount: Number(form.croquetteAmount || 0),
       croquetteUnit: form.croquetteUnit,
+      moneyAmount: Number(form.moneyAmount || 0),
       donor: {
         career: form.isItsMotul && form.memberType === 'student' ? form.career : null,
         email: form.email.trim() || null,
@@ -356,7 +368,7 @@ export default function DonadoresAdminPage() {
   })
 
   const totalDonors = donations.length
-  const totalKg = donations.reduce((total, record) => total + record.croquetteKg, 0)
+  const totalKg = donations.reduce((total, record) => total + record.totalKg, 0)
   const totalArticles = donations.reduce(
     (total, record) => total + record.items.reduce((sum, article) => sum + (Number(article.quantity) || 0), 0),
     0
@@ -508,7 +520,10 @@ export default function DonadoresAdminPage() {
                     </td>
                     <td className="px-4 py-3">{record.donor.email ?? '—'}</td>
                     <td className="px-4 py-3">{record.donor.phone ?? '—'}</td>
-                    <td className="px-4 py-3">{record.croquetteAmount} {record.croquetteUnit}</td>
+                    <td className="px-4 py-3">
+                      {record.croquetteAmount} {record.croquetteUnit}
+                      {record.moneyAmount > 0 && <span className="block opacity-70">${record.moneyAmount} MXN</span>}
+                    </td>
                     <td className="px-4 py-3">
                       {record.items.length
                         ? record.items.map((article) => `${article.quantity} ${article.typeName ?? article.type ?? article.customName ?? ''}`).join(', ')
@@ -654,7 +669,7 @@ export default function DonadoresAdminPage() {
                     <div className="mt-2 grid grid-cols-2 gap-3 phone:grid-cols-1">
                       <FieldLabel>
                         {isEnglish ? 'Amount' : 'Cantidad'}
-                        <TextInput type="number" step="0.01" variant="control" value={form.croquetteAmount} onChange={(e) => setForm({ ...form, croquetteAmount: e.target.value })} required />
+                        <TextInput type="number" step="0.01" min="0" variant="control" value={form.croquetteAmount} onChange={(e) => setForm({ ...form, croquetteAmount: e.target.value })} placeholder="0" />
                       </FieldLabel>
                       <FieldLabel>
                         {isEnglish ? 'Unit' : 'Unidad de medida'}
@@ -667,6 +682,27 @@ export default function DonadoresAdminPage() {
                           <option value="g">{isEnglish ? 'Grams (g)' : 'Gramos (g)'}</option>
                         </select>
                       </FieldLabel>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Eyebrow variant="section" tone="accent">
+                      {isEnglish ? 'Money donation' : 'Donación en dinero'}
+                    </Eyebrow>
+                    <div className="mt-2 grid grid-cols-2 gap-3 phone:grid-cols-1">
+                      <FieldLabel>
+                        {isEnglish ? 'Amount (MXN)' : 'Monto (MXN)'}
+                        <TextInput type="number" step="0.01" min="0" variant="control" value={form.moneyAmount} onChange={(e) => setForm({ ...form, moneyAmount: e.target.value })} placeholder="0" />
+                      </FieldLabel>
+                      <p className="m-0 self-end pb-2 text-caption font-extrabold opacity-70">
+                        {Number(form.moneyAmount) > 0
+                          ? isEnglish
+                            ? `Counts as ${(Number(form.moneyAmount) / mxnPerKg).toLocaleString(undefined, { maximumFractionDigits: 3 })} kg toward the goal ($${mxnPerKg} = 1 kg).`
+                            : `Cuenta como ${(Number(form.moneyAmount) / mxnPerKg).toLocaleString(undefined, { maximumFractionDigits: 3 })} kg en la meta ($${mxnPerKg} = 1 kg).`
+                          : isEnglish
+                            ? `$${mxnPerKg} MXN = 1 kg of croquettes in the counter.`
+                            : `$${mxnPerKg} MXN = 1 kg de croqueta en el contador.`}
+                      </p>
                     </div>
                   </div>
 
@@ -772,6 +808,9 @@ export default function DonadoresAdminPage() {
                     <p><strong>{isEnglish ? 'Email:' : 'Correo:'}</strong> {viewingRecord.donor.email ?? '—'}</p>
                     <p><strong>{isEnglish ? 'Phone:' : 'Teléfono:'}</strong> {viewingRecord.donor.phone ?? '—'}</p>
                     <p><strong>{isEnglish ? 'Croquettes:' : 'Croquetas:'}</strong> {viewingRecord.croquetteAmount} {viewingRecord.croquetteUnit}</p>
+                    {viewingRecord.moneyAmount > 0 && (
+                      <p><strong>{isEnglish ? 'Money:' : 'Dinero:'}</strong> ${viewingRecord.moneyAmount} MXN ({viewingRecord.moneyKg} kg)</p>
+                    )}
                     {viewingRecord.items.length > 0 && (
                       <div>
                         <strong>{isEnglish ? 'Other articles:' : 'Otros artículos:'}</strong>

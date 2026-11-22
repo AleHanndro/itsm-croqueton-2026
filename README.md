@@ -21,8 +21,25 @@ que registra lo aplicado en la tabla `schema_migrations`.
    El script crea la base si no existe, aplica las migraciones pendientes y crea
    el superadmin definido en `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD`.
 
-Para cambiar el esquema, agrega un archivo nuevo (`003_algo.sql`, …) en lugar de
+Para cambiar el esquema, agrega un archivo nuevo (`004_algo.sql`, …) en lugar de
 editar uno ya aplicado.
+
+## Correos (SMTP)
+
+Los correos se envían con `nodemailer` usando las variables `SMTP_*` y
+`MAIL_FROM` de `.env.local` (ver `.env.example`). Si `SMTP_HOST` está vacío, la
+app funciona igual pero no envía nada. Cada intento queda registrado en la tabla
+`email_log` con estado `sent`, `failed` o `skipped`.
+
+| Correo                 | Cuándo se envía                                                                                                       |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Aceptación             | Alguien envía la solicitud de colaborador y hay cupo (`JOIN_CAPACITY`, 35 por defecto). Incluye los datos `EVENT_*`.  |
+| Cupo lleno             | Alguien envía la solicitud y ya no hay cupo. Queda en lista de espera.                                                |
+| Aceptación (promoción) | Un admin rechaza o manda a espera a alguien aceptado: el más antiguo de la lista de espera toma el lugar.             |
+| Gracias por donar      | Un admin registra una donación con correo del donador. Menciona croqueta, dinero (`DONATION_MXN_PER_KG`) y artículos. |
+
+Las donaciones en dinero cuentan para la meta con su equivalente en croqueta
+(20 MXN = 1 kg por defecto), guardado al momento de registrarlas.
 
 ## Getting Started
 

@@ -6,7 +6,7 @@ import { AdminSidebar } from '@/components/admin-dashboard'
 import { PageShell } from '@/components/page-shell'
 import { Container } from '@/components/ui/container'
 import { useNavigate } from '@/lib/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { useCommunity } from '@/providers/community-provider'
@@ -16,7 +16,6 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const router = useRouter()
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin'
-  const [requestCount, setRequestCount] = useState(0)
 
   useEffect(() => {
     if (!isHydrated) return
@@ -28,21 +27,6 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       router.replace('/mi-perfil')
     }
   }, [isAdmin, isHydrated, router, user])
-
-  useEffect(() => {
-    function updateCount() {
-      try {
-        const stored = window.localStorage.getItem('croqueton-join-requests')
-        const requests = stored ? (JSON.parse(stored) as { status?: string }[]) : []
-        setRequestCount(requests.filter((request) => request.status === 'pending').length)
-      } catch {
-        setRequestCount(0)
-      }
-    }
-    updateCount()
-    window.addEventListener('storage', updateCount)
-    return () => window.removeEventListener('storage', updateCount)
-  }, [])
 
   if (!isHydrated || !user || !isAdmin) {
     return (
@@ -72,7 +56,6 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             userEmail={user.email}
             userRole={user.role === 'superadmin' ? 'superadmin' : 'admin'}
             pendingCount={postReviewRequests.length}
-            requestCount={requestCount}
             onSignOut={() => {
               signOut()
               navigate('/')
