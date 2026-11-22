@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { AdminLayout } from '@/components/admin-layout'
+import { EventSettingsCard } from '@/components/event-settings-card'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import {
@@ -228,6 +229,8 @@ export default function SolicitudesPage() {
             {message.text}
           </p>
         )}
+
+        <EventSettingsCard isEnglish={isEnglish} />
 
         <div className="mb-5 grid grid-cols-4 gap-3 tablet:grid-cols-2 phone:grid-cols-2">
           <div className="rounded-2xl border border-stroke-card-admin bg-surface-panel p-4">

@@ -1,4 +1,4 @@
-import { eventInfo, joinCapacity, mxnPerKg } from '@/lib/server/config'
+import { joinCapacity, mxnPerKg, type EventInfo } from '@/lib/server/config'
 
 const colors = {
   accent: '#f15b3e',
@@ -30,8 +30,17 @@ function siteUrl() {
 }
 
 /** Envoltura común: encabezado amarillo, tarjeta blanca y pie con el nombre del evento. */
-function layout({ body, preheader, title }: { body: string; preheader: string; title: string }) {
-  const event = eventInfo()
+function layout({
+  body,
+  event,
+  preheader,
+  title
+}: {
+  body: string
+  event: EventInfo
+  preheader: string
+  title: string
+}) {
   return `<!doctype html>
 <html lang="es">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title></head>
@@ -55,8 +64,7 @@ Recibiste este correo porque te registraste o donaste en ${escapeHtml(event.name
 </html>`
 }
 
-function eventDetailsHtml() {
-  const event = eventInfo()
+function eventDetailsHtml(event: EventInfo) {
   const row = (label: string, value: string) =>
     `<tr><td style="padding:6px 12px 6px 0;font-weight:bold;white-space:nowrap;vertical-align:top;">${label}</td><td style="padding:6px 0;">${escapeHtml(value)}</td></tr>`
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:18px 0;padding:14px 16px;background:${colors.cream};border:2px solid ${colors.ink};border-radius:14px;">
@@ -67,8 +75,7 @@ ${event.details ? row('📝 Indicaciones', event.details) : ''}
 </table>`
 }
 
-function eventDetailsText() {
-  const event = eventInfo()
+function eventDetailsText(event: EventInfo) {
   return [
     `Fecha: ${event.date}`,
     `Hora: ${event.time}`,
@@ -79,16 +86,16 @@ function eventDetailsText() {
     .join('\n')
 }
 
-export function joinAcceptedEmail({ name }: { name: string }) {
-  const event = eventInfo()
+export function joinAcceptedEmail({ event, name }: { event: EventInfo; name: string }) {
   const subject = `¡Ya eres parte de la manada de ${event.name}! 🐶`
   const safeName = escapeHtml(name)
 
   const html = layout({
+    event,
     body: `<p style="margin:0 0 14px;">¡Hola, <strong>${safeName}</strong>!</p>
 <p style="margin:0 0 14px;">Tu solicitud fue <strong style="color:${colors.secondary};">aceptada</strong>: ya tienes uno de los ${joinCapacity()} lugares como colaborador de ${escapeHtml(event.name)}. Gracias por regalar tu tiempo para llenar platos y mover colitas.</p>
 <p style="margin:0;font-weight:bold;">Esto es lo que necesitas saber del evento:</p>
-${eventDetailsHtml()}
+${eventDetailsHtml(event)}
 <p style="margin:0 0 14px;">Si al final no puedes asistir, responde a este correo para liberar tu lugar y dárselo a alguien de la lista de espera.</p>
 <p style="margin:0;">¡Nos vemos pronto!<br><strong>La manada del Croquetón</strong></p>`,
     preheader: `Tu lugar como colaborador está confirmado. Fecha: ${event.date}.`,
@@ -100,7 +107,7 @@ ${eventDetailsHtml()}
 Tu solicitud fue aceptada: ya tienes uno de los ${joinCapacity()} lugares como colaborador de ${event.name}. Gracias por regalar tu tiempo.
 
 Información del evento:
-${eventDetailsText()}
+${eventDetailsText(event)}
 
 Si al final no puedes asistir, responde a este correo para liberar tu lugar.
 
@@ -110,12 +117,12 @@ La manada del Croquetón`
   return { html, subject, text }
 }
 
-export function joinWaitlistedEmail({ name }: { name: string }) {
-  const event = eventInfo()
+export function joinWaitlistedEmail({ event, name }: { event: EventInfo; name: string }) {
   const subject = `Gracias por querer unirte a ${event.name} 🐾`
   const safeName = escapeHtml(name)
 
   const html = layout({
+    event,
     body: `<p style="margin:0 0 14px;">¡Hola, <strong>${safeName}</strong>!</p>
 <p style="margin:0 0 14px;">Muchas gracias por querer ser parte de ${escapeHtml(event.name)}. Nos llena el corazón (y la pancita de los perritos) ver a tanta gente con ganas de ayudar.</p>
 <p style="margin:0 0 14px;">Por ahora ya se ocuparon los <strong>${joinCapacity()} lugares</strong> para colaboradores, así que no fue posible sumarte en este momento.</p>
@@ -178,8 +185,7 @@ function joinList(parts: string[]) {
   return `${parts.slice(0, -1).join(', ')} y ${parts.at(-1)}`
 }
 
-export function donationThanksEmail(summary: DonationSummary) {
-  const event = eventInfo()
+export function donationThanksEmail(summary: DonationSummary, event: EventInfo) {
   const parts = describeDonation(summary)
   const headline = joinList(parts)
   const totalKg =
@@ -189,6 +195,7 @@ export function donationThanksEmail(summary: DonationSummary) {
   const safeName = escapeHtml(summary.firstName)
 
   const html = layout({
+    event,
     body: `<p style="margin:0 0 14px;">¡Hola, <strong>${safeName}</strong>!</p>
 <p style="margin:0 0 14px;font-size:18px;">Gracias por haber donado <strong>${escapeHtml(headline)}</strong>.</p>
 ${

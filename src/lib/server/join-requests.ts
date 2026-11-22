@@ -2,6 +2,7 @@ import type { PoolClient } from 'pg'
 
 import { joinCapacity } from '@/lib/server/config'
 import { joinAcceptedEmail, joinWaitlistedEmail } from '@/lib/server/email-templates'
+import { loadEventInfo } from '@/lib/server/event-settings'
 import { sendEmail } from '@/lib/server/mailer'
 
 export type JoinStatus = 'accepted' | 'rejected' | 'waitlisted'
@@ -84,9 +85,10 @@ export async function sendJoinEmail(
   request: Pick<JoinRequestRow, 'email' | 'id' | 'name'>,
   kind: 'join_accepted' | 'join_waitlisted'
 ) {
+  const event = await loadEventInfo()
   const template =
     kind === 'join_accepted'
-      ? joinAcceptedEmail({ name: request.name })
-      : joinWaitlistedEmail({ name: request.name })
+      ? joinAcceptedEmail({ event, name: request.name })
+      : joinWaitlistedEmail({ event, name: request.name })
   await sendEmail({ ...template, kind, relatedId: request.id, to: request.email })
 }

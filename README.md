@@ -38,6 +38,10 @@ app funciona igual pero no envía nada. Cada intento queda registrado en la tabl
 | Aceptación (promoción) | Un admin rechaza o manda a espera a alguien aceptado: el más antiguo de la lista de espera toma el lugar.             |
 | Gracias por donar      | Un admin registra una donación con correo del donador. Menciona croqueta, dinero (`DONATION_MXN_PER_KG`) y artículos. |
 
+La fecha, hora, lugar e indicaciones del evento se editan en
+`/admin/solicitudes` (tarjeta "Datos del evento"). Si un campo se deja vacío se
+usa la variable `EVENT_*` correspondiente o, si tampoco existe, "Por confirmar".
+
 Las donaciones en dinero cuentan para la meta con su equivalente en croqueta
 (20 MXN = 1 kg por defecto), guardado al momento de registrarlas.
 

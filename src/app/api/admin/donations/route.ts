@@ -6,6 +6,7 @@ import { actorFromUser, getClientIp } from '@/lib/server/auth'
 import { writeAudit } from '@/lib/server/audit'
 import { moneyToKg, mxnPerKg } from '@/lib/server/config'
 import { donationThanksEmail } from '@/lib/server/email-templates'
+import { loadEventInfo } from '@/lib/server/event-settings'
 import { sendEmail } from '@/lib/server/mailer'
 
 interface DonationRow {
@@ -242,17 +243,25 @@ export async function POST(request: Request) {
     })
 
     if (email) {
-      const template = donationThanksEmail({
-        croquetteAmount,
-        croquetteUnit,
-        firstName,
-        items: created.emailItems,
-        moneyAmount,
-        moneyKg
+      after(async () => {
+        const template = donationThanksEmail(
+          {
+            croquetteAmount,
+            croquetteUnit,
+            firstName,
+            items: created.emailItems,
+            moneyAmount,
+            moneyKg
+          },
+          await loadEventInfo()
+        )
+        await sendEmail({
+          ...template,
+          kind: 'donation_thanks',
+          relatedId: created.donationId,
+          to: email
+        })
       })
-      after(() =>
-        sendEmail({ ...template, kind: 'donation_thanks', relatedId: created.donationId, to: email })
-      )
     }
 
     return NextResponse.json({ id: created.donationId }, { status: 201 })
