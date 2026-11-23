@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/dialog'
 import { FieldLabel, TextInput, TextareaInput } from '@/components/ui/field'
 import { useCommunity } from '@/providers/community-provider'
+import { useToast } from '@/providers/toast-provider'
+import { useConfirm } from '@/providers/confirm-provider'
 import { useLanguage } from '@/providers/language-provider'
 
 type DonorArticle = {
@@ -103,12 +105,16 @@ export default function DonadoresAdminPage() {
   const { language } = useLanguage()
   const { user, isHydrated } = useCommunity()
   const isEnglish = language === 'en'
+  const { toast } = useToast()
+  const { confirm } = useConfirm()
 
   const [years, setYears] = useState<number[]>([])
   const [selectedYear, setSelectedYear] = useState<number>(0)
   const [donations, setDonations] = useState<Donation[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [donorTypeFilter, setDonorTypeFilter] = useState<'all' | 'external' | 'its'>('all')
+  const [articleFilter, setArticleFilter] = useState('all')
   const [isYearOpen, setIsYearOpen] = useState(false)
   const [newYear, setNewYear] = useState('')
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -174,7 +180,7 @@ export default function DonadoresAdminPage() {
       setSelectedYear(year)
       setNewYear('')
       setIsYearOpen(false)
-      setMessage({ type: 'success', text: isEnglish ? 'Year added.' : 'Año agregado.' })
+      toast(isEnglish ? 'Year added.' : 'Año agregado.')
     } catch {
       setMessage({ type: 'error', text: isEnglish ? 'Could not add year.' : 'No se pudo agregar el año.' })
     }
@@ -214,7 +220,7 @@ export default function DonadoresAdminPage() {
   function validateForm() {
     if (!form.firstName.trim() || !form.lastName.trim()) return isEnglish ? 'Name and last name are required.' : 'Nombre y apellido son obligatorios.'
     if (form.email.trim() && !isEmail(form.email.trim())) return isEnglish ? 'Enter a valid email.' : 'Ingresa un correo válido.'
-    if (!/^[0-9+\-\s]{7,20}$/.test(form.phone.trim())) return isEnglish ? 'Enter a valid phone number.' : 'Ingresa un teléfono válido.'
+    if (!/^\d{10}$/.test(form.phone.trim())) return isEnglish ? 'Phone must have 10 digits.' : 'El teléfono debe tener 10 dígitos.'
     const amount = Number(form.croquetteAmount)
     if (Number.isNaN(amount) || amount < 0) return isEnglish ? 'Enter a valid croquette amount.' : 'Ingresa una cantidad válida de croquetas.'
     if (form.isItsMotul && form.memberType === 'student' && !form.career.trim()) return isEnglish ? 'Select a career.' : 'Selecciona una carrera.'
@@ -271,7 +277,7 @@ export default function DonadoresAdminPage() {
       )
       if (!response.ok) throw new Error('request_failed')
 
-      setMessage({ type: 'success', text: editingId ? (isEnglish ? 'Donation updated.' : 'Donación actualizada.') : (isEnglish ? 'Donation registered.' : 'Donación registrada.') })
+      toast(editingId ? (isEnglish ? 'Donation updated.' : 'Donación actualizada.') : (isEnglish ? 'Donation registered.' : 'Donación registrada.'))
       setIsFormOpen(false)
       setEditingId(null)
       setForm(emptyForm)
@@ -284,14 +290,20 @@ export default function DonadoresAdminPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm(isEnglish ? 'Delete this donation?' : '¿Eliminar esta donación?')) return
+    const ok = await confirm({
+      title: isEnglish ? 'Delete donation?' : '¿Eliminar donación?',
+      description: isEnglish ? 'This action cannot be undone.' : 'Esta acción no se puede deshacer.',
+      confirmLabel: isEnglish ? 'Delete' : 'Eliminar',
+      cancelLabel: isEnglish ? 'Cancel' : 'Cancelar'
+    })
+    if (!ok) return
     try {
       const response = await fetch(`/api/admin/donations/${id}`, { method: 'DELETE' })
       if (!response.ok) throw new Error('request_failed')
-      setMessage({ type: 'success', text: isEnglish ? 'Donation deleted.' : 'Donación eliminada.' })
+      toast(isEnglish ? 'Donation deleted.' : 'Donación eliminada.')
       await loadDonations()
     } catch {
-      setMessage({ type: 'error', text: isEnglish ? 'Could not delete donation.' : 'No se pudo eliminar la donación.' })
+      toast(isEnglish ? 'Could not delete donation.' : 'No se pudo eliminar la donación.', 'error')
     }
   }
 
@@ -320,13 +332,27 @@ export default function DonadoresAdminPage() {
 
   const filteredRecords = yearRecords.filter((record) => {
     const query = search.trim().toLowerCase()
-    if (!query) return true
-    return (
-      record.donor.firstName.toLowerCase().includes(query) ||
-      record.donor.lastName.toLowerCase().includes(query) ||
-      (record.donor.email ?? '').toLowerCase().includes(query) ||
-      (record.donor.phone ?? '').toLowerCase().includes(query)
-    )
+    if (query) {
+      const matches =
+        record.donor.firstName.toLowerCase().includes(query) ||
+        record.donor.lastName.toLowerCase().includes(query) ||
+        (record.donor.email ?? '').toLowerCase().includes(query) ||
+        (record.donor.phone ?? '').toLowerCase().includes(query)
+      if (!matches) return false
+    }
+
+    if (donorTypeFilter === 'its' && !record.donor.isItsMotul) return false
+    if (donorTypeFilter === 'external' && record.donor.isItsMotul) return false
+
+    if (articleFilter !== 'all') {
+      const hasArticle =
+        articleFilter === 'croquettes'
+          ? record.croquetteAmount > 0
+          : record.items.some((item) => (item.type ?? 'other') === articleFilter)
+      if (!hasArticle) return false
+    }
+
+    return true
   })
 
   const totalDonors = donations.length
@@ -391,6 +417,28 @@ export default function DonadoresAdminPage() {
             onChange={(event) => setSearch(event.target.value)}
             placeholder={isEnglish ? 'Search by name, email or phone' : 'Buscar por nombre, correo o teléfono'}
           />
+          <select
+            className="rounded-control border border-stroke bg-card px-3 py-2 text-small font-black"
+            value={donorTypeFilter}
+            onChange={(event) => setDonorTypeFilter(event.target.value as typeof donorTypeFilter)}
+          >
+            <option value="all">{isEnglish ? 'All donors' : 'Todos los donadores'}</option>
+            <option value="its">ITS Motul</option>
+            <option value="external">{isEnglish ? 'External' : 'Externos'}</option>
+          </select>
+          <select
+            className="rounded-control border border-stroke bg-card px-3 py-2 text-small font-black"
+            value={articleFilter}
+            onChange={(event) => setArticleFilter(event.target.value)}
+          >
+            <option value="all">{isEnglish ? 'All articles' : 'Todos los artículos'}</option>
+            <option value="croquettes">{isEnglish ? 'Croquettes' : 'Croquetas'}</option>
+            {ARTICLE_TYPES.map((type) => (
+              <option key={type.slug} value={type.slug}>
+                {type.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <section className="mb-6 grid grid-cols-5 gap-3 tablet:grid-cols-3 phone:grid-cols-2">
@@ -595,7 +643,7 @@ export default function DonadoresAdminPage() {
                     </FieldLabel>
                     <FieldLabel>
                       {isEnglish ? 'Phone' : 'Teléfono'}
-                      <TextInput variant="control" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
+                      <TextInput type="tel" inputMode="numeric" maxLength={10} variant="control" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })} required />
                     </FieldLabel>
                   </div>
 
@@ -697,6 +745,11 @@ export default function DonadoresAdminPage() {
                     </div>
                   )}
 
+                  {message && (
+                    <p className={message.type === 'error' ? 'text-small font-extrabold text-[#9e3b28]' : 'text-small font-extrabold text-[#2f6b45]'}>
+                      {message.text}
+                    </p>
+                  )}
                   <Button type="submit" disabled={saving}>
                     {saving ? (isEnglish ? 'Saving…' : 'Guardando…') : (isEnglish ? 'Submit donation' : 'Enviar donación')}
                   </Button>

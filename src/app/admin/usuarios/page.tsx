@@ -18,6 +18,8 @@ import {
 import { FieldLabel, TextInput, TextareaInput } from '@/components/ui/field'
 import { UserAvatar } from '@/components/user-visuals'
 import { useLanguage } from '@/providers/language-provider'
+import { useToast } from '@/providers/toast-provider'
+import { useConfirm } from '@/providers/confirm-provider'
 
 interface AdminUserBlock {
   endsAt: string
@@ -62,6 +64,8 @@ const STATUS_LABELS: Record<AdminUser['status'], { en: string; es: string }> = {
 export default function UsuariosPage() {
   const { language } = useLanguage()
   const isEnglish = language === 'en'
+  const { toast } = useToast()
+  const { confirm } = useConfirm()
   const [users, setUsers] = useState<AdminUser[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -72,6 +76,7 @@ export default function UsuariosPage() {
   const [error, setError] = useState<string | null>(null)
   const [canBlock, setCanBlock] = useState(false)
   const [canUnlock, setCanUnlock] = useState(false)
+  const [isSuperadmin, setIsSuperadmin] = useState(false)
   const [blockTarget, setBlockTarget] = useState<AdminUser | null>(null)
   const [reason, setReason] = useState('')
   const [notes, setNotes] = useState('')
@@ -115,6 +120,7 @@ export default function UsuariosPage() {
         const permissions = data?.user?.permissions ?? {}
         setCanBlock(Boolean(permissions['users.block']))
         setCanUnlock(Boolean(permissions['users.unlock']))
+        setIsSuperadmin(data?.user?.role === 'superadmin')
       })
       .catch(() => {})
   }, [])
@@ -146,14 +152,39 @@ export default function UsuariosPage() {
     }
   }
 
-  async function handleUnlock(user: AdminUser) {
-    if (!window.confirm(isEnglish ? 'Unlock this account?' : '¿Desbloquear esta cuenta?')) return
+  async function handleUnlock(target: AdminUser) {
+    const ok = await confirm({
+      title: isEnglish ? 'Unlock account?' : '¿Desbloquear cuenta?',
+      description: isEnglish ? 'The user will regain access.' : 'El usuario recuperará el acceso.',
+      confirmLabel: isEnglish ? 'Unlock' : 'Desbloquear',
+      cancelLabel: isEnglish ? 'Cancel' : 'Cancelar'
+    })
+    if (!ok) return
     try {
-      const response = await fetch(`/api/admin/users/${user.id}/unblock`, { method: 'POST' })
+      const response = await fetch(`/api/admin/users/${target.id}/unblock`, { method: 'POST' })
       if (!response.ok) throw new Error('unlock_failed')
+      toast(isEnglish ? 'Account unlocked.' : 'Cuenta desbloqueada.')
       await loadUsers()
     } catch {
       setError(isEnglish ? 'Could not unlock the account.' : 'No se pudo desbloquear la cuenta.')
+    }
+  }
+
+  async function handleDeleteUser(target: AdminUser) {
+    const ok = await confirm({
+      title: isEnglish ? 'Delete user?' : '¿Eliminar usuario?',
+      description: isEnglish ? 'This will permanently delete the account and its content.' : 'Se eliminará permanentemente la cuenta y su contenido.',
+      confirmLabel: isEnglish ? 'Delete' : 'Eliminar',
+      cancelLabel: isEnglish ? 'Cancel' : 'Cancelar'
+    })
+    if (!ok) return
+    try {
+      const response = await fetch(`/api/admin/users/${target.id}`, { method: 'DELETE' })
+      if (!response.ok) throw new Error('delete_failed')
+      toast(isEnglish ? 'User deleted.' : 'Usuario eliminado.')
+      await loadUsers()
+    } catch {
+      setError(isEnglish ? 'Could not delete the user.' : 'No se pudo eliminar el usuario.')
     }
   }
 
@@ -333,6 +364,15 @@ export default function UsuariosPage() {
                             }}
                           >
                             {isEnglish ? 'Block for 15 days' : 'Bloquear cuenta por 15 días'}
+                          </button>
+                        )}
+                        {isSuperadmin && (
+                          <button
+                            type="button"
+                            className="text-caption font-black text-[#9e3b28] underline"
+                            onClick={() => void handleDeleteUser(user)}
+                          >
+                            {isEnglish ? 'Delete' : 'Eliminar'}
                           </button>
                         )}
                       </div>

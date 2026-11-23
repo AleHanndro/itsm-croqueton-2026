@@ -21,6 +21,8 @@ import { FieldLabel, TextInput, TextareaInput } from '@/components/ui/field'
 import { Button } from '@/components/ui/button'
 import { packGenerationImage } from '@/lib/images'
 import { useCommunity } from '@/providers/community-provider'
+import { useToast } from '@/providers/toast-provider'
+import { useConfirm } from '@/providers/confirm-provider'
 import { useLanguage } from '@/providers/language-provider'
 
 type Generation = {
@@ -37,6 +39,8 @@ export default function PackPage() {
   const { language } = useLanguage()
   const { user, isHydrated } = useCommunity()
   const isEnglish = language === 'en'
+  const { toast } = useToast()
+  const { confirm } = useConfirm()
 
   const [generations, setGenerations] = useState<Generation[]>([])
   const [loading, setLoading] = useState(true)
@@ -174,7 +178,7 @@ export default function PackPage() {
 
       if (!response.ok) throw new Error('save_failed')
 
-      setMessage({ type: 'success', text: editingId ? (isEnglish ? 'Generation updated.' : 'Generación actualizada.') : (isEnglish ? 'Generation added.' : 'Generación agregada.') })
+      toast(editingId ? (isEnglish ? 'Generation updated.' : 'Generación actualizada.') : (isEnglish ? 'Generation added.' : 'Generación agregada.'))
       setIsFormOpen(false)
       setEditingId(null)
       await loadGenerations()
@@ -186,14 +190,20 @@ export default function PackPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm(isEnglish ? 'Delete this generation?' : '¿Eliminar esta generación?')) return
+    const ok = await confirm({
+      title: isEnglish ? 'Delete generation?' : '¿Eliminar generación?',
+      description: isEnglish ? 'This action cannot be undone.' : 'Esta acción no se puede deshacer.',
+      confirmLabel: isEnglish ? 'Delete' : 'Eliminar',
+      cancelLabel: isEnglish ? 'Cancel' : 'Cancelar'
+    })
+    if (!ok) return
     try {
       const response = await fetch(`/api/admin/croquetones/${id}`, { method: 'DELETE' })
       if (!response.ok) throw new Error('delete_failed')
-      setMessage({ type: 'success', text: isEnglish ? 'Generation deleted.' : 'Generación eliminada.' })
+      toast(isEnglish ? 'Generation deleted.' : 'Generación eliminada.')
       await loadGenerations()
     } catch {
-      setMessage({ type: 'error', text: isEnglish ? 'Could not delete generation.' : 'No se pudo eliminar la generación.' })
+      toast(isEnglish ? 'Could not delete generation.' : 'No se pudo eliminar la generación.', 'error')
     }
   }
 
@@ -434,6 +444,11 @@ export default function PackPage() {
                         {isEnglish ? 'Members (one per line or comma separated)' : 'Integrantes (uno por línea o separados por coma)'}
                         <TextareaInput variant="control" value={members} onChange={(e) => setMembers(e.target.value)} />
                       </FieldLabel>
+                      {message && (
+                        <p className={message.type === 'error' ? 'text-small font-extrabold text-[#9e3b28]' : 'text-small font-extrabold text-[#2f6b45]'}>
+                          {message.text}
+                        </p>
+                      )}
                       <Button type="submit" disabled={saving}>
                         {saving ? (isEnglish ? 'Saving…' : 'Guardando…') : editingId ? (isEnglish ? 'Save' : 'Guardar') : (isEnglish ? 'Add' : 'Agregar')}
                       </Button>

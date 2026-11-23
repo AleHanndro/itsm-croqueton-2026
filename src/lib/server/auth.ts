@@ -158,10 +158,12 @@ export function isEmail(value: string) {
 }
 
 export function normalizeUsername(value: unknown) {
-  return String(value ?? '')
-    .trim()
-    .toLowerCase()
+  const raw = String(value ?? '').trim().toLowerCase()
+  const localPart = raw.includes('@') ? raw.split('@')[0] : raw
+  return localPart
     .replace(/^@/, '')
+    .replace(/[^a-z0-9._]/g, '')
+    .slice(0, 24)
 }
 
 export function isUsername(value: string) {

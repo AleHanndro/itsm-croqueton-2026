@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS donation_items (
 CREATE TABLE IF NOT EXISTS donation_goals (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,
-  goal_kg numeric(12,3) NOT NULL DEFAULT 1000,
+  goal_kg numeric(12,3) NOT NULL DEFAULT 250,
   is_public boolean NOT NULL DEFAULT true,
   campaign_year integer,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -93,7 +93,7 @@ INSERT INTO donation_item_types (slug, name_es, name_en) VALUES
 ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO donation_goals (name, goal_kg, is_public)
-SELECT 'Meta principal', 1000, true
+SELECT 'Meta principal', 250, true
 WHERE NOT EXISTS (SELECT 1 FROM donation_goals WHERE is_public = true);
 
 CREATE OR REPLACE FUNCTION touch_updated_at()

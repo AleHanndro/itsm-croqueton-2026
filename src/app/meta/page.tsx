@@ -37,7 +37,7 @@ export default function GoalPage() {
   const { language } = useLanguage()
   const [showGoal, setShowGoal] = useState(false)
   const [collectedKilograms, setCollectedKilograms] = useState(0)
-  const [goalKg, setGoalKg] = useState(1000)
+  const [goalKg, setGoalKg] = useState(250)
   const goalRef = useRef(null)
   const isEnglish = language === 'en'
 
@@ -51,7 +51,7 @@ export default function GoalPage() {
         setGoalKg(data.goalKg)
       } catch {
         setCollectedKilograms(0)
-        setGoalKg(1000)
+        setGoalKg(250)
       }
     }
     void load()
@@ -88,8 +88,8 @@ export default function GoalPage() {
         accentTitle={isEnglish ? 'every bowl.' : 'todos los platos.'}
         description={
           isEnglish
-            ? 'Our goal is to collect 1,000 kg of sealed dog food. It sounds huge, but so did teaching Croqueto not to eat the homework.'
-            : 'Queremos reunir 1,000 kg de alimento sellado. Suena enorme, pero tambi\xE9n sonaba enorme ense\xF1arle a Croqueto a no comerse la tarea.'
+            ? 'Our goal is to collect 250 kg of sealed dog food. It sounds huge, but so did teaching Croqueto not to eat the homework.'
+            : 'Queremos reunir 250 kg de alimento sellado. Suena enorme, pero tambi\xE9n sonaba enorme ense\xF1arle a Croqueto a no comerse la tarea.'
         }
         descriptionClassName="phone:text-base"
         aside={
