@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { AdminSidebar } from '@/components/admin-dashboard'
 import { GuaubookProfilePage } from '@/components/guaubook-profile'
@@ -13,19 +13,6 @@ import { useLanguage } from '@/providers/language-provider'
 
 export default function ProfilePage() {
   const { user, isHydrated, signOut, postReviewRequests } = useCommunity()
-  const [requestCount, setRequestCount] = useState(0)
-
-  useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- Reading the admin badge count from localStorage. */
-    try {
-      const stored = window.localStorage.getItem('croqueton-join-requests')
-      const requests = stored ? (JSON.parse(stored) as { status?: string }[]) : []
-      setRequestCount(requests.filter((request) => request.status === 'pending').length)
-    } catch {
-      setRequestCount(0)
-    }
-    /* eslint-enable react-hooks/set-state-in-effect */
-  }, [])
   const { language } = useLanguage()
   const router = useRouter()
   const isEnglish = language === 'en'
@@ -61,7 +48,6 @@ export default function ProfilePage() {
             userEmail={user.email}
             userRole={user.role === 'superadmin' ? 'superadmin' : 'admin'}
             pendingCount={postReviewRequests.length}
-            requestCount={requestCount}
             onSignOut={() => {
               signOut()
               router.push('/')

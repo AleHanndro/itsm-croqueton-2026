@@ -15,7 +15,7 @@ export async function GET() {
     const goalKg = Number(goalResult.rows[0]?.goal_kg ?? 250)
 
     const totalResult = await query<{ total: string }>(
-      `SELECT COALESCE(SUM(croquette_kg), 0)::text AS total FROM donations`
+      `SELECT COALESCE(SUM(croquette_kg + money_kg), 0)::text AS total FROM donations`
     )
     const collectedKg = Number(totalResult.rows[0]?.total ?? 0)
 

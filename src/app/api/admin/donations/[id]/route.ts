@@ -9,6 +9,7 @@ import {
   requireAdmin
 } from '@/lib/server/auth'
 import { writeAudit } from '@/lib/server/audit'
+import { moneyToKg } from '@/lib/server/config'
 
 function toKg(amount: number, unit: 'g' | 'kg') {
   return unit === 'g' ? amount / 1000 : amount
@@ -90,6 +91,15 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
         values.push(unit)
         fields.push(`croquette_kg = $${index++}`)
         values.push(toKg(amount, unit))
+      }
+
+      if (input.moneyAmount !== undefined) {
+        const money = Math.round(Number(input.moneyAmount) * 100) / 100
+        if (Number.isNaN(money) || money < 0) throw new ApiError(400, 'invalid_money_amount')
+        fields.push(`money_amount = $${index++}`)
+        values.push(money)
+        fields.push(`money_kg = $${index++}`)
+        values.push(moneyToKg(money))
       }
 
       if (fields.length) {

@@ -19,6 +19,75 @@ import { Eyebrow } from '@/components/ui/eyebrow'
 import { CheckboxCard, FieldLabel, TextareaInput, TextInput } from '@/components/ui/field'
 import { heroDogImage, rejectedApplicationImage } from '@/lib/images'
 
+type JoinResult = 'duplicate' | 'error' | 'requirements' | 'waitlisted' | 'welcome'
+
+type Bilingual = { en: string; es: string }
+
+const RESULT_COPY: Record<
+  JoinResult,
+  {
+    description: Bilingual
+    eyebrow: Bilingual
+    title: { en: (name: string) => string; es: (name: string) => string }
+  }
+> = {
+  duplicate: {
+    description: {
+      en: 'This email already has an active application. Check your inbox (and spam folder) for our message.',
+      es: 'Este correo ya tiene una solicitud activa. Revisa tu bandeja de entrada (y la de spam) para ver nuestro mensaje.'
+    },
+    eyebrow: { en: 'Already sniffed', es: 'Ya te olfateamos' },
+    title: {
+      en: () => 'You are already registered.',
+      es: () => 'Ya estás registrado.'
+    }
+  },
+  error: {
+    description: {
+      en: 'We could not send your application. Please try again in a few minutes.',
+      es: 'No pudimos enviar tu solicitud. Inténtalo de nuevo en unos minutos.'
+    },
+    eyebrow: { en: 'Oops', es: 'Ups' },
+    title: {
+      en: () => 'Something went wrong.',
+      es: () => 'Algo salió mal.'
+    }
+  },
+  requirements: {
+    description: {
+      en: 'You need to be 18+, explain your motivation in at least 20 characters, be available and ready to work as a team. The dog is laughing with you, not at you. Probably.',
+      es: 'Necesitas ser mayor de edad, explicar tu motivación en al menos 20 caracteres, tener disponibilidad y aceptar el trabajo en equipo. El perrito se ríe contigo, no de ti. Probablemente.'
+    },
+    eyebrow: { en: 'Almost, human', es: 'Casi, humano' },
+    title: {
+      en: () => 'Your checklist needs work.',
+      es: () => 'Te faltaron unas casillas.'
+    }
+  },
+  waitlisted: {
+    description: {
+      en: 'All volunteer spots are taken for now, so you are on the waiting list. We sent you an email, and if a spot opens up we will write to you with the event details.',
+      es: 'Por ahora todos los lugares para colaboradores están ocupados, así que quedaste en lista de espera. Te enviamos un correo y, si se libera un lugar, te escribiremos con la información del evento.'
+    },
+    eyebrow: { en: 'Waiting list', es: 'Lista de espera' },
+    title: {
+      en: (name) => `Thank you, ${name}!`,
+      es: (name) => `¡Gracias, ${name}!`
+    }
+  },
+  welcome: {
+    description: {
+      en: 'Your time and motivation can fill many bowls. Your spot is confirmed: we sent the event details to your email.',
+      es: 'Tu tiempo y tu motivación pueden llenar muchos platos. Tu lugar está confirmado: te enviamos la información del evento a tu correo.'
+    },
+    eyebrow: { en: 'Registration complete', es: 'Registro completado' },
+    title: {
+      en: (name) => `Thank you for joining, ${name}!`,
+      es: (name) => `¡Gracias por registrarte, ${name}!`
+    }
+  }
+}
+
 export function JoinApplicationDialog({
   open,
   onOpenChange,
@@ -28,7 +97,7 @@ export function JoinApplicationDialog({
   onOpenChange: (open: boolean) => void
   isEnglish: boolean
 }) {
-  const [joinResult, setJoinResult] = useState<'requirements' | 'welcome' | null>(null)
+  const [joinResult, setJoinResult] = useState<JoinResult | null>(null)
   const [applicantName, setApplicantName] = useState('')
   const [applicantAge, setApplicantAge] = useState('')
   const [applicantEmail, setApplicantEmail] = useState('')
@@ -45,13 +114,13 @@ export function JoinApplicationDialog({
     onOpenChange(nextOpen)
   }
 
-  const submitJoinForm = (event: FormEvent<HTMLFormElement>) => {
+  const submitJoinForm = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (isSubmitting) return
 
-    const isEmailValid = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(applicantEmail.trim())
-    const isPhoneValid = /^[0-9+\\-\\s]{7,20}$/.test(applicantPhone.trim())
+    const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(applicantEmail.trim())
+    const isPhoneValid = /^[0-9+\-\s]{7,20}$/.test(applicantPhone.trim())
 
     if (
       !applicantName.trim() ||
@@ -68,33 +137,40 @@ export function JoinApplicationDialog({
 
     setIsSubmitting(true)
 
-    const request = {
-      acceptsCommitment,
-      age: Number(applicantAge),
-      createdAt: new Date().toISOString(),
-      decidedAt: null,
-      decidedBy: null,
-      email: applicantEmail.trim(),
-      hasAvailability,
-      id: crypto.randomUUID(),
-      motivation: motivation.trim(),
-      name: applicantName.trim(),
-      phone: applicantPhone.trim(),
-      status: 'pending'
-    }
-
-    const existing = window.localStorage.getItem('croqueton-join-requests')
-    let requests: unknown[] = []
     try {
-      requests = existing ? (JSON.parse(existing) as unknown[]) : []
-    } catch {
-      requests = []
-    }
-    window.localStorage.setItem('croqueton-join-requests', JSON.stringify([request, ...requests]))
+      const response = await fetch('/api/join-requests', {
+        body: JSON.stringify({
+          acceptsCommitment,
+          age: Number(applicantAge),
+          email: applicantEmail.trim(),
+          hasAvailability,
+          motivation: motivation.trim(),
+          name: applicantName.trim(),
+          phone: applicantPhone.trim()
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST'
+      })
+      const data = (await response.json().catch(() => ({}))) as { error?: string; status?: string }
 
-    setIsSubmitting(false)
-    setJoinResult('welcome')
+      if (response.ok) {
+        setJoinResult(data.status === 'waitlisted' ? 'waitlisted' : 'welcome')
+      } else if (data.error === 'already_registered') {
+        setJoinResult('duplicate')
+      } else if (data.error === 'requirements_not_met') {
+        setJoinResult('requirements')
+      } else {
+        setJoinResult('error')
+      }
+    } catch {
+      setJoinResult('error')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
+
+  const resultCopy = joinResult ? RESULT_COPY[joinResult] : null
+  const isPositive = joinResult === 'welcome' || joinResult === 'waitlisted'
 
   return (
     <DialogRoot open={open} onOpenChange={handleOpenChange}>
@@ -164,7 +240,7 @@ export function JoinApplicationDialog({
                     <span>
                       {isEnglish
                         ? 'Why do you want to participate?'
-                        : '\\xBFPor qu\\xE9 quieres participar?'}
+                        : '¿Por qué quieres participar?'}
                     </span>
                     <TextareaInput
                       value={motivation}
@@ -216,58 +292,46 @@ export function JoinApplicationDialog({
             ) : (
               <div className="grid justify-items-center pt-2.5 text-center">
                 <Image
-                  src={joinResult === 'welcome' ? heroDogImage : rejectedApplicationImage}
+                  src={isPositive ? heroDogImage : rejectedApplicationImage}
                   className={cn(
                     'mb-6 block max-h-67.5 w-[min(300px,80%)] -rotate-2 border-7 border-ink bg-brand shadow-card phone:w-[min(250px,78%)]',
-                    joinResult === 'welcome'
+                    isPositive
                       ? 'rounded-circle object-contain'
                       : 'aspect-square rounded-3xl object-cover'
                   )}
                   alt={
-                    joinResult === 'welcome'
+                    isPositive
                       ? isEnglish
                         ? 'Happy dog welcoming the new volunteer'
                         : 'Perrito feliz dando la bienvenida al nuevo voluntario'
                       : isEnglish
                         ? 'Laughing dog reacting to the application'
-                        : 'Perrito ri\xE9ndose de la solicitud'
+                        : 'Perrito riéndose de la solicitud'
                   }
                 />
-                <Eyebrow variant="section" tone="accent">
-                  {joinResult === 'welcome'
-                    ? isEnglish
-                      ? 'Registration complete'
-                      : 'Registro completado'
-                    : isEnglish
-                      ? 'Almost, human'
-                      : 'Casi, humano'}
-                </Eyebrow>
-                <DialogTitle id="join-dialog-title">
-                  {joinResult === 'welcome'
-                    ? isEnglish
-                      ? `Thank you for joining, ${applicantName.trim()}!`
-                      : `\xA1Gracias por registrarte, ${applicantName.trim()}!`
-                    : isEnglish
-                      ? 'Your checklist needs work.'
-                      : 'Te faltaron unas casillas.'}
-                </DialogTitle>
-                <DialogDescription>
-                  {joinResult === 'welcome'
-                    ? isEnglish
-                      ? 'Your time and motivation can fill many bowls. The pack received your registration and will contact you to confirm the next steps.'
-                      : 'Tu tiempo y tu motivaci\xF3n pueden llenar muchos platos. La manada recibi\xF3 tu registro y se pondr\xE1 en contacto contigo para confirmar los siguientes pasos.'
-                    : isEnglish
-                      ? 'You need to be 18+, explain your motivation in at least 20 characters, be available and ready to work as a team. The dog is laughing with you, not at you. Probably.'
-                      : 'Necesitas ser mayor de edad, explicar tu motivaci\xF3n en al menos 20 caracteres, tener disponibilidad y aceptar el trabajo en equipo. El perrito se r\xEDe contigo, no de ti. Probablemente.'}
-                </DialogDescription>
+                {resultCopy && (
+                  <>
+                    <Eyebrow variant="section" tone="accent">
+                      {isEnglish ? resultCopy.eyebrow.en : resultCopy.eyebrow.es}
+                    </Eyebrow>
+                    <DialogTitle id="join-dialog-title">
+                      {isEnglish
+                        ? resultCopy.title.en(applicantName.trim())
+                        : resultCopy.title.es(applicantName.trim())}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {isEnglish ? resultCopy.description.en : resultCopy.description.es}
+                    </DialogDescription>
+                  </>
+                )}
                 <Button className="mt-3" onClick={() => setJoinResult(null)}>
-                  {joinResult === 'welcome'
+                  {isPositive
                     ? isEnglish
                       ? 'Review my answers'
                       : 'Revisar mis respuestas'
                     : isEnglish
-                      ? 'Complete the form'
-                      : 'Completar el formulario'}
+                      ? 'Back to the form'
+                      : 'Volver al formulario'}
                 </Button>
               </div>
             )}
